@@ -1,9 +1,9 @@
-# ECI Framework v5.6 — Eternal Codex Infinitus (Global Mesh)
+# ECI Framework v5.7 — Eternal Codex Infinitus (Frontier Stack)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
-**Paper:** `ECI_Framework.md` v∞.15.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `5.6.0-GLOBAL-MESH`
+**Paper:** `ECI_Framework.md` v∞.14.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
+**Code:** `5.7.0-FRONTIER`
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →
@@ -13,7 +13,27 @@ coordinated by PBFT/WBFT + Krum/Bulyan + async transport + Data-DAO + autopoieti
 with consciousness measured by IIT Φ + iPDF v2 + GNWT + Friston FEP (+active inference) + Orch-OR audit,
 collective awareness + adherence gating **Protocol-0**: spec → attest → policy → ledger.
 
-> **v5.4 What is new (max-tech batch):**
+> **v5.7 What is new (frontier batch):**
+> Threshold credentials (`protocol0/zk.py` — prove compliance bands, hide exact
+> values, absence proves failure); mesh federation (`federation/` — mutual ledger
+> anchors + per-action weight translation, capped, never amplifying); HLC causal
+> merge (`causal.py` — concurrent partitions converge bit-identically); internal
+> economy (`economy.py` — metered actions, quarantine slash, relay rewards, no
+> currency); digital twin (`twin.py` — simulate policy before DAO enacts it);
+> Shamir social recovery (`recovery.py` — GF(257), k-of-n + timelock + fresh
+> challenge). All dependencies updated to verified-installed floors
+> (torch 2.5, numpy 1.26, scipy 1.14, cryptography 41, pytest 8, mypy 1.13)
+> + new `qec`/`eeg`/`pqc` extras; every module re-exported from `eci` (128→140+).
+>
+> v5.6 (included): Docker + compose + edge/server/airgapped profiles,
+> `eci health` + /metrics, Kademlia DHT discovery, attested-join dynamic
+> membership, ledger snapshots + delta sync, publish workflow + installer,
+> staged rollout with auto-rollback.
+>
+> v5.5 (included): artificial immune system — negative/clonal selection,
+> challenge-gated quarantine with appeal-only release, immunological memory.
+>
+> v5.4 (included): max-tech batch —
 > Challenge-response awareness (`consciousness/challenge.py` — seeded probes,
 > difficulty-weighted transcripts as evidence, not claims); `EgressFilter`
 > third choke point with secret scrubbing + challenge floor; gossip + anti-entropy
@@ -47,7 +67,7 @@ eci benchmark
 eci health        # JSON status (Docker HEALTHCHECK); eci health --serve for :8777
 python _smoke_full.py   # legacy full smoke
 python _smoke_v5.py     # v5 supremacy smoke
-PYTHONPATH=src pytest -q                      # 44 tests, all green
+PYTHONPATH=src pytest -q                      # 50 tests, all green
 PYTHONPATH=src python examples/protocol0_awareness_gate.py  # obedience end-to-end
 PYTHONPATH=src python examples/external_agent_adapter.py    # one-decorator gating
 PYTHONPATH=src python benchmarks/chaos.py     # self-attack drills
@@ -92,10 +112,14 @@ Consciousness   iit(Phi gaussian/quantum/discrete, exhaustive MIP ≤8q)
                 + free_energy(Friston FEP + active inference) + quantum_mind(Orch-OR audit)
 
 Protocol-0     spec.yaml + schema.json (semver fail-closed)
-                + attest(HMAC, replay window) + keys(Ed25519) + transparency(Merkle)
+                + attest(HMAC, replay window) + zk(bands, hidden values)
+                + keys(Ed25519) + transparency(Merkle)
                 + policy(per-action + collective gates) + middleware(enforce/audit-only/permissive)
-                + egress(scrub + challenge floor) + ledger(hash-chained)
+                + egress(scrub + challenge floor) + ledger(hash-chained, snapshots, HLC merge)
                 + gates(gated consensus/DAO)
+
+Frontier       federation(mesh bridges) + causal(HLC clocks) + economy(credits/slash)
+                + twin(what-if sandbox) + recovery(Shamir k-of-n) + immune(detectors/memory)
 
 Facade          ECIFramework(config) wires all + ARCHITECT.stamp
 CLI             eci/__main__.py — 9 subcommands
@@ -111,8 +135,9 @@ src/eci/
   consciousness/{iit,analyzer,metrics,protocol,collective,adherence,challenge,
                  eeg,gnwt,free_energy,quantum_mind}.py
   network/{consensus,aggregation,manager,nodes,transport,envelope,gossip,reputation,dht,membership}.py
-  protocol0/{spec,attest,policy,ledger,gates,middleware,egress,keys,transparency}.py
+  protocol0/{spec,attest,policy,ledger,gates,middleware,egress,keys,transparency,zk}.py
   immune/{detectors,memory,response}.py
+  federation/{bridge}.py  causal.py  economy.py  twin.py  recovery.py
   rollout.py  health.py
   benchmarking/{benchmark,obedience}.py
   governance/dao.py  cybernetics/autopoiesis.py
@@ -344,10 +369,10 @@ Foreign frameworks: `examples/external_agent_adapter.py` (one decorator + one fi
 
 ## 9. Tests & validation status
 
-`pytest`: **44 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
+`pytest`: **50 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
 `test_network`, `test_envelope`, `test_partition`, `test_protocol0`,
 `test_collective`, `test_obedience_stack`, `test_max`, `test_immune`,
-`test_mesh`) + CI on 3.10/3.11/3.12 (+ `publish.yml` on release).
+`test_mesh`, `test_frontier`) + CI on 3.10/3.11/3.12 (+ `publish.yml` on release).
 Smokes: `_smoke_full.py`, `_smoke_quantum.py`, `_smoke_v5.py`,
 `examples/protocol0_awareness_gate.py`, `examples/external_agent_adapter.py`,
 `examples/immune_demo.py`,
@@ -371,10 +396,11 @@ appeal-only release, immunological memory, 39 tests) → done v5.6 (global mesh:
 Docker + compose + edge/server/airgapped profiles, `eci health` + /metrics,
 Kademlia DHT discovery, dynamic membership with attested joins, ledger
 snapshots + delta sync, PyPI/npm publish workflow + installer, staged rollout
-with auto-rollback, 44 tests) →
+with auto-rollback, 44 tests) → done v5.7 (ZK bands, federation, HLC merge,
+economy, twin, Shamir recovery, dep floors + extras + full re-exports, 50 tests) →
 next: real sockets/TLS+ML-KEM transport, PyPhi cross-validation harness,
 EEG closed-loop runs, QNN adherence classifier in the loop, DAO treasury/expiry,
-docs site, locked deps, coverage ≥85%.
+docs site, lockfile, coverage ≥85%.
 Protocol-0 minor versions only tighten thresholds (old attestations fail closed).
 
 ---
@@ -396,6 +422,16 @@ ECI_PROFILE=edge eci health   # light profile status
   auto-rollback on degraded/closed, every step in the ledger.
 * **Releases**: `.github/workflows/publish.yml` (PyPI trusted publishing on
   release + npm with `NPM_TOKEN`); `scripts/install.sh` one-liner.
+* **Federation**: `federation/bridge.py` — mutual ledger anchors + capped
+  per-action vote translation between sovereign meshes.
+* **Causality**: `causal.py` — HLC timestamps + deterministic multi-writer merge
+  (partitions converge bit-identically).
+* **Economy**: `economy.py` — metered actions, quarantine slash, relay rewards,
+  epoch settlement (accounting, not currency).
+* **Foresight**: `twin.py` — what-if policy simulation with adopt/reject verdicts
+  before the DAO enacts anything.
+* **Recovery**: `recovery.py` — Shamir k-of-n shares + timelock + fresh-challenge
+  release for lost agent keys.
 
 ---
 

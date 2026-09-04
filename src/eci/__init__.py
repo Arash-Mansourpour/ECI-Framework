@@ -57,13 +57,17 @@ from eci.quantum.qnn import QuantumNeuralNetwork, QuantumLayer
 from eci.quantum.topological import BivariateBicycleCode, SurfaceCode
 from eci.quantum.unified_field import ECIFieldConfig, eci_unified_hamiltonian
 
-# Consciousness (v5: IIT + GNWT + FEP + quantum-mind)
+# Consciousness (IIT + GNWT + FEP + quantum-mind + collective + challenge)
 from eci.consciousness.iit import IntegratedInformationTheory
 from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
 from eci.consciousness.protocol import ConsciousnessProtocol, awareness_index_from_bits
 from eci.consciousness.gnwt import GNWTWorkspace
 from eci.consciousness.free_energy import FreeEnergyAgent
 from eci.consciousness.quantum_mind import quantum_mind_audit
+from eci.consciousness.collective import CollectiveState, collective_awareness
+from eci.consciousness.adherence import AdherenceTracker, calibration_tasks
+from eci.consciousness.challenge import Transcript, grade, issue as issue_challenges
+from eci.consciousness.eeg import bandpower, load_timeseries
 
 # Learning
 from eci.learning.maml import MAML, MetaMLP
@@ -85,6 +89,22 @@ from eci.network.aggregation import (
 )
 from eci.network.manager import AutonomousNetworkManager
 from eci.network.transport import AsyncMemoryChannel
+from eci.network.envelope import Envelope, ReplayGuard, open_envelope, seal
+from eci.network.gossip import GossipNode, anti_entropy, gossip_round
+from eci.network.reputation import Reputation, ReputationBoard
+from eci.network.dht import DHTNode, lookup, xor_distance
+from eci.network.membership import Member, Membership
+
+# Protocol-0 + immune + frontier systems
+from eci import protocol0 as protocol0
+from eci import immune as immune
+from eci import federation as federation
+from eci.causal import HLC, hlc_now, merge_chains, sort_key
+from eci.economy import ACTION_COSTS, Economy
+from eci.twin import TwinReport, what_if
+from eci.recovery import RecoveryRequest, combine as shamir_combine, split as shamir_split
+from eci.rollout import RolloutPlan, staged_rollout
+from eci.health import metrics_text, status as health_status
 
 # Governance + cybernetics (v5)
 from eci.governance.dao import ECIDataDAO
@@ -148,6 +168,15 @@ __all__ = [
     "GNWTWorkspace",
     "FreeEnergyAgent",
     "quantum_mind_audit",
+    "CollectiveState",
+    "collective_awareness",
+    "AdherenceTracker",
+    "calibration_tasks",
+    "Transcript",
+    "grade",
+    "issue_challenges",
+    "bandpower",
+    "load_timeseries",
     "MAML",
     "MetaMLP",
     "AdvancedNAS",
@@ -164,6 +193,38 @@ __all__ = [
     "krum",
     "bulyan",
     "AsyncMemoryChannel",
+    "Envelope",
+    "ReplayGuard",
+    "open_envelope",
+    "seal",
+    "GossipNode",
+    "gossip_round",
+    "anti_entropy",
+    "Reputation",
+    "ReputationBoard",
+    "DHTNode",
+    "lookup",
+    "xor_distance",
+    "Member",
+    "Membership",
+    "protocol0",
+    "immune",
+    "federation",
+    "HLC",
+    "hlc_now",
+    "merge_chains",
+    "sort_key",
+    "ACTION_COSTS",
+    "Economy",
+    "TwinReport",
+    "what_if",
+    "RecoveryRequest",
+    "shamir_combine",
+    "shamir_split",
+    "RolloutPlan",
+    "staged_rollout",
+    "metrics_text",
+    "health_status",
     "AutonomousNetworkManager",
     "ECIDataDAO",
     "AutopoieticNetwork",

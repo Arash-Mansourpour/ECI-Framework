@@ -20,6 +20,7 @@ from eci.protocol0.middleware import Middleware
 from eci.protocol0.egress import EgressFilter, scrub
 from eci.protocol0 import keys as keys
 from eci.protocol0 import transparency as transparency
+from eci.protocol0 import zk as zk
 from eci.protocol0.ledger import Ledger
 from eci.protocol0.gates import gated_consensus, gated_dao_vote
 
@@ -39,6 +40,7 @@ __all__ = [
     "scrub",
     "keys",
     "transparency",
+    "zk",
     "Ledger",
     "gated_consensus",
     "gated_dao_vote",

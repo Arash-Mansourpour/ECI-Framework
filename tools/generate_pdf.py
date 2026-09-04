@@ -21,7 +21,7 @@ sys.path.insert(0, "src")
 ARCHITECT = "Arash Mansourpour"
 TITLE2 = "Sovereign Architect (Ma'mar-e A'zam)"
 WALLET = "GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW"
-VERSION = "v∞.15.0 Awareness-Amplified + Protocol-0  /  Code v5.2"
+VERSION = "v∞.15.0 Frontier Stack  /  Code v5.7.0-FRONTIER"
 
 
 def collect_results() -> dict:

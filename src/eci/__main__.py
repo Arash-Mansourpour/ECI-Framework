@@ -51,12 +51,12 @@ def cmd_info(args: argparse.Namespace) -> int:
 def cmd_demo(args: argparse.Namespace) -> int:
     framework = ECIFramework()
     print("=" * 72)
-    print("ECI Framework v5 demo - quantum-supremacy suite")
+    print(f"ECI Framework v{__version__} demo - quantum-supremacy suite")
     print("=" * 72)
     _print_json(framework.run_quantum_suite())
 
     print("=" * 72)
-    print("ECI Framework v5 demo - consciousness analysis")
+    print(f"ECI Framework v{__version__} demo - consciousness analysis")
     print("=" * 72)
     profile = asyncio.run(framework.analyze_consciousness(n_steps=256, n_neurons=32))
     _print_json(profile.to_dict())
@@ -136,7 +136,7 @@ def cmd_health(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="eci",
-        description="ECI Framework v5 - Quantum-Supremacy Autonomous AI Research Framework",
+        description=f"ECI Framework v{__version__} - Autonomous AI Research Framework",
     )
     parser.add_argument("--version", action="version", version=f"eci {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)

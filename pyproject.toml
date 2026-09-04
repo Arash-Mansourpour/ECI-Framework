@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "5.6.0"
-description = "ECI Framework v5.6 - Global Mesh (Docker, DHT, ledger sync, rollout, health)"
+version = "5.7.0"
+description = "ECI Framework v5.7 - Frontier Stack (ZK bands, federation, HLC merge, economy, twin, recovery)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -36,16 +36,20 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-    "torch>=2.0",
-    "numpy>=1.24",
-    "scipy>=1.10",
+    "torch>=2.5",
+    "numpy>=1.26",
+    "scipy>=1.14",  # MWPM Hungarian decoder (topological QEC)
     "pyyaml>=6.0",
+    "cryptography>=41",  # Ed25519 agent keys (protocol0/keys)
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.4", "mypy>=1.5", "ruff>=0.4"]
-viz = ["matplotlib>=3.7"]
-paper = ["matplotlib>=3.7", "reportlab>=4.0", "pyyaml>=6.0"]
+dev = ["pytest>=8", "mypy>=1.13", "ruff>=0.4"]
+viz = ["matplotlib>=3.9"]
+paper = ["matplotlib>=3.9", "reportlab>=4.0", "pyyaml>=6.0"]
+qec = ["stim", "pymatching"]  # scale-up QEC: circuit Monte Carlo + Blossom MWPM
+eeg = ["mne"]  # real EEG recordings for awareness calibration
+pqc = ["liboqs-python"]  # NIST ML-KEM/ML-DSA via liboqs adapter
 
 [project.scripts]
 eci = "eci.__main__:main"
