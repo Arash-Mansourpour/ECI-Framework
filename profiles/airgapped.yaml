@@ -1,0 +1,8 @@
+# ECI_PROFILE=airgapped — no network dial-out: file/QR gossip only, vendored deps.
+profile: airgapped
+quantum: {n_qubits: 4, shots: 128, surface_trials: 50}
+consciousness: {history: 64, significance_perm: 0, n_bins: 16}
+network: {heartbeat_s: 0, member_timeout_s: 0, gossip_fanout: 0, offline_bundle_dir: /data/offline}
+ledger: {snapshot_every: 100}
+health: {port: 8777}
+notes: "Exchange /data/offline/*.jsonl bundles physically (or QR) between sites."

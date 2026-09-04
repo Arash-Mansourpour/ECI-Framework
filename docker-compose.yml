@@ -1,0 +1,28 @@
+# ECI global mesh — 3 seeded nodes + 1 edge node, shared nothing, gossip heal.
+# Up:   docker compose up --build
+# Seed: ECI_BOOTSTRAP=eci-seed-1:8777 on joiners.
+services:
+  eci-seed-1:
+    build: .
+    environment: { ECI_PROFILE: server, ECI_NODE_ID: seed-1 }
+    ports: ["8777:8777"]
+    volumes: ["seed1:/data"]
+  eci-seed-2:
+    build: .
+    environment: { ECI_PROFILE: server, ECI_NODE_ID: seed-2, ECI_BOOTSTRAP: eci-seed-1:8777 }
+    ports: ["8778:8777"]
+    volumes: ["seed2:/data"]
+    depends_on: [eci-seed-1]
+  eci-seed-3:
+    build: .
+    environment: { ECI_PROFILE: server, ECI_NODE_ID: seed-3, ECI_BOOTSTRAP: eci-seed-1:8777 }
+    ports: ["8779:8777"]
+    volumes: ["seed3:/data"]
+    depends_on: [eci-seed-1]
+  eci-edge-1:
+    build: .
+    environment: { ECI_PROFILE: edge, ECI_NODE_ID: edge-1, ECI_BOOTSTRAP: eci-seed-2:8777 }
+    ports: ["8780:8777"]
+    volumes: ["edge1:/data"]
+    depends_on: [eci-seed-2]
+volumes: { seed1: {}, seed2: {}, seed3: {}, edge1: {} }

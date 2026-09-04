@@ -1,0 +1,13 @@
+.git
+__pycache__
+*.pyc
+.gitignore
+ECI_Framework.pdf
+imgs
+paper
+.venv
+venv
+tests
+benchmarks
+_data
+ledger*.jsonl

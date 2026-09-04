@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "5.5.0"
-description = "ECI Framework v5.5 - Artificial Immune System for Protocol-0 Networks"
+version = "5.6.0"
+description = "ECI Framework v5.6 - Global Mesh (Docker, DHT, ledger sync, rollout, health)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

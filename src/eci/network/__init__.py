@@ -13,6 +13,8 @@ from eci.network.transport import AsyncMemoryChannel
 from eci.network.envelope import Envelope, ReplayGuard, seal, open_envelope
 from eci.network.gossip import GossipNode, anti_entropy, gossip_round
 from eci.network.reputation import Reputation, ReputationBoard
+from eci.network.dht import DHTNode, lookup, xor_distance
+from eci.network.membership import Member, Membership
 
 __all__ = [
     "PBFTConsensus", "WBFTConsensus", "ConsensusResult",
@@ -21,4 +23,6 @@ __all__ = [
     "Envelope", "ReplayGuard", "seal", "open_envelope",
     "GossipNode", "gossip_round", "anti_entropy",
     "Reputation", "ReputationBoard",
+    "DHTNode", "lookup", "xor_distance",
+    "Member", "Membership",
 ]

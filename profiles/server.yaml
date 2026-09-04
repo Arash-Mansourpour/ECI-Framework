@@ -1,0 +1,7 @@
+# ECI_PROFILE=server — full node: all suites, full QEC trials, full history.
+profile: server
+quantum: {n_qubits: 8, shots: 1024, surface_trials: 200}
+consciousness: {history: 512, significance_perm: 24, n_bins: 32}
+network: {heartbeat_s: 15, member_timeout_s: 300, gossip_fanout: 3}
+ledger: {snapshot_every: 1000}
+health: {port: 8777}

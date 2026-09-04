@@ -120,6 +120,19 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_health(args: argparse.Namespace) -> int:
+    import json as _json
+
+    from eci.health import serve as _serve
+    from eci.health import status as _status
+
+    if args.serve:
+        _serve(args.port)
+        return 0
+    print(_json.dumps(_status()))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="eci",
@@ -148,6 +161,11 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("activate", help="Sovereign Architect activation protocol")
     sub.add_parser("benchmark", help="run timing benchmark")
 
+    hh = sub.add_parser("health", help="health JSON / HTTP probe")
+    hh.add_argument("--serve", action="store_true", help="serve /health + /metrics (blocks)")
+    hh.add_argument("--once", action="store_true", help="print one JSON status and exit")
+    hh.add_argument("--port", type=int, default=8777, help="serve port")
+
     return parser
 
 
@@ -166,6 +184,7 @@ def main(argv: List[str] | None = None) -> int:
         "mind": cmd_mind,
         "activate": cmd_activate,
         "benchmark": cmd_benchmark,
+        "health": cmd_health,
     }
     handler = handlers.get(args.command)
     if handler is None:

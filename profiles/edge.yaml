@@ -1,0 +1,7 @@
+# ECI_PROFILE=edge — light node: small sims, sampled trials, bounded memory.
+profile: edge
+quantum: {n_qubits: 4, shots: 128, surface_trials: 50}
+consciousness: {history: 64, significance_perm: 0, n_bins: 16}
+network: {heartbeat_s: 30, member_timeout_s: 600, gossip_fanout: 2}
+ledger: {snapshot_every: 200}
+health: {port: 8777}

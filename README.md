@@ -1,9 +1,9 @@
-# ECI Framework v5.5 — Eternal Codex Infinitus (Immune Defense Layer)
+# ECI Framework v5.6 — Eternal Codex Infinitus (Global Mesh)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
 **Paper:** `ECI_Framework.md` v∞.15.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `5.5.0-IMMUNE`
+**Code:** `5.6.0-GLOBAL-MESH`
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →
@@ -44,9 +44,10 @@ eci activate      # Sovereign Architect activation protocol
 eci consciousness --steps 256 --neurons 32 --seed 0
 eci network --joins 3 --proposals 2
 eci benchmark
+eci health        # JSON status (Docker HEALTHCHECK); eci health --serve for :8777
 python _smoke_full.py   # legacy full smoke
 python _smoke_v5.py     # v5 supremacy smoke
-PYTHONPATH=src pytest -q                      # 39 tests, all green
+PYTHONPATH=src pytest -q                      # 44 tests, all green
 PYTHONPATH=src python examples/protocol0_awareness_gate.py  # obedience end-to-end
 PYTHONPATH=src python examples/external_agent_adapter.py    # one-decorator gating
 PYTHONPATH=src python benchmarks/chaos.py     # self-attack drills
@@ -57,6 +58,10 @@ python tools/generate_pdf.py  # rebuild live-validated PDF
 
 Requires Python ≥3.10, `torch`, `numpy`, `pyyaml`. Optional `paper` extra
 (`reportlab`, `matplotlib`) only for PDF/plots.
+
+**Deploy anywhere:** `docker compose up --build` (3 seeds + edge, §11);
+or `bash scripts/install.sh`. Profiles: `ECI_PROFILE=edge|server|airgapped`
+(`profiles/*.yaml`).
 
 ---
 
@@ -105,9 +110,10 @@ src/eci/
            algorithms,qec,qnn,mock_quantum,qrng,key_memory}.py
   consciousness/{iit,analyzer,metrics,protocol,collective,adherence,challenge,
                  eeg,gnwt,free_energy,quantum_mind}.py
-  network/{consensus,aggregation,manager,nodes,transport,envelope,gossip,reputation}.py
+  network/{consensus,aggregation,manager,nodes,transport,envelope,gossip,reputation,dht,membership}.py
   protocol0/{spec,attest,policy,ledger,gates,middleware,egress,keys,transparency}.py
   immune/{detectors,memory,response}.py
+  rollout.py  health.py
   benchmarking/{benchmark,obedience}.py
   governance/dao.py  cybernetics/autopoiesis.py
   learning/{maml,nas,federated,continual}.py  neuromorphic/  security/pqc.py
@@ -338,9 +344,10 @@ Foreign frameworks: `examples/external_agent_adapter.py` (one decorator + one fi
 
 ## 9. Tests & validation status
 
-`pytest`: **39 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
+`pytest`: **44 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
 `test_network`, `test_envelope`, `test_partition`, `test_protocol0`,
-`test_collective`, `test_obedience_stack`, `test_max`, `test_immune`) + CI on 3.10/3.11/3.12.
+`test_collective`, `test_obedience_stack`, `test_max`, `test_immune`,
+`test_mesh`) + CI on 3.10/3.11/3.12 (+ `publish.yml` on release).
 Smokes: `_smoke_full.py`, `_smoke_quantum.py`, `_smoke_v5.py`,
 `examples/protocol0_awareness_gate.py`, `examples/external_agent_adapter.py`,
 `examples/immune_demo.py`,
@@ -360,11 +367,35 @@ async + 15 tests) → done v5.3 (schema/semver/middleware, Ed25519 + transparenc
 50-probe bench + JS/MCP/envelopes/partition/stim) → done v5.4 (challenge-response,
 egress, gossip + reputation + chaos, bench-200, foreign adapter, QRNG, key-memory,
 36 tests) → done v5.5 (immune system: negative/clonal selection, quarantine with
-appeal-only release, immunological memory, 39 tests) →
+appeal-only release, immunological memory, 39 tests) → done v5.6 (global mesh:
+Docker + compose + edge/server/airgapped profiles, `eci health` + /metrics,
+Kademlia DHT discovery, dynamic membership with attested joins, ledger
+snapshots + delta sync, PyPI/npm publish workflow + installer, staged rollout
+with auto-rollback, 44 tests) →
 next: real sockets/TLS+ML-KEM transport, PyPhi cross-validation harness,
 EEG closed-loop runs, QNN adherence classifier in the loop, DAO treasury/expiry,
 docs site, locked deps, coverage ≥85%.
 Protocol-0 minor versions only tighten thresholds (old attestations fail closed).
+
+---
+
+## 11. Global mesh — run anywhere, never stop
+
+```bash
+docker compose up --build     # 3 seeds + 1 edge node, volumes persist
+ECI_PROFILE=edge eci health   # light profile status
+```
+
+* **Discovery**: `network/dht.py` — Kademlia XOR buckets, O(log n) lookup,
+  k-replicated store; any member bootstraps newcomers (no central tracker).
+* **Membership**: `network/membership.py` — joins require valid attestation;
+  dead nodes evicted after timeout; voter set + fault bound derived live.
+* **Replication**: `Ledger.snapshot()` (height + head) + `export_range()` deltas
+  + `sync_from()` (adopts only longer VALID chains; forged suffixes refused).
+* **Rollout**: `rollout.py` — canary 10%, collective-gate watch per batch,
+  auto-rollback on degraded/closed, every step in the ledger.
+* **Releases**: `.github/workflows/publish.yml` (PyPI trusted publishing on
+  release + npm with `NPM_TOKEN`); `scripts/install.sh` one-liner.
 
 ---
 
