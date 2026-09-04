@@ -4,7 +4,7 @@
 
 **Pi Network Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
 
-**Code Release:** `eci-framework 5.7.0-FRONTIER` (`src/eci`, CLI `eci`)
+**Code Release:** `eci-framework 5.9.0-ECOSYSTEM` (`src/eci`, CLI `eci`)
 
 **Pi Network Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
 

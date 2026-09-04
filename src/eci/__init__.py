@@ -107,6 +107,11 @@ from eci.twin import TwinReport, what_if
 from eci.recovery import RecoveryRequest, combine as shamir_combine, split as shamir_split
 from eci.rollout import RolloutPlan, staged_rollout
 from eci.health import metrics_text, status as health_status
+from eci.court import Case, Court, Verdict
+from eci.market import Market, Marketplace
+from eci.semantic import Commons, Dispute, Fact
+from eci.privacy import Guardian
+from eci.genome import Gene, Genome, life_cycle, mutate
 
 # Governance + cybernetics (v5)
 from eci.governance.dao import ECIDataDAO
@@ -229,6 +234,19 @@ __all__ = [
     "staged_rollout",
     "metrics_text",
     "health_status",
+    "Case",
+    "Court",
+    "Verdict",
+    "Market",
+    "Marketplace",
+    "Commons",
+    "Dispute",
+    "Fact",
+    "Guardian",
+    "Gene",
+    "Genome",
+    "life_cycle",
+    "mutate",
     "AutonomousNetworkManager",
     "ECIDataDAO",
     "AutopoieticNetwork",

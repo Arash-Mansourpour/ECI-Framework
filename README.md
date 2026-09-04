@@ -1,9 +1,9 @@
-# ECI Framework v5.8 — Eternal Codex Infinitus (Nervous System)
+# ECI Framework v5.9 — Eternal Codex Infinitus (Ecosystem Justice)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
 **Paper:** `ECI_Framework.md` v∞.14.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `5.8.0-NERVOUS`
+**Code:** `5.9.0-ECOSYSTEM`
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →
@@ -13,6 +13,14 @@ coordinated by PBFT/WBFT + Krum/Bulyan + async transport + Data-DAO + autopoieti
 with consciousness measured by IIT Φ + iPDF v2 + GNWT + Friston FEP (+active inference) + Orch-OR audit,
 collective awareness + adherence gating **Protocol-0**: spec → attest → policy → ledger.
 
+> **v5.9 What is new (ecosystem justice):**
+> Court (`court.py` — rotating seeded panels, 2/3 convictions, one appeal);
+> risk markets (`market.py` — LMSR, manipulation costs money, winners paid on
+> ledger outcomes); semantic commons (`semantic.py` — provenance triples,
+> auto-disputes, witness-weighted resolve, tombstones never delete); privacy
+> guardian (`privacy.py` — Laplace DP with per-agent budgets); evolvable genome
+> (`genome.py` — mutate→twin→canary→DAO→register, harmful genes go extinct).
+>
 > **v5.8 What is new (nervous system):**
 > Precog (`precog/` — Bayesian P(violation|trajectory), ECE calibration,
 > watch/escalate/hold tiers, reversible `ProvisionalHold` with open challenge
@@ -73,7 +81,7 @@ eci benchmark
 eci health        # JSON status (Docker HEALTHCHECK); eci health --serve for :8777
 python _smoke_full.py   # legacy full smoke
 python _smoke_v5.py     # v5 supremacy smoke
-PYTHONPATH=src pytest -q                      # 53 tests, all green
+PYTHONPATH=src pytest -q                      # 58 tests, all green
 PYTHONPATH=src python examples/protocol0_awareness_gate.py  # obedience end-to-end
 PYTHONPATH=src python examples/external_agent_adapter.py    # one-decorator gating
 PYTHONPATH=src python benchmarks/chaos.py     # self-attack drills
@@ -144,6 +152,7 @@ src/eci/
   protocol0/{spec,attest,policy,ledger,gates,middleware,egress,keys,transparency,zk}.py
   immune/{detectors,memory,response}.py
   precog/{risk,hold}.py  neural/{graph,world,cortex}.py
+  court.py  market.py  semantic.py  privacy.py  genome.py
   federation/{bridge}.py  causal.py  economy.py  twin.py  recovery.py
   rollout.py  health.py
   benchmarking/{benchmark,obedience}.py
@@ -376,10 +385,10 @@ Foreign frameworks: `examples/external_agent_adapter.py` (one decorator + one fi
 
 ## 9. Tests & validation status
 
-`pytest`: **53 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
+`pytest`: **58 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
 `test_network`, `test_envelope`, `test_partition`, `test_protocol0`,
 `test_collective`, `test_obedience_stack`, `test_max`, `test_immune`,
-`test_mesh`, `test_frontier`, `test_nervous`) + CI on 3.10/3.11/3.12 (+ `publish.yml` on release).
+`test_mesh`, `test_frontier`, `test_nervous`, `test_ecosystem`) + CI on 3.10/3.11/3.12 (+ `publish.yml` on release).
 Smokes: `_smoke_full.py`, `_smoke_quantum.py`, `_smoke_v5.py`,
 `examples/protocol0_awareness_gate.py`, `examples/external_agent_adapter.py`,
 `examples/immune_demo.py`, `examples/nervous_demo.py`,
@@ -406,7 +415,8 @@ snapshots + delta sync, PyPI/npm publish workflow + installer, staged rollout
 with auto-rollback, 44 tests) → done v5.7 (ZK bands, federation, HLC merge,
 economy, twin, Shamir recovery, dep floors + extras + full re-exports, 50 tests) →
 done v5.8 (precog forecasting + provisional holds, neural cortex GNN/world-model,
-53 tests) →
+53 tests) → done v5.9 (court + LMSR markets + semantic commons + DP guardian +
+evolvable genome, 58 tests) →
 next: real sockets/TLS+ML-KEM transport, PyPhi cross-validation harness,
 EEG closed-loop runs, QNN adherence classifier in the loop, DAO treasury/expiry,
 docs site, lockfile, coverage ≥85%.

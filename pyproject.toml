@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "5.8.0"
-description = "ECI Framework v5.8 - Nervous System (precog forecasting + neural cortex)"
+version = "5.9.0"
+description = "ECI Framework v5.9 - Ecosystem Justice (court, markets, commons, privacy, genome)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
