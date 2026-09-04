@@ -99,6 +99,8 @@ from eci.network.membership import Member, Membership
 from eci import protocol0 as protocol0
 from eci import immune as immune
 from eci import federation as federation
+from eci import precog as precog
+from eci import neural as neural
 from eci.causal import HLC, hlc_now, merge_chains, sort_key
 from eci.economy import ACTION_COSTS, Economy
 from eci.twin import TwinReport, what_if
@@ -210,6 +212,8 @@ __all__ = [
     "protocol0",
     "immune",
     "federation",
+    "precog",
+    "neural",
     "HLC",
     "hlc_now",
     "merge_chains",
