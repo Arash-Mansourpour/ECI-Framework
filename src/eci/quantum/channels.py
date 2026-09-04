@@ -29,7 +29,14 @@ __all__ = [
 
 
 def depolarizing(p: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tensor]:
-    """Single-qubit depolarizing channel: rho -> (1-p) rho + p I/2."""
+    """Single-qubit depolarizing channel.
+
+    Kraus form ``{sqrt(1-p) I, sqrt(p/3) X, sqrt(p/3) Y, sqrt(p/3) Z}``
+    implements ``rho -> (1-4p/3) rho + (2p/3) I``. For the textbook
+    parametrization ``rho -> (1-q) rho + q I/2`` pass ``p = 3q/4``.
+    """
+    if not 0.0 <= p <= 1.0:
+        raise ValueError("depolarizing p must be in [0, 1]")
     sqrt_p = math.sqrt(p)
     sqrt_1mp = math.sqrt(max(0.0, 1.0 - p))
     return [
@@ -72,12 +79,17 @@ def amplitude_damping(gamma: float, dtype: torch.dtype = torch.complex64) -> Lis
 
 
 def phase_damping(gamma: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tensor]:
-    """Phase damping (T2 decay without energy loss)."""
+    """Phase damping (T2 decay without energy loss).
+
+    Standard 2-Kraus form satisfying sum K†K = I:
+    K0 = diag(1, sqrt(1-gamma)), K1 = [[0, sqrt(gamma)],[0, 0]].
+    """
+    if not 0.0 <= gamma <= 1.0:
+        raise ValueError("phase_damping gamma must be in [0, 1]")
     a = math.sqrt(1 - gamma)
     k0 = torch.tensor([[1.0, 0.0], [0.0, a]], dtype=dtype)
-    k1 = torch.tensor([[0.0, 0.0], [0.0, math.sqrt(gamma)]], dtype=dtype)
-    k2 = torch.tensor([[a, 0.0], [0.0, 0.0]], dtype=dtype)
-    return [k0, k1, k2]
+    k1 = torch.tensor([[0.0, math.sqrt(gamma)], [0.0, 0.0]], dtype=dtype)
+    return [k0, k1]
 
 
 CHANNEL_FACTORIES: Dict[str, Callable[..., List[torch.Tensor]]] = {

@@ -11,7 +11,11 @@ from eci.consciousness.metrics import (
     sample_entropy,
     spectral_entropy,
 )
-from eci.consciousness.protocol import ConsciousnessMeasurement, ConsciousnessProtocol
+from eci.consciousness.protocol import (
+    ConsciousnessMeasurement,
+    ConsciousnessProtocol,
+    awareness_index_from_bits,
+)
 from eci.consciousness.quantum_mind import OrchORConfig, quantum_mind_audit
 
 __all__ = [
@@ -19,6 +23,7 @@ __all__ = [
     "AdvancedConsciousnessAnalyzer",
     "ConsciousnessProtocol",
     "ConsciousnessMeasurement",
+    "awareness_index_from_bits",
     "GNWTWorkspace",
     "gnwt_ignition_curve",
     "FreeEnergyAgent",

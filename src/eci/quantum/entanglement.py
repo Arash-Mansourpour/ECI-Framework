@@ -87,19 +87,23 @@ def concurrence(rho: torch.Tensor) -> torch.Tensor:
                        torch.tensor([[0.0, -1j], [1j, 0.0]], dtype=rho.dtype, device=rho.device))
     rho_star = rho.conj()
     r_tilde = rho @ sy_sy @ rho_star @ sy_sy
-    evals = torch.linalg.eigvalsh(r_tilde).clamp_min(0.0).sqrt()
-    evals_sorted, _ = torch.sort(evals, dim=-1, descending=True)
+    # R is generically non-Hermitian: use general eigenvalues, not eigvalsh.
+    evals = torch.linalg.eigvals(r_tilde).abs().clamp_min(0.0).sqrt()
+    evals_sorted, _ = torch.sort(evals.real, dim=-1, descending=True)
     c = evals_sorted[..., 0] - evals_sorted[..., 1] - evals_sorted[..., 2] - evals_sorted[..., 3]
     return c.clamp_min(0.0)
 
 
 def entanglement_of_formation(rho: torch.Tensor) -> torch.Tensor:
-    """Entanglement of formation from the concurrence (bits)."""
+    """Entanglement of formation from the concurrence (bits).
+
+    Wootters (1998): Ef = h2((1 + sqrt(1 - C^2)) / 2) with binary entropy h2.
+    """
     c = concurrence(rho).clamp(0.0, 1.0)
-    x = (1.0 + 4.0 * c * (1.0 - c)).clamp(0.0, 1.0)
-    h2 = -(0.5 * (1 + x.sqrt().clamp_max(1.0)) * torch.log2(0.5 * (1 + x.sqrt().clamp_max(1.0))) +
-           0.5 * (1 - x.sqrt()) * torch.log2(0.5 * (1 - x.sqrt())).nan_to_num(0.0))
-    return h2
+    x = torch.sqrt((1.0 - c * c).clamp(0.0, 1.0))
+    p = 0.5 * (1.0 + x)
+    h2 = -(p * torch.log2(p.clamp_min(1e-12)) + (1.0 - p) * torch.log2((1.0 - p).clamp_min(1e-12)))
+    return h2.nan_to_num(0.0)
 
 
 def partial_transpose(rho: torch.Tensor, n_qubits: int, qubits: Sequence[int]) -> torch.Tensor:

@@ -22,6 +22,8 @@ from eci.core.types import (
 # Quantum core (v5: operator algebra → field Hamiltonian)
 from eci.quantum.gates import (
     CNOT,
+    CRX,
+    CRZ,
     CZ,
     H,
     I,
@@ -58,7 +60,7 @@ from eci.quantum.unified_field import ECIFieldConfig, eci_unified_hamiltonian
 # Consciousness (v5: IIT + GNWT + FEP + quantum-mind)
 from eci.consciousness.iit import IntegratedInformationTheory
 from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
-from eci.consciousness.protocol import ConsciousnessProtocol
+from eci.consciousness.protocol import ConsciousnessProtocol, awareness_index_from_bits
 from eci.consciousness.gnwt import GNWTWorkspace
 from eci.consciousness.free_energy import FreeEnergyAgent
 from eci.consciousness.quantum_mind import quantum_mind_audit
@@ -108,7 +110,7 @@ __all__ = [
     "ConsciousnessProfile",
     "NetworkNode",
     "I", "X", "Y", "Z", "H", "S", "T",
-    "CNOT", "CZ", "SWAP",
+    "CNOT", "CZ", "SWAP", "CRZ", "CRX",
     "RX", "RY", "RZ",
     "controlled",
     "pauli_string_matrix",
@@ -136,6 +138,7 @@ __all__ = [
     "IntegratedInformationTheory",
     "AdvancedConsciousnessAnalyzer",
     "ConsciousnessProtocol",
+    "awareness_index_from_bits",
     "GNWTWorkspace",
     "FreeEnergyAgent",
     "quantum_mind_audit",

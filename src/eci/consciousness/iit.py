@@ -12,7 +12,7 @@ References
 
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import torch
 
@@ -37,6 +37,7 @@ class IntegratedInformationTheory:
         neural_state: torch.Tensor,
         connectivity: Optional[torch.Tensor] = None,
         method: str = "gaussian",
+        exhaustive: bool = False,
     ) -> Dict[str, float]:
         """Compute Phi and its causal decomposition.
 
@@ -45,17 +46,22 @@ class IntegratedInformationTheory:
             connectivity: optional ``[neurons, neurons]`` matrix; defaults
                 to the empirical correlation matrix.
             method: ``"gaussian"``, ``"quantum"`` or ``"discrete"``.
+            exhaustive: if True and neurons <= 8, search all 2^n
+                bipartitions for the true MIP instead of contiguous cuts.
         """
         neural_state = neural_state.to(self.device).double()
+        neural_state = torch.nan_to_num(neural_state, nan=0.0, posinf=1.0, neginf=-1.0)
         if connectivity is None:
             if neural_state.shape[1] < 2:
                 connectivity = torch.ones(1, 1, device=self.device)
             else:
-                connectivity = torch.corrcoef(neural_state.T)
+                cc = torch.corrcoef(neural_state.T)
+                connectivity = torch.nan_to_num(cc, nan=0.0).clamp(-1.0, 1.0)
         connectivity = connectivity.to(self.device).double()
+        connectivity = torch.nan_to_num(connectivity, nan=0.0, posinf=1.0, neginf=-1.0)
 
         if method == "gaussian":
-            phi = self._phi_gaussian(neural_state)
+            phi = self._phi_gaussian(neural_state, exhaustive=exhaustive)
         elif method == "quantum":
             phi = self._phi_quantum(neural_state)
         elif method == "discrete":
@@ -80,7 +86,7 @@ class IntegratedInformationTheory:
         n = cov.shape[0]
         return cov + torch.eye(n, device=cov.device, dtype=cov.dtype) * COVARIANCE_REGULARIZER
 
-    def _phi_gaussian(self, neural_state: torch.Tensor) -> float:
+    def _phi_gaussian(self, neural_state: torch.Tensor, exhaustive: bool = False) -> float:
         """Phi = 1/2 min_partition [logdet(Sigma_A) + logdet(Sigma_B) - logdet(Sigma)].
 
         This is the (non-negative) mutual-information gap between the
@@ -90,6 +96,10 @@ class IntegratedInformationTheory:
         used by the legacy implementation was always <= 0. Uses
         ``slogdet`` (stable even near-singular) and skips partitions with
         non-positive determinant signs.
+
+        By default only contiguous cuts [:i, i:] are tried (O(n) heuristic
+        that upper-bounds the true MIP cost). With exhaustive=True and
+        n <= 8 all bipartitions are searched for the exact minimum.
         """
         cov = self._covariance(neural_state)
         n = cov.shape[0]
@@ -101,15 +111,35 @@ class IntegratedInformationTheory:
             return 0.0
 
         min_phi = float("inf")
-        for i in range(1, n):
-            cov_a = cov[:i, :i]
-            cov_b = cov[i:, i:]
+
+        def _gap(idx_a: List[int]) -> None:
+            nonlocal min_phi
+            idx_b = [i for i in range(n) if i not in idx_a]
+            if not idx_a or not idx_b:
+                return
+            ia = torch.tensor(idx_a, device=cov.device)
+            ib = torch.tensor(idx_b, device=cov.device)
+            cov_a = cov.index_select(0, ia).index_select(1, ia)
+            cov_b = cov.index_select(0, ib).index_select(1, ib)
             sign_a, logdet_a = torch.linalg.slogdet(cov_a)
             sign_b, logdet_b = torch.linalg.slogdet(cov_b)
             if sign_a <= 0 or sign_b <= 0:
-                continue
+                return
             phi = 0.5 * (float(logdet_a) + float(logdet_b) - float(logdet_w))
             min_phi = min(min_phi, phi)
+
+        if exhaustive and n <= 8:
+            from itertools import combinations
+
+            for k in range(1, n // 2 + 1):
+                for combo in combinations(range(n), k):
+                    # Canonical half to avoid duplicate complements.
+                    if 0 not in combo and len(combo) * 2 == n:
+                        continue
+                    _gap(list(combo))
+        else:
+            for i in range(1, n):
+                _gap(list(range(i)))
         if min_phi == float("inf") or not torch.isfinite(torch.tensor(min_phi)):
             return 0.0
         return max(0.0, min_phi)

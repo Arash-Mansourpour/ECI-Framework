@@ -28,7 +28,8 @@ class GNWTWorkspace:
     n_processors: int = 8
     beta: float = 4.0          # competition inverse-temperature
     theta: float = 0.6         # ignition threshold
-    entropy_max: float = 1.0   # normalized entropy gate (fraction of log N)
+    entropy_max: float = 0.85  # normalized entropy gate (fraction of log N)
+    max_history: int = 1024
     ignition_history: List[Dict] = field(default_factory=list)
 
     def compete(self, salience: torch.Tensor) -> Dict[str, object]:
@@ -36,15 +37,20 @@ class GNWTWorkspace:
         import math as _m
 
         s = salience.flatten().double()
-        assert s.numel() == self.n_processors, "salience size mismatch"
+        if s.numel() != self.n_processors:
+            raise ValueError(
+                f"salience size {s.numel()} != n_processors {self.n_processors}"
+            )
         logits = self.beta * s
         p = torch.softmax(logits, dim=0)
         ent = float((-(p * torch.log(p.clamp_min(1e-12))).sum() / _m.log(self.n_processors)).item())
         winner = int(torch.argmax(s).item())
         ignited = bool(s[winner].item() > self.theta and ent < self.entropy_max)
-        broadcast = float(ignited * (1.0 - ent))
+        broadcast = float(float(ignited) * (1.0 - ent))
         rec = {"winner": winner, "ignited": ignited, "broadcast": broadcast, "entropy": ent}
         self.ignition_history.append(rec)
+        if len(self.ignition_history) > self.max_history:
+            del self.ignition_history[: len(self.ignition_history) - self.max_history]
         return {"probabilities": p, **rec}
 
     def reportability(self) -> float:

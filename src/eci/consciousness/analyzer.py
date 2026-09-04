@@ -156,11 +156,22 @@ class AdvancedConsciousnessAnalyzer:
         connectivity: torch.Tensor,
         phi_value: float,
     ) -> float:
-        autocorr = cmetrics.autocorrelation(neural_data)
-        hub = self._hub_activity(connectivity)
-        self_ref = self._self_reference(neural_data)
-        combined = 0.3 * phi_value + 0.25 * autocorr + 0.25 * hub + 0.2 * self_ref
-        return float(min(combined, 1.0))
+        autocorr = float(torch.nan_to_num(
+            torch.as_tensor(cmetrics.autocorrelation(neural_data)), nan=0.0
+        ).item())
+        hub = float(torch.nan_to_num(
+            torch.as_tensor(self._hub_activity(connectivity)), nan=0.0
+        ).item())
+        self_ref = float(torch.nan_to_num(
+            torch.as_tensor(self._self_reference(neural_data)), nan=0.0
+        ).item())
+        # Normalize unbounded Phi to [0,1) so it can't saturate the mix:
+        # phi_norm = 1 - exp(-phi).  Preserves ordering, bounds influence.
+        import math as _m
+
+        phi_norm = 1.0 - _m.exp(-max(0.0, phi_value))
+        combined = 0.3 * phi_norm + 0.25 * autocorr + 0.25 * hub + 0.2 * self_ref
+        return float(min(max(combined, 0.0), 1.0))
 
     def _hub_activity(self, connectivity: torch.Tensor) -> float:
         degrees = connectivity.abs().sum(dim=1)
@@ -185,11 +196,16 @@ class AdvancedConsciousnessAnalyzer:
         for i in range(n_windows - 1):
             a = neural_data[i * window:(i + 1) * window].flatten()
             b = neural_data[(i + 1) * window:(i + 2) * window].flatten()
+            if a.var(unbiased=False) < 1e-12 or b.var(unbiased=False) < 1e-12:
+                continue
             sim = torch.nn.functional.cosine_similarity(
                 (a - a.mean()).unsqueeze(0).double(),
                 (b - b.mean()).unsqueeze(0).double(),
             )
-            sims.append(float(sim.item()))
+            v = float(sim.nan_to_num(0.0).item())
+            sims.append(v)
+        if not sims:
+            return 0.0
         return float(max(0.0, float(np.mean(sims))))
 
     def _temporal_consistency(self, neural_data: torch.Tensor) -> float:
@@ -201,11 +217,13 @@ class AdvancedConsciousnessAnalyzer:
         for i in range(0, n_time - 2 * window, window):
             a = neural_data[i:i + window].flatten()
             b = neural_data[i + window:i + 2 * window].flatten()
+            if a.var(unbiased=False) < 1e-12 or b.var(unbiased=False) < 1e-12:
+                continue
             c = torch.nn.functional.cosine_similarity(
                 (a - a.mean()).unsqueeze(0).double(),
                 (b - b.mean()).unsqueeze(0).double(),
             )
-            correlations.append(float(c.item()))
+            correlations.append(float(c.nan_to_num(0.0).item()))
         if not correlations:
             return 0.0
         return float(max(0.0, float(np.mean(correlations))))

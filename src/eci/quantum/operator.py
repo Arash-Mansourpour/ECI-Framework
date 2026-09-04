@@ -37,6 +37,7 @@ __all__ = [
     "is_positive",
     "operator_entropy",
     "fidelity_unitary",
+    "average_gate_fidelity",
 ]
 
 
@@ -113,7 +114,7 @@ def heisenberg_evolution(H: torch.Tensor, A0: torch.Tensor, t: float) -> torch.T
     """A(t) = e^{iHt} A0 e^{-iHt}."""
     U = matrix_exponential_hermitian(H, t)
     Ud = U.conj().transpose(-1, -2)
-    return U @ A0 @ Ud
+    return Ud @ A0 @ U
 
 
 def uncertainty_bound(
@@ -122,9 +123,14 @@ def uncertainty_bound(
     """Robertson-Schrödinger bound: ΔA ΔB ≥ ½ |<[A,B]>|.
 
     Returns variances, commutator expectation and bound saturation.
+    Batched ``psi`` of shape ``(batch, d)`` is averaged; 1-D input is
+    a single state.
     """
     if psi.dim() == 2:
-        psi = psi[0]
+        # Average the bound over the batch instead of silently dropping rows.
+        acc = [uncertainty_bound(A, B, psi[i]) for i in range(psi.shape[0])]
+        keys = acc[0].keys()
+        return {k: float(sum(a[k] for a in acc) / len(acc)) for k in keys}
     psi = psi / torch.linalg.vector_norm(psi).clamp_min(EPS)
     rho = torch.outer(psi, psi.conj())
 
@@ -202,6 +208,16 @@ def operator_entropy(A: torch.Tensor, base: float = 2.0) -> torch.Tensor:
 
 
 def fidelity_unitary(U: torch.Tensor, V: torch.Tensor) -> float:
-    """Average gate fidelity proxy: |Tr(U†V)|/d."""
+    """Hilbert-Schmidt overlap |Tr(U†V)|/d (entanglement fidelity proxy).
+
+    For the Nielsen average-gate fidelity use (|Tr(U†V)| + d) / d(d+1).
+    """
     d = U.shape[-1]
     return float((torch.abs(torch.trace(U.conj().transpose(-1, -2) @ V)) / d).real.item())
+
+
+def average_gate_fidelity(U: torch.Tensor, V: torch.Tensor) -> float:
+    """Nielsen average-gate fidelity (|Tr(U†V)|^2 + d) / d(d+1)."""
+    d = U.shape[-1]
+    t = float(torch.abs(torch.trace(U.conj().transpose(-1, -2) @ V)).real.item())
+    return (t * t + d) / (d * (d + 1))

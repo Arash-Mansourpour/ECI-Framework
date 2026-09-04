@@ -18,7 +18,7 @@ import torch
 __all__ = [
     "I", "X", "Y", "Z", "H", "S", "SDAG", "T", "TDAG",
     "RX", "RY", "RZ", "PHASE", "U3",
-    "CNOT", "CZ", "SWAP", "CRZ", "CCX",
+    "CNOT", "CZ", "SWAP", "CRZ", "CRX", "CCX",
     "controlled", "pauli_string_matrix", "kron_list",
     "STANDARD_GATES",
 ]
@@ -124,7 +124,25 @@ SWAP = _c(
 
 
 def CRZ(theta: float, dtype: torch.dtype = _COMPLEX) -> torch.Tensor:
-    """Controlled-RZ with (control, target) ordering."""
+    """Controlled-RZ with (control, target) ordering.
+
+    diag(1, 1, e^{-iθ/2}, e^{+iθ/2}) = |0><0|⊗I + |1><1|⊗RZ(θ).
+    """
+    e_plus = cmath.exp(-0.5j * theta)
+    e_minus = cmath.exp(0.5j * theta)
+    return _c(
+        [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, e_plus, 0],
+            [0, 0, 0, e_minus],
+        ],
+        dtype=dtype,
+    )
+
+
+def CRX(theta: float, dtype: torch.dtype = _COMPLEX) -> torch.Tensor:
+    """Controlled-RX with (control, target) ordering."""
     c = math.cos(theta / 2)
     s = math.sin(theta / 2)
     return _c(

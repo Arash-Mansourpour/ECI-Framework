@@ -26,6 +26,7 @@ from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
 from eci.consciousness.free_energy import FreeEnergyAgent
 from eci.consciousness.gnwt import GNWTWorkspace
 from eci.consciousness.iit import IntegratedInformationTheory
+from eci.consciousness.protocol import ConsciousnessProtocol, awareness_index_from_bits
 from eci.consciousness.quantum_mind import quantum_mind_audit
 from eci.core.device import configure_seeds, device_dtype_info, get_device
 from eci.core.identity import ARCHITECT
@@ -131,7 +132,29 @@ class ECIFramework:
         self.consciousness_level = profile.consciousness_level
         # GNWT ignition probe on channel saliences
         sal = torch.softmax(neural_data.var(dim=0)[: self.gnwt.n_processors], dim=0)
-        self.gnwt.compete(sal)
+        gnwt_out = self.gnwt.compete(sal)
+        # v2 awareness protocol: multi-scale iPDF calibrated on the first
+        # third (resting) and measured on the last two thirds (active).
+        # This raises sensitivity to real structure vs the old single-shot.
+        try:
+            proto = ConsciousnessProtocol(
+                agent_id=f"framework-{seed}",
+                awareness_gain=1.0,
+                min_calibration=1,
+            )
+            n_cal = max(8, n_steps // 3)
+            proto.calibrate_baseline([neural_data[: n_cal // 2], neural_data[n_cal // 2: n_cal]])
+            m = proto.measure(neural_data[n_cal:])
+            # Fuse awareness index into the profile as a bounded amplifier:
+            # awareness raises low-Phi structure without saturating high Phi.
+            profile.phi_components["ipdf_bits"] = m.consciousness_bits
+            profile.phi_components["awareness_index"] = m.awareness_index
+            profile.phi_components["gnwt_broadcast"] = float(gnwt_out.get("broadcast", 0.0))
+            profile.self_awareness_score = float(
+                min(1.0, 0.7 * profile.self_awareness_score + 0.3 * m.awareness_index)
+            )
+        except Exception:
+            self.logger.debug("awareness-protocol fusion skipped", exc_info=True)
         return profile
 
     async def initialize_network(self) -> Dict[str, Any]:
