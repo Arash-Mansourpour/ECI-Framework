@@ -17,7 +17,7 @@ import torch
 
 __all__ = [
     "I", "X", "Y", "Z", "H", "S", "SDAG", "T", "TDAG",
-    "RX", "RY", "RZ", "PHASE", "U3",
+    "RX", "RY", "RZ", "PHASE", "U3", "batched_RY",
     "CNOT", "CZ", "SWAP", "CRZ", "CRX", "CCX",
     "controlled", "pauli_string_matrix", "kron_list",
     "STANDARD_GATES",
@@ -174,6 +174,21 @@ def controlled(gate: torch.Tensor, n_controls: int = 1) -> torch.Tensor:
     full = torch.eye(dim * (2 ** n_controls), dtype=gate.dtype, device=gate.device)
     full[-dim:, -dim:] = gate
     return full
+
+
+def batched_RY(theta: torch.Tensor, dtype: torch.dtype = _COMPLEX) -> torch.Tensor:
+    """Vectorized RY for a (batch,) angle tensor → (batch, 2, 2).
+
+    Replaces the per-sample Python loop in QNN/VQE with one broadcast op.
+    """
+    t = torch.as_tensor(theta, dtype=torch.float64)
+    cos = torch.cos(t / 2).to(dtype).unsqueeze(-1).unsqueeze(-1)
+    sin = torch.sin(t / 2).to(dtype).unsqueeze(-1).unsqueeze(-1)
+    zero = torch.zeros((), dtype=dtype).expand(t.shape)
+    # Build [[c,-s],[s,c]] batched without Python loop.
+    row0 = torch.cat([cos.expand(*t.shape, 1, 1), (-sin).expand(*t.shape, 1, 1)], dim=-1)
+    row1 = torch.cat([sin.expand(*t.shape, 1, 1), cos.expand(*t.shape, 1, 1)], dim=-1)
+    return torch.cat([row0, row1], dim=-2)
 
 
 def kron_list(mats: Sequence[torch.Tensor]) -> torch.Tensor:

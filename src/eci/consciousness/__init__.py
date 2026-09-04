@@ -17,6 +17,7 @@ from eci.consciousness.protocol import (
     awareness_index_from_bits,
 )
 from eci.consciousness.quantum_mind import OrchORConfig, quantum_mind_audit
+from eci.consciousness.eeg import load_timeseries, bandpower
 
 __all__ = [
     "IntegratedInformationTheory",
@@ -30,6 +31,8 @@ __all__ = [
     "expected_free_energy",
     "OrchORConfig",
     "quantum_mind_audit",
+    "load_timeseries",
+    "bandpower",
     "lempel_ziv_complexity",
     "sample_entropy",
     "spectral_entropy",

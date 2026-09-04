@@ -73,6 +73,31 @@ class FreeEnergyAgent:
         self.precision = 1.0 + float(min(max(phi, 0.0), 5.0))
         return self.precision
 
+    def select_action(self, obs: torch.Tensor, actions: torch.Tensor, preferences: torch.Tensor) -> Dict[str, object]:
+        """Active inference: pick the action minimizing expected free energy.
+
+        Args:
+            obs: current observation (n_obs).
+            actions: (n_actions, n_obs) predicted observation shifts.
+            preferences: prior preference distribution over obs bins
+                (or a preferred observation vector — converted to softmax).
+        Returns {action, G_values, F_after}.
+        """
+        g_vals = []
+        for a in actions:
+            pred = (self.A.double() @ self.mu.double() + a.double())
+            # Softmax over predicted obs as Q(o|pi); preferences as P(o).
+            q = torch.softmax(pred, dim=0)
+            p = preferences.double()
+            if p.shape != q.shape:
+                p = torch.softmax(p.flatten()[: q.numel()], dim=0)
+            p = p / p.sum().clamp_min(1e-12)
+            g_vals.append(expected_free_energy(p, q))
+        best = int(torch.argmin(torch.tensor(g_vals)).item())
+        # Execute best action in belief space (one perception step after).
+        self.mu = (self.mu.double() + 0.1 * (self.A.double().T @ actions[best].double())).detach()
+        return {"action": best, "G_values": g_vals, "F_after": float(self.free_energy(obs).item())}
+
 
 def expected_free_energy(pref_prob: torch.Tensor, predicted_prob: torch.Tensor) -> float:
     """G(π) = D_KL(Q(o|π)||P(o)) - E[H[Q]] ≈ risk - ambiguity (discrete)."""

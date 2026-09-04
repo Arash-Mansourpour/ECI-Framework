@@ -77,8 +77,14 @@ from eci.neuromorphic.snn import SpikingNeuralNetwork
 
 # Network
 from eci.network.consensus import PBFTConsensus, WBFTConsensus, ConsensusResult
-from eci.network.aggregation import geometric_median, byzantine_robust_aggregate
+from eci.network.aggregation import (
+    geometric_median,
+    byzantine_robust_aggregate,
+    krum,
+    bulyan,
+)
 from eci.network.manager import AutonomousNetworkManager
+from eci.network.transport import AsyncMemoryChannel
 
 # Governance + cybernetics (v5)
 from eci.governance.dao import ECIDataDAO
@@ -155,6 +161,9 @@ __all__ = [
     "ConsensusResult",
     "geometric_median",
     "byzantine_robust_aggregate",
+    "krum",
+    "bulyan",
+    "AsyncMemoryChannel",
     "AutonomousNetworkManager",
     "ECIDataDAO",
     "AutopoieticNetwork",

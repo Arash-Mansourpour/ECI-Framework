@@ -182,7 +182,12 @@ class StatevectorSimulator:
         shots: int = 1024,
         generator: Optional[torch.Generator] = None,
     ) -> List[Dict[str, int]]:
-        """Sample computational-basis shots; returns per-batch counts dict."""
+        """Sample computational-basis shots; returns per-batch counts dict.
+
+        Uses one vectorized ``multinomial`` per batch row with an optional
+        per-call generator (pass a fresh ``torch.Generator(seed)`` per call
+        for uncorrelated batches; reusing one generator correlates rows).
+        """
         probs = self.probabilities(state).clamp_min(0)
         counts: List[Dict[str, int]] = []
         for b in range(state.shape[0]):
@@ -193,6 +198,19 @@ class StatevectorSimulator:
                 c[key] = c.get(key, 0) + 1
             counts.append(c)
         return counts
+
+    def sample_shots(self, state: torch.Tensor, shots: int = 1024, seed: int = 0) -> torch.Tensor:
+        """Vectorized shot indices ``(batch, shots)`` with split generators.
+
+        Each batch row gets ``Generator(seed + row)`` so rows are
+        uncorrelated even in one call — fixes the old sequential-reuse bias.
+        """
+        probs = self.probabilities(state).clamp_min(0)
+        rows = []
+        for b in range(state.shape[0]):
+            g = torch.Generator().manual_seed(seed + b)
+            rows.append(torch.multinomial(probs[b].cpu().float(), shots, replacement=True, generator=g))
+        return torch.stack(rows, dim=0)
 
     def expectation_z(self, state: torch.Tensor, qubit: int) -> torch.Tensor:
         """<Z_qubit> per batch element, shape ``(batch,)``."""
