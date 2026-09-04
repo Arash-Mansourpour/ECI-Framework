@@ -1,9 +1,9 @@
-# ECI Framework v5.7 — Eternal Codex Infinitus (Frontier Stack)
+# ECI Framework v5.8 — Eternal Codex Infinitus (Nervous System)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
 **Paper:** `ECI_Framework.md` v∞.14.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `5.7.0-FRONTIER`
+**Code:** `5.8.0-NERVOUS`
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →
@@ -13,6 +13,12 @@ coordinated by PBFT/WBFT + Krum/Bulyan + async transport + Data-DAO + autopoieti
 with consciousness measured by IIT Φ + iPDF v2 + GNWT + Friston FEP (+active inference) + Orch-OR audit,
 collective awareness + adherence gating **Protocol-0**: spec → attest → policy → ledger.
 
+> **v5.8 What is new (nervous system):**
+> Precog (`precog/` — Bayesian P(violation|trajectory), ECE calibration,
+> watch/escalate/hold tiers, reversible `ProvisionalHold` with open challenge
+> path); neural cortex (`neural/` — mesh GNN + GRU world-model + unified
+> `advise()` with per-agent risk+gate and `mesh_health`). See `docs/NERVOUS.md`.
+>
 > **v5.7 What is new (frontier batch):**
 > Threshold credentials (`protocol0/zk.py` — prove compliance bands, hide exact
 > values, absence proves failure); mesh federation (`federation/` — mutual ledger
@@ -67,7 +73,7 @@ eci benchmark
 eci health        # JSON status (Docker HEALTHCHECK); eci health --serve for :8777
 python _smoke_full.py   # legacy full smoke
 python _smoke_v5.py     # v5 supremacy smoke
-PYTHONPATH=src pytest -q                      # 50 tests, all green
+PYTHONPATH=src pytest -q                      # 53 tests, all green
 PYTHONPATH=src python examples/protocol0_awareness_gate.py  # obedience end-to-end
 PYTHONPATH=src python examples/external_agent_adapter.py    # one-decorator gating
 PYTHONPATH=src python benchmarks/chaos.py     # self-attack drills
@@ -137,6 +143,7 @@ src/eci/
   network/{consensus,aggregation,manager,nodes,transport,envelope,gossip,reputation,dht,membership}.py
   protocol0/{spec,attest,policy,ledger,gates,middleware,egress,keys,transparency,zk}.py
   immune/{detectors,memory,response}.py
+  precog/{risk,hold}.py  neural/{graph,world,cortex}.py
   federation/{bridge}.py  causal.py  economy.py  twin.py  recovery.py
   rollout.py  health.py
   benchmarking/{benchmark,obedience}.py
@@ -144,8 +151,8 @@ src/eci/
   learning/{maml,nas,federated,continual}.py  neuromorphic/  security/pqc.py
   framework.py  config.py  __main__.py (9 subcommands)
 protocol0/{spec.yaml,schema.json}  js/eci-protocol0/  mcp/server.py
-benchmarks/{chaos,stim_memory}.py  examples/{protocol0_awareness_gate,external_agent_adapter,immune_demo}.py
-docs/{PROTOCOL0,IMMUNE}.md  tests/ (39 pytest)  .github/workflows/ci.yml
+benchmarks/{chaos,stim_memory}.py  examples/{protocol0_awareness_gate,external_agent_adapter,immune_demo,nervous_demo}.py
+docs/{PROTOCOL0,IMMUNE,NERVOUS}.md  tests/ (53 pytest)  .github/workflows/ci.yml
 tools/{upgrade_paper,generate_pdf}.py
 ECI_Framework.md  ECI_Framework.pdf (live numbers)
 eci_framework_v3.py (legacy research edition, superseded by src/eci v5)
@@ -369,13 +376,13 @@ Foreign frameworks: `examples/external_agent_adapter.py` (one decorator + one fi
 
 ## 9. Tests & validation status
 
-`pytest`: **50 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
+`pytest`: **53 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
 `test_network`, `test_envelope`, `test_partition`, `test_protocol0`,
 `test_collective`, `test_obedience_stack`, `test_max`, `test_immune`,
-`test_mesh`, `test_frontier`) + CI on 3.10/3.11/3.12 (+ `publish.yml` on release).
+`test_mesh`, `test_frontier`, `test_nervous`) + CI on 3.10/3.11/3.12 (+ `publish.yml` on release).
 Smokes: `_smoke_full.py`, `_smoke_quantum.py`, `_smoke_v5.py`,
 `examples/protocol0_awareness_gate.py`, `examples/external_agent_adapter.py`,
-`examples/immune_demo.py`,
+`examples/immune_demo.py`, `examples/nervous_demo.py`,
 `benchmarks/chaos.py`, `benchmarks/stim_memory.py`, `node js/eci-protocol0/test.js`.
 **PDF is the complete record**: `python tools/generate_pdf.py` measures every
 subsystem live (quantum, awareness v2, collective, Protocol-0, QEC shots, MPS,
@@ -398,6 +405,8 @@ Kademlia DHT discovery, dynamic membership with attested joins, ledger
 snapshots + delta sync, PyPI/npm publish workflow + installer, staged rollout
 with auto-rollback, 44 tests) → done v5.7 (ZK bands, federation, HLC merge,
 economy, twin, Shamir recovery, dep floors + extras + full re-exports, 50 tests) →
+done v5.8 (precog forecasting + provisional holds, neural cortex GNN/world-model,
+53 tests) →
 next: real sockets/TLS+ML-KEM transport, PyPhi cross-validation harness,
 EEG closed-loop runs, QNN adherence classifier in the loop, DAO treasury/expiry,
 docs site, lockfile, coverage ≥85%.
