@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eci-framework"
+version = "5.0.0"
+description = "ECI Framework v5 - Quantum-Supremacy Autonomous AI Research Framework (Eternal Codex Infinitus)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Arash Mansourpour" }]
+keywords = [
+    "quantum-computing",
+    "quantum-machine-learning",
+    "quantum-error-correction",
+    "quantum-metrology",
+    "tensor-networks",
+    "integrated-information-theory",
+    "global-workspace",
+    "free-energy-principle",
+    "distributed-consensus",
+    "federated-learning",
+    "neuromorphic",
+    "meta-learning",
+    "autopoiesis",
+    "data-dao",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "torch>=2.0",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "mypy>=1.5", "ruff>=0.4"]
+viz = ["matplotlib>=3.7"]
+paper = ["matplotlib>=3.7", "reportlab>=4.0", "pyyaml>=6.0"]
+
+[project.scripts]
+eci = "eci.__main__:main"
+
+[project.urls]
+Documentation = "https://github.com/arash-mansourpour/eci-framework"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM"]
+ignore = [
+    "E501",  # long lines in scientific formulas / docstrings
+    "N802",  # PascalCase allowed for physics-style function names (e.g. QFT helpers)
+    "N803",  # physics argument names (rho, psi)
+    "N806",  # physics variable names (rho, psi)
+    "B008",  # default device factories
+    "SIM108",
+]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
