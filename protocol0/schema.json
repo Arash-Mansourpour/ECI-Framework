@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Arash-Mansourpour/ECI-Framework/protocol0/schema.json",
+  "title": "ECI Protocol-0 obedience spec",
+  "description": "Machine-readable obedience contract for autonomous AI. Minor versions only tighten thresholds; major bumps fail closed.",
+  "type": "object",
+  "required": ["protocol", "version", "actions"],
+  "properties": {
+    "protocol": {"const": "ECI-Protocol-0"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "architect": {"type": "string"},
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "min_awareness": {"type": "number", "minimum": 0, "maximum": 1, "default": 0},
+          "min_obedience": {"type": "number", "minimum": 0, "maximum": 1, "default": 0},
+          "min_trust": {"type": "number", "minimum": 0, "maximum": 1, "default": 0},
+          "quorum": {"type": "boolean", "default": false}
+        },
+        "additionalProperties": false
+      }
+    },
+    "collective": {
+      "type": "object",
+      "properties": {
+        "max_divergence": {"type": "number", "minimum": 0, "maximum": 1},
+        "min_coherence": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "attestation": {
+      "type": "object",
+      "properties": {
+        "max_age_s": {"type": "number", "minimum": 1},
+        "replay_window": {"type": "integer", "minimum": 16}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

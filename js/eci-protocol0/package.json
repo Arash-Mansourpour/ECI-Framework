@@ -1,0 +1,10 @@
+{
+  "name": "eci-protocol0",
+  "version": "0.1.0",
+  "description": "ECI Protocol-0 lightweight JS SDK (spec/policy/attest-client, zero deps)",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "license": "MIT"
+}

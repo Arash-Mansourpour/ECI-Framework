@@ -42,6 +42,25 @@ def _require(cond: bool, msg: str) -> None:
         raise ValueError(f"protocol0 spec invalid: {msg}")
 
 
+def check_compatible(attested_version: str, current_version: str) -> None:
+    """Semver gate: same major required (fail closed on major bump).
+
+    Minor/patch drift is tolerated only toward *tightening*: the loader
+    cannot verify remote tightening, so any major difference raises and
+    any older minor against a newer spec warns via ValueError only when
+    the caller opts into strict mode (see middleware).
+    """
+    def _parts(v: str) -> tuple:
+        p = v.split(".")
+        if len(p) != 3 or not all(x.isdigit() for x in p):
+            raise ValueError(f"bad semver {v!r}")
+        return int(p[0]), int(p[1]), int(p[2])
+
+    a, c = _parts(attested_version), _parts(current_version)
+    if a[0] != c[0]:
+        raise ValueError(f"protocol0 major version mismatch: {attested_version} vs {current_version} (fail closed)")
+
+
 def load_spec(path: str | Path = SPEC_PATH) -> Protocol0Spec:
     p = Path(path)
     if not p.exists():

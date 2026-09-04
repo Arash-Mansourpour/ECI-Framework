@@ -7,7 +7,7 @@ An autonomous agent reads the spec, attests (agent key + architect
 stamp + fresh nonce), and every sensitive call passes policy.check().
 """
 
-from eci.protocol0.spec import Protocol0Spec, load_spec
+from eci.protocol0.spec import Protocol0Spec, check_compatible, load_spec
 from eci.protocol0.attest import (
     Attestation,
     ReplayWindow,
@@ -16,12 +16,16 @@ from eci.protocol0.attest import (
     verify_attestation,
 )
 from eci.protocol0.policy import PolicyDecision, check
+from eci.protocol0.middleware import Middleware
+from eci.protocol0 import keys as keys
+from eci.protocol0 import transparency as transparency
 from eci.protocol0.ledger import Ledger
 from eci.protocol0.gates import gated_consensus, gated_dao_vote
 
 __all__ = [
     "Protocol0Spec",
     "load_spec",
+    "check_compatible",
     "Attestation",
     "ReplayWindow",
     "architect_anchor_available",
@@ -29,6 +33,9 @@ __all__ = [
     "verify_attestation",
     "PolicyDecision",
     "check",
+    "Middleware",
+    "keys",
+    "transparency",
     "Ledger",
     "gated_consensus",
     "gated_dao_vote",

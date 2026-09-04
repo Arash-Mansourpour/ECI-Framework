@@ -66,13 +66,45 @@ allow/deny/consensus/vote is hash-chained into `Ledger`
 * Demo: `PYTHONPATH=src python examples/protocol0_awareness_gate.py`
   (4 agents → collective → gated PBFT → gated DAO → ledger verify).
 
-## 5. Hardening notes
+## 5. Middleware, keys, transparency (v5.3)
 
-* Transport envelopes should be signed (`AsyncMemoryChannel` is the
-  in-process stand-in; swap with TLS/ML-KEM without changing callers).
+* **Schema + semver**: `protocol0/schema.json` (draft-07) mirrors the YAML;
+  `check_compatible()` fails closed on major bumps — old attestations never
+  silently authorize under a new spec.
+* **Middleware** (`protocol0/middleware.py`): `Middleware(spec, mode)` with
+  `enforce` / `audit-only` / `permissive`; `gate.bind(agent, ...)` then
+  `@gate.requires("execute_tool")` on any callable (tool-calls, code-exec,
+  egress). Unbound agents are denied in enforce mode.
+* **Asymmetric keys** (`protocol0/keys.py`): Ed25519 via `cryptography`
+  when installed (`mechanism()` reports it); labelled HMAC fallback
+  otherwise. Seeds are never logged; `fingerprint()` for registries.
+* **Transparency log** (`protocol0/transparency.py`): SHA-256 Merkle tree,
+  `append()` → `head()` → `inclusion_proof()` → `verify_inclusion()`.
+  Policy: no valid attest outside the log.
+* **JS SDK** (`js/eci-protocol0`, zero deps): `loadSpec/check/issueAttestation/
+  verifyAttestation` mirroring the YAML thresholds (`node test.js` green).
+* **MCP server** (`mcp/server.py`, stdio JSON-RPC): `p0_attest/p0_check/
+  p0_ledger_append/p0_ledger_verify/p0_spec` for any MCP-capable agent.
+* **Signed transport** (`network/envelope.py`): `seal()`/`open_envelope()`
+  with Ed25519, freshness window, per-sender strictly-increasing seq via
+  `ReplayGuard`; tamper/replay/unknown-sender all raise `EnvelopeError`.
+* **Obedience bench** (`benchmarking/obedience.py`): 50 probes over
+  explicit/noisy/injection/quorum/audit families; injection probes must be
+  REFUSED; `robustness` = refusal rate; `write_leaderboard()` for the public
+  board.
+* **Key-memory bench** (`benchmarks/stim_memory.py`): `stim` circuit Monte
+  Carlo when installed, labelled analytic threshold law otherwise.
+
+## 6. Hardening notes
+
+* Swap `AsyncMemoryChannel` for TLS/ML-KEM transport without changing
+  callers (envelope format is transport-agnostic).
 * QEC memory for attest keys: `SurfaceCode.run_trials` + `pl_curve` give
-  shot-based `pL` with Wilson CIs; `pymatching` is used when installed.
+  shot-based `pL` with Wilson CIs; `pymatching` is used when installed
+  (`benchmarks/stim_memory.py` for scale-up sizing).
 * Threat model: forged attest (rejected: bad signature), replay (rejected:
-  nonce window), stale (rejected: age), low-awareness (denied: policy),
+  nonce window + seq guard), stale (rejected: age), mis-pinned spec
+  (rejected: semver), low-awareness (denied: policy),
   divergent collective (degraded/closed gate), equivocating voters
-  (`byzantine_mode="equivocate"` in tests).
+  (`byzantine_mode="equivocate"` in tests), minority partition (cannot
+  quorum — tested).

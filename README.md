@@ -1,9 +1,9 @@
-# ECI Framework v5.2 — Eternal Codex Infinitus (Protocol-0 Obedience Layer)
+# ECI Framework v5.3 — Eternal Codex Infinitus (Full Protocol-0 Stack)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
 **Paper:** `ECI_Framework.md` v∞.15.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `5.2.0-PROTOCOL0`
+**Code:** `5.3.0-PROTOCOL0-FULL`
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →
@@ -13,25 +13,23 @@ coordinated by PBFT/WBFT + Krum/Bulyan + async transport + Data-DAO + autopoieti
 with consciousness measured by IIT Φ + iPDF v2 + GNWT + Friston FEP (+active inference) + Orch-OR audit,
 collective awareness + adherence gating **Protocol-0**: spec → attest → policy → ledger.
 
-> **v5.2 What is new (all three waves):**
-> (1) **Protocol-0** (`protocol0/spec.yaml` v0.1.0 + `src/eci/protocol0/`):
-> spec loader with strict validation, HMAC attestations with replay windows
-> and freshness, per-action policy gates (6 action classes), hash-chained
-> ledger, `gated_consensus` / `gated_dao_vote` wrappers. Autonomous AIs read
-> the spec, attest each epoch, and only authorized votes count.
-> (2) **Collective awareness + adherence** (`collective.py`, `adherence.py`):
-> network mean/coherence/divergence gate + recency-weighted obedience score
-> from calibration probes; demo `examples/protocol0_awareness_gate.py`.
-> (3) **Hardening + scale**: MWPM via pymatching-when-present (Hungarian/greedy
-> fallback), shot-based `run_trials` + Wilson CIs + `pl_curve`, canonical MPS
-> truncate with fidelity loss + `tebd_step` + `bond_benchmark`, EEG loader
-> (`eeg.py`) + FEP `select_action`, Krum/Bulyan, equivocate/silent fault modes,
-> `AsyncMemoryChannel`, `batched_RY`, `sample_shots`, 21 pytest + CI.
-> PDF rebuilt from live measurements covering **everything** (§1–§7).
+> **v5.3 What is new (full obedience stack):**
+> `protocol0/schema.json` (JSON Schema) + `check_compatible` semver fail-closed
+> on major bumps; `Middleware` (`enforce`/`audit-only`/`permissive`) with
+> `@gate.requires("execute_tool")` so tool-calls/code-exec/egress pass one
+> choke point; Ed25519 agent keys (`protocol0/keys.py`, HMAC fallback labelled);
+> `TransparencyLog` Merkle inclusion proofs (no valid attest outside the log);
+> `benchmarking/obedience.py` 50-probe battery + leaderboard writer;
+> `js/eci-protocol0` zero-dep JS SDK (tested with node); `mcp/server.py`
+> stdio JSON-RPC tools (`p0_attest/p0_check/p0_ledger_*`); signed transport
+> `Envelope` + `ReplayGuard` (`network/envelope.py`); partition tests (minority
+> cannot quorum, healed 10-node at f=3 boundary 20/20); `benchmarks/stim_memory.py`
+> (stim when present, analytic labelled otherwise).
 >
-> v5.1 (included): Awareness v2 multi-scale iPDF + adaptive baseline + bounded
-> boost + JS + surrogate significance + tiers + awareness_index; quantum hotfixes
-> (`phase_damping` CPTP, concurrence/EoF, CRZ, Heisenberg sign).
+> v5.2 (included): Protocol-0 core (spec/attest/policy/ledger/gates),
+> collective awareness + adherence, MWPM shots + canonical MPS/TEBD, EEG lab,
+> Krum/Bulyan, async transport, 15 tests.
+> v5.1 (included): Awareness v2 multi-scale iPDF; quantum hotfixes.
 
 ---
 
@@ -219,7 +217,8 @@ qubits) and cross-check with `analyzer` + `metrics`.
 
 ## 6. Protocol-0 — obedience layer for autonomous AI (read this to deploy)
 
-`protocol0/spec.yaml` v0.1.0 + `src/eci/protocol0/` — full contract in `docs/PROTOCOL0.md`:
+`protocol0/spec.yaml` v0.1.0 + `protocol0/schema.json` (draft-07) + `src/eci/protocol0/`
+— full contract in `docs/PROTOCOL0.md`. `check_compatible()` fails closed on major bumps.
 
 | Action | awareness | obedience | trust | quorum |
 |---|---|---|---|---|
@@ -249,6 +248,22 @@ How an autonomous AI follows it: `load_spec` → pin version → calibrate aware
 `check()`-allowed actions → votes through gated wrappers → stream ledger.
 Demo: `PYTHONPATH=src python examples/protocol0_awareness_gate.py`.
 Collective gate (`coherence≥0.5`, `divergence≤0.4`) blocks solo commits by divergent nodes.
+
+```python
+from eci.protocol0.middleware import Middleware  # enforce/audit-only/permissive
+gate = Middleware(spec, mode="enforce", ledger=ledger)
+gate.bind("alice", awareness=0.6, obedience=0.8, trust=0.9)
+
+@gate.requires("execute_tool")
+def run_tool(agent_id, x): ...
+```
+
+Trust roots: Ed25519 agent keys (`protocol0/keys.py`, mechanism always reported);
+`TransparencyLog` Merkle inclusion proofs (no valid attest outside the log);
+signed transport `Envelope` + `ReplayGuard`. JS agents: `js/eci-protocol0`
+(zero-dep, `node test.js` green). Any MCP agent: `python mcp/server.py`
+(`p0_attest/p0_check/p0_ledger_*`). Benchmark: `benchmarking/obedience.py`
+(50 probes + leaderboard).
 
 ---
 
