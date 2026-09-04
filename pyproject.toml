@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "5.4.0"
-description = "ECI Framework v5.4 - Max-Tech Obedience Stack (challenge-response, gossip, bench-200, MCP, envelopes)"
+version = "5.5.0"
+description = "ECI Framework v5.5 - Artificial Immune System for Protocol-0 Networks"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

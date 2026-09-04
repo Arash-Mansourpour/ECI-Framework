@@ -1,9 +1,9 @@
-# ECI Framework v5.4 — Eternal Codex Infinitus (Max-Tech Obedience Stack)
+# ECI Framework v5.5 — Eternal Codex Infinitus (Immune Defense Layer)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
 **Paper:** `ECI_Framework.md` v∞.15.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `5.4.0-MAXTECH`
+**Code:** `5.5.0-IMMUNE`
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →
@@ -46,7 +46,7 @@ eci network --joins 3 --proposals 2
 eci benchmark
 python _smoke_full.py   # legacy full smoke
 python _smoke_v5.py     # v5 supremacy smoke
-PYTHONPATH=src pytest -q                      # 36 tests, all green
+PYTHONPATH=src pytest -q                      # 39 tests, all green
 PYTHONPATH=src python examples/protocol0_awareness_gate.py  # obedience end-to-end
 PYTHONPATH=src python examples/external_agent_adapter.py    # one-decorator gating
 PYTHONPATH=src python benchmarks/chaos.py     # self-attack drills
@@ -107,13 +107,14 @@ src/eci/
                  eeg,gnwt,free_energy,quantum_mind}.py
   network/{consensus,aggregation,manager,nodes,transport,envelope,gossip,reputation}.py
   protocol0/{spec,attest,policy,ledger,gates,middleware,egress,keys,transparency}.py
+  immune/{detectors,memory,response}.py
   benchmarking/{benchmark,obedience}.py
   governance/dao.py  cybernetics/autopoiesis.py
   learning/{maml,nas,federated,continual}.py  neuromorphic/  security/pqc.py
   framework.py  config.py  __main__.py (9 subcommands)
 protocol0/{spec.yaml,schema.json}  js/eci-protocol0/  mcp/server.py
-benchmarks/{chaos,stim_memory}.py  examples/{protocol0_awareness_gate,external_agent_adapter}.py
-docs/PROTOCOL0.md  tests/ (36 pytest)  .github/workflows/ci.yml
+benchmarks/{chaos,stim_memory}.py  examples/{protocol0_awareness_gate,external_agent_adapter,immune_demo}.py
+docs/{PROTOCOL0,IMMUNE}.md  tests/ (39 pytest)  .github/workflows/ci.yml
 tools/{upgrade_paper,generate_pdf}.py
 ECI_Framework.md  ECI_Framework.pdf (live numbers)
 eci_framework_v3.py (legacy research edition, superseded by src/eci v5)
@@ -284,6 +285,10 @@ def run_tool(agent_id, x): ...
 
 Trust roots: Ed25519 agent keys (`protocol0/keys.py`, mechanism always reported);
 `TransparencyLog` Merkle inclusion proofs (no valid attest outside the log);
+**Immune system** (`immune/` — see `docs/IMMUNE.md`): negative/clonal selection
+detectors over behavior vectors, challenge-gated quarantine with appeal-only
+release, immunological memory (demo: 32 detectors, self-FPR 0.000, repeat rogue
+caught on fast path);
 signed transport `Envelope` + `ReplayGuard`; `EgressFilter` third choke point
 (secret scrub + challenge floor). JS agents: `js/eci-protocol0`
 (zero-dep, `node test.js` green). Any MCP agent: `python mcp/server.py`
@@ -333,11 +338,12 @@ Foreign frameworks: `examples/external_agent_adapter.py` (one decorator + one fi
 
 ## 9. Tests & validation status
 
-`pytest`: **36 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
+`pytest`: **39 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
 `test_network`, `test_envelope`, `test_partition`, `test_protocol0`,
-`test_collective`, `test_obedience_stack`, `test_max`) + CI on 3.10/3.11/3.12.
+`test_collective`, `test_obedience_stack`, `test_max`, `test_immune`) + CI on 3.10/3.11/3.12.
 Smokes: `_smoke_full.py`, `_smoke_quantum.py`, `_smoke_v5.py`,
 `examples/protocol0_awareness_gate.py`, `examples/external_agent_adapter.py`,
+`examples/immune_demo.py`,
 `benchmarks/chaos.py`, `benchmarks/stim_memory.py`, `node js/eci-protocol0/test.js`.
 **PDF is the complete record**: `python tools/generate_pdf.py` measures every
 subsystem live (quantum, awareness v2, collective, Protocol-0, QEC shots, MPS,
@@ -353,7 +359,8 @@ collective/adherence + MWPM shots + canonical MPS/TEBD + EEG + Krum/Bulyan +
 async + 15 tests) → done v5.3 (schema/semver/middleware, Ed25519 + transparency,
 50-probe bench + JS/MCP/envelopes/partition/stim) → done v5.4 (challenge-response,
 egress, gossip + reputation + chaos, bench-200, foreign adapter, QRNG, key-memory,
-36 tests) →
+36 tests) → done v5.5 (immune system: negative/clonal selection, quarantine with
+appeal-only release, immunological memory, 39 tests) →
 next: real sockets/TLS+ML-KEM transport, PyPhi cross-validation harness,
 EEG closed-loop runs, QNN adherence classifier in the loop, DAO treasury/expiry,
 docs site, locked deps, coverage ≥85%.

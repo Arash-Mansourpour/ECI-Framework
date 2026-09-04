@@ -1,9 +1,9 @@
 """Version metadata for the ECI Framework."""
 
-__version__ = "5.4.0"
+__version__ = "5.5.0"
 
 # Code release channel
-FRAMEWORK_VERSION = "5.4.0-MAXTECH"
+FRAMEWORK_VERSION = "5.5.0-IMMUNE"
 
 # Companion paper revision (ECI_Framework.md / PDF)
 PAPER_VERSION = "infinity.15.0"
