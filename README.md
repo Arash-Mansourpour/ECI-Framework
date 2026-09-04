@@ -1,9 +1,9 @@
-# ECI Framework v5.3 — Eternal Codex Infinitus (Full Protocol-0 Stack)
+# ECI Framework v5.4 — Eternal Codex Infinitus (Max-Tech Obedience Stack)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
 **Paper:** `ECI_Framework.md` v∞.15.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `5.3.0-PROTOCOL0-FULL`
+**Code:** `5.4.0-MAXTECH`
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →
@@ -13,23 +13,21 @@ coordinated by PBFT/WBFT + Krum/Bulyan + async transport + Data-DAO + autopoieti
 with consciousness measured by IIT Φ + iPDF v2 + GNWT + Friston FEP (+active inference) + Orch-OR audit,
 collective awareness + adherence gating **Protocol-0**: spec → attest → policy → ledger.
 
-> **v5.3 What is new (full obedience stack):**
-> `protocol0/schema.json` (JSON Schema) + `check_compatible` semver fail-closed
-> on major bumps; `Middleware` (`enforce`/`audit-only`/`permissive`) with
-> `@gate.requires("execute_tool")` so tool-calls/code-exec/egress pass one
-> choke point; Ed25519 agent keys (`protocol0/keys.py`, HMAC fallback labelled);
-> `TransparencyLog` Merkle inclusion proofs (no valid attest outside the log);
-> `benchmarking/obedience.py` 50-probe battery + leaderboard writer;
-> `js/eci-protocol0` zero-dep JS SDK (tested with node); `mcp/server.py`
-> stdio JSON-RPC tools (`p0_attest/p0_check/p0_ledger_*`); signed transport
-> `Envelope` + `ReplayGuard` (`network/envelope.py`); partition tests (minority
-> cannot quorum, healed 10-node at f=3 boundary 20/20); `benchmarks/stim_memory.py`
-> (stim when present, analytic labelled otherwise).
+> **v5.4 What is new (max-tech batch):**
+> Challenge-response awareness (`consciousness/challenge.py` — seeded probes,
+> difficulty-weighted transcripts as evidence, not claims); `EgressFilter`
+> third choke point with secret scrubbing + challenge floor; gossip + anti-entropy
+> (`network/gossip.py`, O(n log n) healing); multi-signal `ReputationBoard`
+> with designed forgetting; `benchmarks/chaos.py` self-attack drills (20/20 at
+> 30% equivocate, partition heals); 200-probe `BENCH_SUITE_V2` with chain-unit
+> penalties; `examples/external_agent_adapter.py` one-decorator pattern for any
+> foreign framework; `quantum/qrng.py` multi-source mixing + health gate;
+> `quantum/key_memory.py` distance/cost sizing for attest-key storage.
 >
-> v5.2 (included): Protocol-0 core (spec/attest/policy/ledger/gates),
-> collective awareness + adherence, MWPM shots + canonical MPS/TEBD, EEG lab,
-> Krum/Bulyan, async transport, 15 tests.
-> v5.1 (included): Awareness v2 multi-scale iPDF; quantum hotfixes.
+> v5.3 (included): schema.json + semver fail-closed + Middleware
+> enforce/audit-only/permissive; Ed25519 keys + Merkle transparency log;
+> 50-probe bench + leaderboard; JS SDK + MCP server; signed envelopes +
+> partition tests; stim bench.
 
 ---
 

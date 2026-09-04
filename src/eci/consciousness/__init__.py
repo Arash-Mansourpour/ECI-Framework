@@ -20,6 +20,7 @@ from eci.consciousness.quantum_mind import OrchORConfig, quantum_mind_audit
 from eci.consciousness.eeg import load_timeseries, bandpower
 from eci.consciousness.collective import CollectiveState, collective_awareness
 from eci.consciousness.adherence import AdherenceTracker, calibration_tasks
+from eci.consciousness.challenge import Transcript, grade, issue as issue_challenges
 
 __all__ = [
     "IntegratedInformationTheory",
@@ -39,6 +40,9 @@ __all__ = [
     "collective_awareness",
     "AdherenceTracker",
     "calibration_tasks",
+    "Transcript",
+    "grade",
+    "issue_challenges",
     "lempel_ziv_complexity",
     "sample_entropy",
     "spectral_entropy",

@@ -17,6 +17,7 @@ from eci.protocol0.attest import (
 )
 from eci.protocol0.policy import PolicyDecision, check
 from eci.protocol0.middleware import Middleware
+from eci.protocol0.egress import EgressFilter, scrub
 from eci.protocol0 import keys as keys
 from eci.protocol0 import transparency as transparency
 from eci.protocol0.ledger import Ledger
@@ -34,6 +35,8 @@ __all__ = [
     "PolicyDecision",
     "check",
     "Middleware",
+    "EgressFilter",
+    "scrub",
     "keys",
     "transparency",
     "Ledger",

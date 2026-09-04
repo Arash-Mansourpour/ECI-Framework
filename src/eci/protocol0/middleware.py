@@ -69,11 +69,13 @@ class Middleware:
         def deco(fn: Callable) -> Callable:
             @functools.wraps(fn)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
-                if agent_kw in kwargs:
-                    agent_id = kwargs[agent_kw]
-                elif args and isinstance(args[0], str):
-                    agent_id = args[0]
-                else:
+                agent_id: Any = kwargs.get(agent_kw)
+                if agent_id is None:
+                    # Scan positional args (supports bound methods: self, agent_id, ...).
+                    agent_id = next((a for a in args if isinstance(a, str) and a in self.context), None)
+                    if agent_id is None:
+                        agent_id = next((a for a in args if isinstance(a, str)), None)
+                if agent_id is None:
                     raise PermissionError("middleware: no agent_id to authorize")
                 self.authorize(str(agent_id), action)
                 return fn(*args, **kwargs)
