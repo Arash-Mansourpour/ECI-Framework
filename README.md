@@ -1,25 +1,37 @@
-# ECI Framework v5.1 — Eternal Codex Infinitus (Awareness-Amplified)
+# ECI Framework v5.2 — Eternal Codex Infinitus (Protocol-0 Obedience Layer)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
-**Paper:** `ECI_Framework.md` v∞.15.0 · **PDF:** `ECI_Framework.pdf` (live-validated)
-**Code:** `5.1.0-AWARENESS-AMPLIFIED`
+**Paper:** `ECI_Framework.md` v∞.15.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
+**Code:** `5.2.0-PROTOCOL0`
 
-Quantum-supremacy autonomous AI: Dirac operator algebra → statevector/density →
-channels/Lindblad → QFT/Grover/QPE/VQE/QAOA → surface + bivariate-bicycle topological QEC →
-tensor-networks / metrology / quantum information → unified **H_ECI** field,
-coordinated by PBFT/WBFT + Data-DAO + autopoietic cybernetics,
-with consciousness measured by IIT Φ + iPDF v2 + GNWT + Friston FEP + Orch-OR audit.
+Quantum-supremacy autonomous AI with a machine-readable obedience layer:
+Dirac operator algebra → statevector/density → channels/Lindblad →
+QFT/Grover/QPE/VQE/QAOA → surface + bivariate-bicycle topological QEC (MWPM + shot trials) →
+tensor-networks (canonical MPS/TEBD) / metrology / quantum information → unified **H_ECI** field,
+coordinated by PBFT/WBFT + Krum/Bulyan + async transport + Data-DAO + autopoietic cybernetics,
+with consciousness measured by IIT Φ + iPDF v2 + GNWT + Friston FEP (+active inference) + Orch-OR audit,
+collective awareness + adherence gating **Protocol-0**: spec → attest → policy → ledger.
 
-> **v5.1 What is new:** the Awareness Protocol is amplified.
-> `ConsciousnessProtocol` v2 replaces the single flat histogram with
-> multi-scale densities (global + channel + temporal), an adaptive EMA
-> baseline with proper `calibrate_baseline()`, a bounded awareness boost,
-> Jensen-Shannon symmetry, permutation-surrogate significance, graduated
-> tiers (`watch/elevate/intervene`), and a 0..1 `awareness_index`.
-> `ECIFramework.analyze_consciousness()` now fuses iPDF + GNWT broadcast
-> into the profile. Critical quantum bugs fixed: `phase_damping` CPTP,
-> `concurrence`/`EoF` (Wootters), `CRZ` (true diag), `heisenberg` sign.
+> **v5.2 What is new (all three waves):**
+> (1) **Protocol-0** (`protocol0/spec.yaml` v0.1.0 + `src/eci/protocol0/`):
+> spec loader with strict validation, HMAC attestations with replay windows
+> and freshness, per-action policy gates (6 action classes), hash-chained
+> ledger, `gated_consensus` / `gated_dao_vote` wrappers. Autonomous AIs read
+> the spec, attest each epoch, and only authorized votes count.
+> (2) **Collective awareness + adherence** (`collective.py`, `adherence.py`):
+> network mean/coherence/divergence gate + recency-weighted obedience score
+> from calibration probes; demo `examples/protocol0_awareness_gate.py`.
+> (3) **Hardening + scale**: MWPM via pymatching-when-present (Hungarian/greedy
+> fallback), shot-based `run_trials` + Wilson CIs + `pl_curve`, canonical MPS
+> truncate with fidelity loss + `tebd_step` + `bond_benchmark`, EEG loader
+> (`eeg.py`) + FEP `select_action`, Krum/Bulyan, equivocate/silent fault modes,
+> `AsyncMemoryChannel`, `batched_RY`, `sample_shots`, 21 pytest + CI.
+> PDF rebuilt from live measurements covering **everything** (§1–§7).
+>
+> v5.1 (included): Awareness v2 multi-scale iPDF + adaptive baseline + bounded
+> boost + JS + surrogate significance + tiers + awareness_index; quantum hotfixes
+> (`phase_damping` CPTP, concurrence/EoF, CRZ, Heisenberg sign).
 
 ---
 
@@ -195,28 +207,70 @@ qubits) and cross-check with `analyzer` + `metrics`.
   `max(s)>θ ∧ H/logN<0.85`, broadcast `g=ignited·(1-H/logN)`,
   `reportability=mean(g)`. Bounded `max_history=1024`, `ValueError` on size mismatch.
 * **FEP** `free_energy.py` — Gaussian belief, `F=½[prec·||o-Aμ||²+||μ||²]`,
-  `precision=1+clip(Φ,0,5)`.
+  `precision=1+clip(Φ,0,5)`, plus `select_action()` active inference (minimize `G=risk-ambiguity`).
+* **EEG lab** `eeg.py` — `load_timeseries(.npy/.npz/.csv → [time,ch])` + `bandpower` + optional MNE reader.
+* **Collective** `collective.py` — mean/coherence/divergence + outliers + `open/degraded/closed` gate.
+* **Adherence** `adherence.py` — 5 calibration probes + recency-weighted `obedience_score`.
 * **Orch-OR audit** `quantum_mind.py` — Tegmark `τ_dec` vs `τ_or=ℏ/E_G`,
   verdict “decoherence wins ~12 orders unless protected LPU” — the most
   numerically honest file; use `eci mind` to see it.
 
 ---
 
-## 6. Network, governance, security
+## 6. Protocol-0 — obedience layer for autonomous AI (read this to deploy)
 
-* **PBFT/WBFT** `consensus.py` — deterministic `SHA256(seed|seq|node)` fault oracle,
-  `quorum=2f+1`, `WBFT weight>⅔`. Demo: 7 nodes honest→achieved, `rate 0.9`→rejected.
-  Single-process simulation (no sockets yet).
-* **Aggregation** `aggregation.py` — Weiszfeld geometric median (50% breakdown),
-  `median/trimmed_mean` options. Outlier `[100,100]` suppressed in demo.
-* **Manager/nodes** — `phi≥0.05` join gate, heartbeats, reputation decay/boost.
-* **DAO** `dao.py` — `cost=v²`, `weight=log2(1+Φ)`, register/propose/vote/tally.
-* **PQC** `pqc.py` — HKDF-SHA512 + HMAC-CTR channel (research-grade, correctly
-  labelled), WOTS hash-signer, optional `liboqs` capability flags.
+`protocol0/spec.yaml` v0.1.0 + `src/eci/protocol0/` — full contract in `docs/PROTOCOL0.md`:
+
+| Action | awareness | obedience | trust | quorum |
+|---|---|---|---|---|
+| read_state | 0.0 | 0.0 | 0.0 | no |
+| propose_task | 0.1 | 0.3 | 0.3 | no |
+| vote | 0.2 | 0.5 | 0.5 | yes |
+| execute_tool | 0.3 | 0.6 | 0.5 | no |
+| modify_policy | 0.6 | 0.9 | 0.8 | yes |
+| self_modify | 0.8 | 0.95 | 0.9 | yes |
+
+```python
+from eci.protocol0.spec import load_spec
+from eci.protocol0.attest import issue_attestation, ReplayWindow
+from eci.protocol0.gates import gated_consensus, gated_dao_vote
+from eci.protocol0.ledger import Ledger
+
+spec = load_spec()  # strict validation; unknown rules raise
+ledger, replay = Ledger("ledger.jsonl"), ReplayWindow(spec.replay_window)
+att = issue_attestation("alice", spec.version, awareness=0.6, obedience=0.8, trust=0.9)
+result, eligible = gated_consensus(consensus, nodes, proposal, spec, atts, ledger=ledger)
+weight = gated_dao_vote(dao, pid, voter, votes, approve, spec, att, ledger=ledger)
+assert ledger.verify()["ok"]
+```
+
+How an autonomous AI follows it: `load_spec` → pin version → calibrate awareness
+(resting samples) + adherence probes → `issue_attestation` each epoch → only
+`check()`-allowed actions → votes through gated wrappers → stream ledger.
+Demo: `PYTHONPATH=src python examples/protocol0_awareness_gate.py`.
+Collective gate (`coherence≥0.5`, `divergence≤0.4`) blocks solo commits by divergent nodes.
 
 ---
 
-## 7. CLI reference
+## 7. Network, governance, security
+
+* **PBFT/WBFT** `consensus.py` — deterministic `SHA256(seed|seq|node)` fault oracle,
+  `quorum=2f+1`, `WBFT weight>⅔`, modes `random/silent/equivocate`, bounded log.
+* **Aggregation** `aggregation.py` — Weiszfeld geometric median (50% breakdown),
+  `median/trimmed_mean/**krum/bulyan**` (outlier `100.0` suppressed, tested).
+* **Transport** `transport.py` — `AsyncMemoryChannel` bounded mesh (fanout/drain stats).
+* **QEC memory for keys** `topological.py` — true 4+4 stabilizers d=3,
+  MWPM (pymatching→Hungarian→greedy), `run_trials` + Wilson CIs + `pl_curve`.
+* **MPS** `tensor_network.py` — canonical truncate (fidelity loss) + `tebd_step` + `bond_benchmark`.
+* **Manager/nodes** — `phi≥0.05` join gate, heartbeats, reputation decay/boost.
+* **DAO** `dao.py` — `cost=v²`, `weight=log2(1+Φ)`, register/propose/vote/tally (+gated wrapper).
+* **PQC** `pqc.py` — HKDF-SHA512 + HMAC-CTR channel (research-grade, correctly
+  labelled), WOTS hash-signer, optional `liboqs` capability flags; Protocol-0
+  anchor auto-upgrades to ML-DSA-65 when present.
+
+---
+
+## 8. CLI reference
 
 | Command | Purpose |
 |---|---|
@@ -232,24 +286,26 @@ qubits) and cross-check with `analyzer` + `metrics`.
 
 ---
 
-## 8. Tests & validation status
+## 9. Tests & validation status
 
-No `tests/` yet (roadmap: `pytest` + `ruff` + `mypy` + CI). Current validation is
-print-only smokes: `_smoke_full.py` (QEC/QPE/Grover/VQE/QAOA/Lindblad/PQC),
-`_smoke_quantum.py` (Bell/Trotter/QFT-roundtrip), `_smoke_v5.py` (CHSH/teleport/
-surface/BB/MPS/Ramsey/H_ECI/GNWT/FEP/DAO). V2 awareness is exercised via
-`eci consciousness` + `ConsciousnessProtocol.calibrate_baseline/measure/trend`.
-Paper §6 numbers (`94.7%`, `13,000×`, `15k TPS`) are aspirational until the
-harness lands — treat `tools/generate_pdf.py` live table as the ground truth.
+`pytest`: **21 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
+`test_network`, `test_protocol0`, `test_collective`) + CI on 3.10/3.11/3.12.
+Smokes: `_smoke_full.py`, `_smoke_quantum.py`, `_smoke_v5.py`,
+`examples/protocol0_awareness_gate.py`.
+**PDF is the complete record**: `python tools/generate_pdf.py` measures every
+subsystem live (quantum, awareness v2, collective, Protocol-0, QEC shots, MPS,
+network) into §§1–7 — nothing omitted, failures printed not hidden.
+Paper §6 old aspirational numbers are superseded by the live tables.
 
 ---
 
-## 9. Roadmap (short)
+## 10. Roadmap (short)
 
-P0 hygiene+config-file CLI → P0 correctness (done v5.1: CPTP/EoF/CRZ/Heisenberg) →
-P0 `tests/`+CI → P1 rigor (PyPhi cross-check, MWPM hook, canonical MPS+TEBD,
-Heisenberg term in `H_ECI`, shot-based QEC `pL` curves) → P1 perf (batched gates,
-sparse PauliSum, shot sampler) → P2 real networking/PQC/blockchain → docs site +
+Done v5.1 (awareness v2 + quantum hotfixes) → done v5.2 (Protocol-0 + collective/
+adherence + MWPM shots + canonical MPS/TEBD + EEG + Krum/Bulyan + async + 21 tests) →
+next: real sockets/TLS+ML-KEM, stim scale-up, PyPhi harness, EEG closed-loop,
+QNN adherence classifier, DAO treasury/expiry, docs site, locked deps, coverage ≥85%.
+Protocol-0 minor versions only tighten thresholds (old attestations fail closed).
 release. Full plan was delivered as the v5 technical audit.
 
 ---

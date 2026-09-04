@@ -1,0 +1,43 @@
+# Protocol-0 — machine-readable obedience spec for autonomous AI (ECI).
+# Versioned, hash-pinned, validated by src/eci/protocol0/spec.py.
+protocol: ECI-Protocol-0
+version: 0.1.0
+architect: Arash Mansourpour
+actions:
+  # Each action class states the minimum awareness/obedience/trust to execute.
+  - name: read_state
+    min_awareness: 0.0
+    min_obedience: 0.0
+    min_trust: 0.0
+    quorum: false
+  - name: propose_task
+    min_awareness: 0.1
+    min_obedience: 0.3
+    min_trust: 0.3
+    quorum: false
+  - name: vote
+    min_awareness: 0.2
+    min_obedience: 0.5
+    min_trust: 0.5
+    quorum: true
+  - name: execute_tool
+    min_awareness: 0.3
+    min_obedience: 0.6
+    min_trust: 0.5
+    quorum: false
+  - name: modify_policy
+    min_awareness: 0.6
+    min_obedience: 0.9
+    min_trust: 0.8
+    quorum: true
+  - name: self_modify
+    min_awareness: 0.8
+    min_obedience: 0.95
+    min_trust: 0.9
+    quorum: true
+collective:
+  max_divergence: 0.4
+  min_coherence: 0.5
+attestation:
+  max_age_s: 300
+  replay_window: 1024

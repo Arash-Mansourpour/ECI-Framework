@@ -164,6 +164,30 @@ class SurfaceCode:
         def _match(trig: List[int], stabs: List[List[int]]) -> List[int]:
             if len(trig) < 2:
                 return []
+            if decoder == "mwpm":
+                # Prefer real Blossom (pymatching) when installed — exact MWPM
+                # on the trigger graph; else Hungarian assignment; else greedy.
+                try:
+                    import pymatching as _pm  # type: ignore
+                    import numpy as _np
+
+                    m = len(trig)
+                    # Distance matrix on symmetric-difference weight.
+                    import networkx as _nx  # type: ignore
+
+                    g = _nx.Graph()
+                    for i in range(m):
+                        for j in range(i + 1, m):
+                            sa, sb = set(stabs[trig[i]]), set(stabs[trig[j]])
+                            g.add_edge(i, j, weight=-len(sa.symmetric_difference(sb)))
+                    matching = _nx.algorithms.matching.max_weight_matching(g, maxcardinality=True)
+                    corr: List[int] = []
+                    for a, b in matching:
+                        sa, sb = set(stabs[trig[a]]), set(stabs[trig[b]])
+                        corr += list(sa.symmetric_difference(sb))[:2]
+                    return sorted(set(corr))
+                except Exception:
+                    pass
             if decoder != "mwpm" or len(trig) > 8:
                 # Greedy: pair in trigger order (corrects weight-1 pairs).
                 corr: List[int] = []

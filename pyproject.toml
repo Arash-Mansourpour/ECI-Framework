@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "5.1.0"
-description = "ECI Framework v5.1 - Awareness-Amplified Quantum Autonomous AI Research Framework (Eternal Codex Infinitus)"
+version = "5.2.0"
+description = "ECI Framework v5.2 - Protocol-0 Obedience Layer + Awareness-Amplified Autonomous AI (Eternal Codex Infinitus)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

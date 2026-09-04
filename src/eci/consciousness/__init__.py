@@ -18,6 +18,8 @@ from eci.consciousness.protocol import (
 )
 from eci.consciousness.quantum_mind import OrchORConfig, quantum_mind_audit
 from eci.consciousness.eeg import load_timeseries, bandpower
+from eci.consciousness.collective import CollectiveState, collective_awareness
+from eci.consciousness.adherence import AdherenceTracker, calibration_tasks
 
 __all__ = [
     "IntegratedInformationTheory",
@@ -33,6 +35,10 @@ __all__ = [
     "quantum_mind_audit",
     "load_timeseries",
     "bandpower",
+    "CollectiveState",
+    "collective_awareness",
+    "AdherenceTracker",
+    "calibration_tasks",
     "lempel_ziv_complexity",
     "sample_entropy",
     "spectral_entropy",
