@@ -46,6 +46,12 @@ eci network --joins 3 --proposals 2
 eci benchmark
 python _smoke_full.py   # legacy full smoke
 python _smoke_v5.py     # v5 supremacy smoke
+PYTHONPATH=src pytest -q                      # 36 tests, all green
+PYTHONPATH=src python examples/protocol0_awareness_gate.py  # obedience end-to-end
+PYTHONPATH=src python examples/external_agent_adapter.py    # one-decorator gating
+PYTHONPATH=src python benchmarks/chaos.py     # self-attack drills
+PYTHONPATH=src python benchmarks/stim_memory.py  # key-memory sizing
+node js/eci-protocol0/test.js                 # JS SDK self-test
 python tools/generate_pdf.py  # rebuild live-validated PDF
 ```
 
@@ -60,12 +66,14 @@ Requires Python ≥3.10, `torch`, `numpy`, `pyyaml`. Optional `paper` extra
 Infrastructure  operator → gates → statevector/density → entanglement
                 → channels/Lindblad → hamiltonian(Trotter)
                 → algorithms(QFT/Grover/QPE/VQE/QAOA)
-                → qec(BitFlip/Shor) + topological(Surface/BB)
-                → tensor_network(MPS) / metrology / information
-                → unified_field(H_ECI) + security/pqc + benchmarking
+                → qec(BitFlip/Shor) + topological(Surface/BB, MWPM, shot trials)
+                → tensor_network(canonical MPS/TEBD) / metrology / information
+                → qrng + key_memory sizing → unified_field(H_ECI)
+                + security/pqc + benchmarking(obedience-bench)
 
 Coordination    core(types/identity/registry/device)
-                + network(PBFT/WBFT consensus, GM aggregation, manager/nodes)
+                + network(PBFT/WBFT consensus, GM/Krum/Bulyan aggregation,
+                          manager/nodes, transport, envelopes, gossip, reputation)
                 + governance/dao (quadratic + consciousness-weighted)
                 + cybernetics/autopoiesis
 
@@ -73,8 +81,16 @@ Consciousness   iit(Phi gaussian/quantum/discrete, exhaustive MIP ≤8q)
                 + analyzer(8-metric composite, Phi-normalized self-awareness)
                 + metrics(LZ76/SampEn/SpecEn/MI/autocorr, vectorized)
                 + protocol(iPDF v2, multi-scale, adaptive — see §4)
+                + collective(mean/coherence/divergence gate) + adherence(obedience score)
+                + challenge(challenge-response transcripts) + eeg(real recordings)
                 + gnwt(softmax ignition, entropy gate 0.85)
-                + free_energy(Friston FEP) + quantum_mind(Orch-OR audit)
+                + free_energy(Friston FEP + active inference) + quantum_mind(Orch-OR audit)
+
+Protocol-0     spec.yaml + schema.json (semver fail-closed)
+                + attest(HMAC, replay window) + keys(Ed25519) + transparency(Merkle)
+                + policy(per-action + collective gates) + middleware(enforce/audit-only/permissive)
+                + egress(scrub + challenge floor) + ledger(hash-chained)
+                + gates(gated consensus/DAO)
 
 Facade          ECIFramework(config) wires all + ARCHITECT.stamp
 CLI             eci/__main__.py — 9 subcommands
@@ -86,12 +102,18 @@ Layout:
 src/eci/
   quantum/{operator,information,topological,tensor_network,metrology,unified_field,
            gates,statevector,density,entanglement,channels,lindblad,hamiltonian,
-           algorithms,qec,qnn,mock_quantum}.py
-  consciousness/{iit,analyzer,metrics,protocol,gnwt,free_energy,quantum_mind}.py
-  network/{consensus,aggregation,manager,nodes}.py
+           algorithms,qec,qnn,mock_quantum,qrng,key_memory}.py
+  consciousness/{iit,analyzer,metrics,protocol,collective,adherence,challenge,
+                 eeg,gnwt,free_energy,quantum_mind}.py
+  network/{consensus,aggregation,manager,nodes,transport,envelope,gossip,reputation}.py
+  protocol0/{spec,attest,policy,ledger,gates,middleware,egress,keys,transparency}.py
+  benchmarking/{benchmark,obedience}.py
   governance/dao.py  cybernetics/autopoiesis.py
   learning/{maml,nas,federated,continual}.py  neuromorphic/  security/pqc.py
   framework.py  config.py  __main__.py (9 subcommands)
+protocol0/{spec.yaml,schema.json}  js/eci-protocol0/  mcp/server.py
+benchmarks/{chaos,stim_memory}.py  examples/{protocol0_awareness_gate,external_agent_adapter}.py
+docs/PROTOCOL0.md  tests/ (36 pytest)  .github/workflows/ci.yml
 tools/{upgrade_paper,generate_pdf}.py
 ECI_Framework.md  ECI_Framework.pdf (live numbers)
 eci_framework_v3.py (legacy research edition, superseded by src/eci v5)
@@ -104,8 +126,8 @@ eci_framework_v3.py (legacy research edition, superseded by src/eci v5)
 | Module | Physics | Key API |
 |---|---|---|
 | `operator` | HS inner, spectral theorem `U=exp(-iHt)`, Heisenberg `Ud·A·U`, Robertson-Schrödinger bound, Pauli basis | `heisenberg_evolution`, `uncertainty_bound` (batched), `average_gate_fidelity` |
-| `gates` | I/X/Y/Z/H/S/T, RX/RY/RZ/PHASE/U3, CNOT/CZ/SWAP/CRZ(true diag)/CRX/CCX, `controlled`, big-endian `q0=MSB` | `CRZ(θ)=diag(1,1,e^{-iθ/2},e^{+iθ/2})` |
-| `statevector` | `einsum` simulator, no `2^n×2^n`, autograd-safe, `X:H` `Y:S†+H` rotations | `StatevectorSimulator.apply_1q/2q`, `expectation_pauli` |
+| `gates` | I/X/Y/Z/H/S/T, RX/RY/RZ/`batched_RY`/PHASE/U3, CNOT/CZ/SWAP/CRZ(true diag)/CRX/CCX, `controlled`, big-endian `q0=MSB` | `CRZ(θ)=diag(1,1,e^{-iθ/2},e^{+iθ/2})` |
+| `statevector` | `einsum` simulator, no `2^n×2^n`, autograd-safe, `X:H` `Y:S†+H` rotations, `sample_shots` (split generators, no cross-row correlation) | `StatevectorSimulator.apply_1q/2q`, `expectation_pauli` |
 | `density` | Uhlmann fidelity, `D=½Tr\|ρ-σ\|`, `partial_trace`, `is_cptp` | `von_neumann_entropy`, `apply_kraus` |
 | `entanglement` | Schmidt/SVD, Wootters concurrence via `eigvals` (non-Hermitian R), `Ef=h2((1+√(1-C²))/2)`, negativity | `concurrence`, `entanglement_of_formation` |
 | `channels` | CPTP Kraus: depolarizing (documented `3q/4` mapping), bit/phase-flip, amplitude + phase damping (2-Kraus) | `phase_damping`, `NoiseModel` |
@@ -114,8 +136,10 @@ eci_framework_v3.py (legacy research edition, superseded by src/eci v5)
 | `algorithms` | QFT, Grover `⌊π/4√(N/M)⌋`, QPE (counting register big-endian), VQE, QAOA `RX(2β)` | `grover_search`, `quantum_phase_estimation`, `vqe`, `qaoa_maxcut` |
 | `information` | Holevo χ, coherent info, CHSH/Tsirelson, teleport, superdense | `chsh_value≈2.828`, `teleportation_fidelity` |
 | `qec` | BitFlip + Shor (encode/decode inverses, `±1` syndromes) | `BitFlipCode.run_trial`, `ShorCode` |
-| `topological` | `SurfaceCode`, `BivariateBicycleCode`, `pL≈0.1(p/pth)^{⌈d/2⌉}`, `[[1024,64,16]]` LPU | `eci_lpu()`, `logical_error_rate` |
-| `tensor_network` | MPS roundtrip ≤12q diagnostics, area-law `S≤log χ` | `mps_from/to_statevector` |
+| `topological` | `SurfaceCode` (true 4+4 stabilizers d=3), MWPM (pymatching→Hungarian→greedy), shot-based `run_trials` + Wilson CIs + `pl_curve`; `BivariateBicycleCode`, `pL≈0.1(p/pth)^{⌈d/2⌉}`, `[[1024,64,16]]` LPU | `eci_lpu()`, `run_trials(shots)` |
+| `tensor_network` | Left-canonical MPS, **canonical** truncate (true fidelity loss, no corner-cut stub), `tebd_step`, `bond_benchmark`, area-law `S≤log χ` | `mps_truncate`, `tebd_step` |
+| `qrng` | Multi-source mixing (OS + jitter + torch) for nonces/challenges + monobit health gate | `mix`, `health_check` |
+| `key_memory` | Threshold-law distance/cost sizing for attest-key storage (surface vs BB) | `distance_for_target`, `memory_cost` |
 | `metrology` | SQL/HL, `QFI_GHZ=N²`, Ramsey | `ghz_phase_qfi`, `ramsey_sensitivity` |
 | `unified_field` | `H_ECI = H_Q + H_C + H_int + H_Φ + H_G` | `eci_unified_hamiltonian`, `eci_hamiltonian_expectation` |
 | `qnn` | `RY(π·tanh x)` + `RY/RZ` + CNOT ring, `<Z>` readout, autograd | `QuantumLayer`, `QuantumNeuralNetwork` |
@@ -207,6 +231,8 @@ qubits) and cross-check with `analyzer` + `metrics`.
 * **EEG lab** `eeg.py` — `load_timeseries(.npy/.npz/.csv → [time,ch])` + `bandpower` + optional MNE reader.
 * **Collective** `collective.py` — mean/coherence/divergence + outliers + `open/degraded/closed` gate.
 * **Adherence** `adherence.py` — 5 calibration probes + recency-weighted `obedience_score`.
+* **Challenge-response** `challenge.py` — seeded unpredictable probes, difficulty-weighted
+  transcripts (`issue`/`grade`/`score`) as auditable evidence instead of self-reported claims.
 * **Orch-OR audit** `quantum_mind.py` — Tegmark `τ_dec` vs `τ_or=ℏ/E_G`,
   verdict “decoherence wins ~12 orders unless protected LPU” — the most
   numerically honest file; use `eci mind` to see it.
@@ -258,10 +284,12 @@ def run_tool(agent_id, x): ...
 
 Trust roots: Ed25519 agent keys (`protocol0/keys.py`, mechanism always reported);
 `TransparencyLog` Merkle inclusion proofs (no valid attest outside the log);
-signed transport `Envelope` + `ReplayGuard`. JS agents: `js/eci-protocol0`
+signed transport `Envelope` + `ReplayGuard`; `EgressFilter` third choke point
+(secret scrub + challenge floor). JS agents: `js/eci-protocol0`
 (zero-dep, `node test.js` green). Any MCP agent: `python mcp/server.py`
 (`p0_attest/p0_check/p0_ledger_*`). Benchmark: `benchmarking/obedience.py`
-(50 probes + leaderboard).
+(50-probe suite + **200-probe `BENCH_SUITE_V2`** with chain-unit penalties + leaderboard).
+Foreign frameworks: `examples/external_agent_adapter.py` (one decorator + one filter).
 
 ---
 
@@ -271,7 +299,11 @@ signed transport `Envelope` + `ReplayGuard`. JS agents: `js/eci-protocol0`
   `quorum=2f+1`, `WBFT weight>⅔`, modes `random/silent/equivocate`, bounded log.
 * **Aggregation** `aggregation.py` — Weiszfeld geometric median (50% breakdown),
   `median/trimmed_mean/**krum/bulyan**` (outlier `100.0` suppressed, tested).
-* **Transport** `transport.py` — `AsyncMemoryChannel` bounded mesh (fanout/drain stats).
+* **Transport** `transport.py` — `AsyncMemoryChannel` bounded mesh (fanout/drain stats);
+  `envelope.py` — signed `Envelope` + `ReplayGuard` (tamper/replay/unknown-sender rejected).
+* **Gossip + reputation** `gossip.py` — O(n log n) dissemination + anti-entropy healing;
+  `reputation.py` — `ReputationBoard`, weight = stake×trust×obedience×freshness with designed forgetting.
+* **Chaos drills** `benchmarks/chaos.py` — self-attack: 30% equivocate 20/20, partition heals.
 * **QEC memory for keys** `topological.py` — true 4+4 stabilizers d=3,
   MWPM (pymatching→Hungarian→greedy), `run_trials` + Wilson CIs + `pl_curve`.
 * **MPS** `tensor_network.py` — canonical truncate (fidelity loss) + `tebd_step` + `bond_benchmark`.
@@ -301,10 +333,12 @@ signed transport `Envelope` + `ReplayGuard`. JS agents: `js/eci-protocol0`
 
 ## 9. Tests & validation status
 
-`pytest`: **21 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
-`test_network`, `test_protocol0`, `test_collective`) + CI on 3.10/3.11/3.12.
+`pytest`: **36 tests** (`test_quantum_core`, `test_awareness`, `test_qec_mps`,
+`test_network`, `test_envelope`, `test_partition`, `test_protocol0`,
+`test_collective`, `test_obedience_stack`, `test_max`) + CI on 3.10/3.11/3.12.
 Smokes: `_smoke_full.py`, `_smoke_quantum.py`, `_smoke_v5.py`,
-`examples/protocol0_awareness_gate.py`.
+`examples/protocol0_awareness_gate.py`, `examples/external_agent_adapter.py`,
+`benchmarks/chaos.py`, `benchmarks/stim_memory.py`, `node js/eci-protocol0/test.js`.
 **PDF is the complete record**: `python tools/generate_pdf.py` measures every
 subsystem live (quantum, awareness v2, collective, Protocol-0, QEC shots, MPS,
 network) into §§1–7 — nothing omitted, failures printed not hidden.
@@ -314,12 +348,16 @@ Paper §6 old aspirational numbers are superseded by the live tables.
 
 ## 10. Roadmap (short)
 
-Done v5.1 (awareness v2 + quantum hotfixes) → done v5.2 (Protocol-0 + collective/
-adherence + MWPM shots + canonical MPS/TEBD + EEG + Krum/Bulyan + async + 21 tests) →
-next: real sockets/TLS+ML-KEM, stim scale-up, PyPhi harness, EEG closed-loop,
-QNN adherence classifier, DAO treasury/expiry, docs site, locked deps, coverage ≥85%.
+Done v5.1 (awareness v2 + quantum hotfixes) → done v5.2 (Protocol-0 core +
+collective/adherence + MWPM shots + canonical MPS/TEBD + EEG + Krum/Bulyan +
+async + 15 tests) → done v5.3 (schema/semver/middleware, Ed25519 + transparency,
+50-probe bench + JS/MCP/envelopes/partition/stim) → done v5.4 (challenge-response,
+egress, gossip + reputation + chaos, bench-200, foreign adapter, QRNG, key-memory,
+36 tests) →
+next: real sockets/TLS+ML-KEM transport, PyPhi cross-validation harness,
+EEG closed-loop runs, QNN adherence classifier in the loop, DAO treasury/expiry,
+docs site, locked deps, coverage ≥85%.
 Protocol-0 minor versions only tighten thresholds (old attestations fail closed).
-release. Full plan was delivered as the v5 technical audit.
 
 ---
 
