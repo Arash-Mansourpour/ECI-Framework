@@ -223,6 +223,31 @@ def cmd_ever(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_aik(args: argparse.Namespace) -> int:
+    """Read-only unification observability, direct ledger reads.
+
+    Deliberately NOT routed through the MCP pipeline: introspection must
+    keep working when auth/budget gates trip. A test locks CLI output to
+    the MCP tool output so the two paths cannot diverge silently.
+    """
+    from eci.aikernel.mcp_bridge import describe_ledger
+    fw = ECIFramework()
+    aik = getattr(fw, "_aik", None)
+    if aik is None or "ledger" not in aik:
+        _print_json({"ok": False, "error": "unification mesh unavailable"})
+        return 1
+    ledger = aik["ledger"]
+    if args.what == "shares":
+        _print_json({"shares": {k: float(v) for k, v in ledger.shares().items()}})
+    elif args.what == "total":
+        tot = ledger.total_free_energy()
+        _print_json({"total_free_energy": float(tot.detach().item()),
+                     "members": sorted(ledger.members())})
+    else:
+        _print_json(describe_ledger(ledger))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="eci",
@@ -289,6 +314,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("ever", help="everlasting continuance report")
 
+    aik_p = sub.add_parser("aik", help="unification mesh observability (read-only)")
+    aik_p.add_argument("what", choices=["shares", "total", "describe"], default="total", nargs="?")
+
     return parser
 
 
@@ -317,6 +345,7 @@ def main(argv: List[str] | None = None) -> int:
         "dream": cmd_dream,
         "morph": cmd_morph,
         "ever": cmd_ever,
+        "aik": cmd_aik,
     }
     handler = handlers.get(args.command)
     if handler is None:

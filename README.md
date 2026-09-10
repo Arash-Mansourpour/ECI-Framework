@@ -134,6 +134,7 @@ Every subsystem optimizes one shared objective, variational free energy
 | 8 | `learning/aikernel_adapter.py` (`EWCContributor`) | Weight-posterior share; displacement-priced consolidation |
 | 9 | Default mesh completion (no new adapter) | All 8 adapters in `build_unification()` + full `describe` coverage |
 | 10 | Hardening + PyPhi bridge (no new adapter) | Hygiene gate; PEC table q≤0.2; repertoires agree 1e-9; see `docs/AIKERNEL_UNIFICATION.md` |
+| 11 | Operability: mesh in status + CLI (no new adapter) | `system_status()["aik"]` + `eci aik {shares,total,describe}` read the live ledger |
 
 > Honesty ledger for all consciousness metrics (what each number is and
 > is not validated against): `src/eci/consciousness/LIMITATIONS.md` —

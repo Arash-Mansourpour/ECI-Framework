@@ -18,8 +18,8 @@ from eci.aikernel.functors import (default_paulis, density_to_cov, fuse_beliefs,
                                    pauli_expectations, pauli_string_matrix, split_belief)
 from eci.aikernel.generative_model import GenerativeState, Likelihood, Prior
 from eci.aikernel.mcp_bridge import (ADAPTER_NAMESPACES, EMPTY_SCHEMA, FREE_ENERGY_SCHEMA,
-                                     STATE_SCHEMA, build_unification, register_contributor,
-                                     register_ledger)
+                                     STATE_SCHEMA, build_unification, describe_ledger,
+                                     register_contributor, register_ledger)
 from eci.aikernel.state_contract import KernelLedger, StateContributor, conforms
 
 __all__ = ["GenerativeState", "Likelihood", "Prior",
@@ -29,4 +29,4 @@ __all__ = ["GenerativeState", "Likelihood", "Prior",
            "StateContributor", "KernelLedger", "conforms",
            "STATE_SCHEMA", "EMPTY_SCHEMA", "FREE_ENERGY_SCHEMA",
            "ADAPTER_NAMESPACES", "register_contributor", "register_ledger",
-           "build_unification"]
+           "describe_ledger", "build_unification"]

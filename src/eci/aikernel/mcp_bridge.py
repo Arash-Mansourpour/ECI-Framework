@@ -41,8 +41,8 @@ import inspect
 from typing import Any, Dict, List, Optional
 
 __all__ = ["STATE_SCHEMA", "EMPTY_SCHEMA", "FREE_ENERGY_SCHEMA",
-           "register_contributor", "register_ledger", "build_unification",
-           "ADAPTER_NAMESPACES"]
+           "register_contributor", "register_ledger", "describe_ledger",
+           "build_unification", "ADAPTER_NAMESPACES"]
 
 STATE_SCHEMA: Dict[str, Any] = {
     "type": "object",
@@ -145,15 +145,7 @@ def register_ledger(registry: Any, ledger: Any,
         docstring — the docstring stays the source of truth. Members whose
         class isn't listed report 'unlisted' rather than a guess.
         """
-        notes = _adapter_notes()
-        out: Dict[str, Any] = {}
-        for name, member in ledger.members().items():
-            hit = notes.get(type(member))
-            share = ledger.shares().get(name)
-            out[name] = {"share": float(share) if share is not None else None,
-                         "category": hit[0] if hit else "unlisted",
-                         "note": hit[1] if hit else ""}
-        return {"members": out}
+        return describe_ledger(ledger)
 
     tools = [
         McpTool(f"{namespace}.shares", "per-subsystem F shares",
@@ -166,6 +158,23 @@ def register_ledger(registry: Any, ledger: Any,
     for t in tools:
         registry.register(t, overwrite=True)
     return [t.name for t in tools]
+
+
+def describe_ledger(ledger: Any) -> Dict[str, Any]:
+    """Shared describe logic for the MCP tool AND framework status/CLI.
+
+    One implementation, three callers (tool handler, system_status, CLI) —
+    so the meanings can never diverge between transports.
+    """
+    notes = _adapter_notes()
+    out: Dict[str, Any] = {}
+    for name, member in ledger.members().items():
+        hit = notes.get(type(member))
+        share = ledger.shares().get(name)
+        out[name] = {"share": float(share) if share is not None else None,
+                     "category": hit[0] if hit else "unlisted",
+                     "note": hit[1] if hit else ""}
+    return {"members": out}
 
 
 def _adapter_notes() -> Dict[Any, Any]:

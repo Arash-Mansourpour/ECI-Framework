@@ -514,6 +514,28 @@ class ECIFramework:
             "system_state": self.system_state,
         }
 
+    def aik_status(self) -> Dict[str, Any]:
+        """Unification-mesh observability (Phase 11).
+
+        Reads the SAME KernelLedger instance the MCP tools read (built by
+        fabric into ``self._aik``) — status/MCP/CLI can never disagree
+        because there is only one object. Absent mesh -> explicit error,
+        never invented numbers.
+        """
+        aik = getattr(self, "_aik", None)
+        if aik is None or "ledger" not in aik:
+            return {"ok": False, "error": "unification mesh unavailable"}
+        from eci.aikernel.mcp_bridge import describe_ledger
+        ledger = aik["ledger"]
+        total = ledger.total_free_energy()
+        try:
+            total_f = float(total.detach().item() if hasattr(total, "detach") else total)
+        except Exception:  # noqa: BLE001
+            return {"ok": False, "error": "total not finite"}
+        return {"ok": True, "members": sorted(ledger.members()),
+                "total_free_energy": total_f,
+                "describe": describe_ledger(ledger)["members"]}
+
     def system_status(self) -> Dict[str, Any]:
         """Full v6 hyper-architecture health snapshot (for `eci system`)."""
         def _safe(fn):
@@ -551,6 +573,7 @@ class ECIFramework:
             "compat": _safe(self.compat.health),
             "futarchy": _safe(self.futarchy.health),
             "mcp": _safe(self.mcp.health),
+            "aik": _safe(self.aik_status),
         }
 
     async def workflow_demo(self) -> Dict[str, Any]:
