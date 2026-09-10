@@ -118,6 +118,42 @@ class GenerativeState:
         return torch.linalg.inv(self.cov)
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"dim": self.dim, "mu": self.mu.tolist(),
-                "cov": self.cov.tolist(), "n_qubits": self.n_qubits,
-                "paulis": self.paulis, "meta": self.meta}
+        """Wire format (Phase 5): JSON-safe, round-trippable via from_dict.
+
+        The density matrix serializes as row-major ``rho_real``/``rho_imag``
+        nested float lists (None when Gaussian-only). Cost is O(4^n)
+        floats — exact and fine for the small-n states this interface
+        carries; large registers should travel as Gaussian coords only
+        (pass ``include_rho=False``).
+        """
+        return self.to_dict_with_rho(include_rho=True)
+
+    def to_dict_with_rho(self, include_rho: bool = True) -> Dict[str, Any]:
+        d: Dict[str, Any] = {"dim": self.dim, "mu": self.mu.tolist(),
+                             "cov": self.cov.tolist(), "n_qubits": self.n_qubits,
+                             "paulis": self.paulis, "meta": self.meta,
+                             "rho_real": None, "rho_imag": None}
+        if include_rho and self.rho is not None:
+            d["rho_real"] = self.rho.real.tolist()
+            d["rho_imag"] = self.rho.imag.tolist()
+        return d
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "GenerativeState":
+        """Inverse of to_dict (accepts dicts that predate rho_* keys too)."""
+        mu = torch.as_tensor(d["mu"], dtype=torch.float32)
+        cov = torch.as_tensor(d["cov"], dtype=torch.float32)
+        rho = None
+        n_qubits = int(d.get("n_qubits", 0))
+        if d.get("rho_real") is not None and d.get("rho_imag") is not None:
+            real = torch.as_tensor(d["rho_real"], dtype=torch.float32)
+            imag = torch.as_tensor(d["rho_imag"], dtype=torch.float32)
+            if real.shape != imag.shape:
+                raise ValueError("rho_real/rho_imag shape mismatch")
+            rho = torch.complex(real, imag)
+            if rho.dim() != 2 or rho.size(0) != rho.size(1):
+                raise ValueError("rho must be a square matrix")
+            if n_qubits and rho.size(0) != 2 ** n_qubits:
+                raise ValueError("rho dim does not match n_qubits")
+        return cls(mu, cov, rho, n_qubits,
+                   list(d.get("paulis", [])), dict(d.get("meta", {})))

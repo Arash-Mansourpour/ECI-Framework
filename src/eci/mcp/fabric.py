@@ -13,6 +13,8 @@ Namespaces
   supply.*        SBOM
   twin.*          what-if simulation (also powers dry_run)
   chaos.*         fault-plan run
+  aik.*           unification layer: {quantum,phi,agent,noisy}.{posterior,update,
+                  free_energy} on ONE GenerativeState schema + ledger.{shares,total}
 
 Every handler is (args, ctx) -> JSON-safe data and raises on failure so
 the pipeline converts it to structured {ok:false} envelopes.
@@ -412,4 +414,15 @@ def build_default_registry(framework: Any, registry=None):
     T("ever.compat", "Fail-closed interface compat check", {"interface": "str"}, _compat, cost=1.0)
     T("ever.futura", "Futarchy/sortition/emergency ops", {"op": "str"}, _futura, cost=2.0, mutating=True)
     T("ever.redteam", "Falsify/forecast/contradiction probes", {"op": "str"}, _redteam, cost=1.0, mutating=True)
+
+    # -- Unification layer (AIK Phase 5): every StateContributor adapter as
+    #    posterior/update/free_energy tools on ONE shared GenerativeState
+    #    schema, plus ledger shares/total. Guarded: MCP must build even if
+    #    the unification stack is unavailable; instances stored for reuse.
+    try:
+        if F is not None:
+            from eci.aikernel.mcp_bridge import build_unification
+            F._aik = build_unification(reg)
+    except Exception:  # noqa: BLE001
+        pass
     return reg

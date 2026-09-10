@@ -17,10 +17,16 @@ from eci.aikernel.free_energy import free_energy, free_energy_parts, neg_log_evi
 from eci.aikernel.functors import (default_paulis, density_to_cov, fuse_beliefs,
                                    pauli_expectations, pauli_string_matrix, split_belief)
 from eci.aikernel.generative_model import GenerativeState, Likelihood, Prior
+from eci.aikernel.mcp_bridge import (ADAPTER_NAMESPACES, EMPTY_SCHEMA, FREE_ENERGY_SCHEMA,
+                                     STATE_SCHEMA, build_unification, register_contributor,
+                                     register_ledger)
 from eci.aikernel.state_contract import KernelLedger, StateContributor, conforms
 
 __all__ = ["GenerativeState", "Likelihood", "Prior",
            "free_energy", "free_energy_parts", "neg_log_evidence", "quantum_free_energy",
            "density_to_cov", "pauli_expectations", "pauli_string_matrix", "default_paulis",
            "split_belief", "fuse_beliefs",
-           "StateContributor", "KernelLedger", "conforms"]
+           "StateContributor", "KernelLedger", "conforms",
+           "STATE_SCHEMA", "EMPTY_SCHEMA", "FREE_ENERGY_SCHEMA",
+           "ADAPTER_NAMESPACES", "register_contributor", "register_ledger",
+           "build_unification"]
