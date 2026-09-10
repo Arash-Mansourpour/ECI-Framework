@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "6.3.0"
-description = "ECI Framework v6.3 MORPHOGENESIS - living self-evolving graphs (spectral health, self-modifying grammar, Darwin selection, motif genome, self-repair, coevolution) over the AGI cognition stack"
+version = "7.0.0"
+description = "ECI Framework v7.0 EVERLASTING - future-proof continuance (capability tokens, proof receipts, temporal continuum, MAPE-K autonomics, interface compat, futarchy/sortition/sunset, red-team epistemology)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

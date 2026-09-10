@@ -1,19 +1,20 @@
-# ECI Framework v6.3 — Eternal Codex Infinitus (MORPHOGENESIS Living Networks)
+# ECI Framework v7.0 — Eternal Codex Infinitus (EVERLASTING Continuance)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
-**Paper:** `ECI_Framework.md` v∞.18.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `6.3.0-MORPHOGENESIS`
+**Paper:** `ECI_Framework.md` v∞.19.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
+**Code:** `7.0.0-EVERLASTING`
 
-> **v6.3 What is new (living self-evolving graphs):**
-> tissue graph (`morph/graph.py` — exact λ2/radius/resistance/modularity/triads);
-> self-modifying grammar (`grammar.py` — rules learn their own utility + mining);
-> Darwin selection (`selection.py` — λ2 leave-one-out + Shapley-lite + energy pool);
-> motif genome (`motifs.py` — block crossover, bounded mutation, 7 circuits);
-> self-repair (`repair.py` — measurable heal fraction + immortal scars);
-> coevolution (`coevolve.py` — population × curriculum + DAO-gated champion).
-> `eci morph` · `morph.*` MCP tools · 9 new tests (111 total).
-> See `docs/MORPHOGENESIS.md`.
+> **v7.0 What is new (future-proof continuance):**
+> capability tokens (`caps/` — HMAC-chained attenuable macaroons, offline verify);
+> runtime verification (`verify/` — LTL-lite watchtower + offline proof receipts);
+> temporal continuum (`continuum/` — hash-chained snapshots + autobiography + replay check);
+> autonomic control (`mapek/` — SLO/z-anomaly MAPE-K + twin-first + degradation ladder);
+> interface evolution (`compat/` — fail-closed semver + adapters + enforced sunsets);
+> governance futures (`futura/` — LMSR futarchy + verifiable sortition + self-dying emergencies);
+> adversarial epistemology (`redteam/` — falsification challenger + Brier forecasters + dispute scan).
+> `eci ever` · `ever.*` MCP tools · 8 new tests (119 total).
+> See `docs/EVERLASTING.md`.
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →

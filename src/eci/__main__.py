@@ -19,6 +19,7 @@ eval          : golden regression gates
 think         : AGI cognitive beat (charter+imagine+plan)
 dream         : sleep consolidation cycle
 morph         : living-graph evolve steps (self-evolving networks)
+ever          : everlasting continuance report (caps/proofs/continuum/mapek/compat)
 """
 
 from __future__ import annotations
@@ -204,6 +205,24 @@ def cmd_morph(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_ever(args: argparse.Namespace) -> int:
+    import asyncio as _aio
+    fw = ECIFramework()
+    tok, ser = fw.caps.mint("eci", "ns:default", "act:system.*")
+    snap = fw.continuum.snapshot({"health": fw.system_status()}, note="ever-report")
+    cycle = _aio.run(fw.mapek.cycle({"errors": 0.0, "dlq": 0.0}))
+    _print_json({
+        "caps": fw.caps.verify(ser, action="system.status", namespace="default"),
+        "watchtower": fw.watchtower.health(),
+        "continuum": fw.continuum.verify_chain(),
+        "autobiography": fw.continuum.autobiography(limit=3),
+        "mapek": {"rung": cycle["rung"], "breaches": cycle["breaches"]},
+        "compat": fw.compat.check("eci.mcp", "1.0.0"),
+        "emergency": fw.emergency.sweep(),
+    })
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="eci",
@@ -268,6 +287,8 @@ def build_parser() -> argparse.ArgumentParser:
     mo = sub.add_parser("morph", help="living-graph evolve steps")
     mo.add_argument("--steps", type=int, default=3)
 
+    sub.add_parser("ever", help="everlasting continuance report")
+
     return parser
 
 
@@ -295,6 +316,7 @@ def main(argv: List[str] | None = None) -> int:
         "think": cmd_think,
         "dream": cmd_dream,
         "morph": cmd_morph,
+        "ever": cmd_ever,
     }
     handler = handlers.get(args.command)
     if handler is None:

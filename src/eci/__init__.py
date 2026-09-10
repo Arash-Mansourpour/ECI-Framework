@@ -146,6 +146,15 @@ from eci import mcp as mcp
 from eci.mcp import McpFabric, McpServer, McpRegistry
 from eci.cognition import Cognition, CognitionConfig
 from eci.morph import Morphogenesis
+from eci import aikernel as aikernel
+from eci.aikernel import GenerativeState, Likelihood, Prior, StateContributor, KernelLedger
+from eci.caps import CapToken, Issuer as CapIssuer
+from eci.verify import Watchtower, Monitor, seal_proof, verify_proof
+from eci.continuum import Continuum
+from eci.mapek import MAPEK, SLO, Strategy
+from eci.compat import CompatRegistry, Interface
+from eci.futura import Futarchy, Sortition, EmergencyPowers
+from eci.redteam import Challenger, ForecasterRegistry, contradiction_scan
 
 # Security & benchmarking
 from eci.security.pqc import PQCSuite, HashBasedSigner, derive_key
@@ -298,6 +307,13 @@ __all__ = [
     "FramedTcpTransport", "SimBackend", "transpile", "zne_extrapolate",
     "mcp", "McpFabric", "McpServer", "McpRegistry",
     "Cognition", "CognitionConfig", "Morphogenesis",
+    "aikernel", "GenerativeState", "Likelihood", "Prior",
+    "StateContributor", "KernelLedger",
+    "CapToken", "CapIssuer", "Watchtower", "Monitor", "seal_proof", "verify_proof",
+    "Continuum", "MAPEK", "SLO", "Strategy",
+    "CompatRegistry", "Interface",
+    "Futarchy", "Sortition", "EmergencyPowers",
+    "Challenger", "ForecasterRegistry", "contradiction_scan",
     "PQCSuite",
     "HashBasedSigner",
     "derive_key",

@@ -341,4 +341,75 @@ def build_default_registry(framework: Any, registry=None):
     T("morph.motifs", "Motif genome histogram/mutate/export", {"op": "str"}, _morph_motifs, cost=1.0, mutating=True)
     T("morph.repair", "Diagnose + heal the living graph", {}, _morph_repair, cost=2.0, mutating=True)
     T("morph.coevolve", "Population coevolution generation", {}, _morph_coevolve, cost=3.0, mutating=True)
+
+    # -- everlasting (v7 future-proofing) ---------------------------------------
+    def _caps(args, ctx):
+        op = str(args.get("op", "mint"))
+        if op == "verify":
+            return F.caps.verify(str(args.get("token", "")),
+                                 action=str(args.get("action", "")),
+                                 namespace=str(args.get("namespace", "")),
+                                 spend=float(args.get("spend", 0.0)))
+        tok, ser = F.caps.mint(str(args.get("issuer", "eci")),
+                               *[str(c) for c in args.get("caveats", [])])
+        return {"token": ser, "caveats": tok.caveats}
+
+    def _proof(args, ctx):
+        from eci.verify import seal_proof, verify_proof
+        if str(args.get("op", "seal")) == "verify":
+            return verify_proof(args.get("proof", {}), str(args.get("policy", "")))
+        return seal_proof(str(args.get("action", "act")), str(args.get("policy", "p0/0.1.0")),
+                          list(args.get("checks", [])), args.get("measurements", {}))
+
+    async def _mapek(args, ctx):
+        return await F.mapek.cycle({k: float(v) for k, v in args.get("metrics", {}).items()})
+
+    def _continuum(args, ctx):
+        op = str(args.get("op", "snapshot"))
+        if op == "verify":
+            return F.continuum.verify_chain()
+        if op == "story":
+            return {"story": F.continuum.autobiography()}
+        snap = F.continuum.snapshot(args.get("states", {"note": "mcp"}), note=str(args.get("note", "")))
+        return snap.to_dict()
+
+    def _compat(args, ctx):
+        return F.compat.check(str(args.get("interface", "")), str(args.get("required", "1.0.0")))
+
+    def _futura(args, ctx):
+        op = str(args.get("op", "sortition"))
+        if op == "propose":
+            return F.futarchy.propose(str(args.get("pid", "p1")), str(args.get("claim", "it works")))
+        if op == "close":
+            return F.futarchy.close(str(args.get("pid", "p1")))
+        if op == "emergency":
+            g = F.emergency.grant(str(args.get("scope", "ops")), str(args.get("holder", "ops")),
+                                  int(args.get("ttl", 2)), str(args.get("reason", "drill")))
+            return {"scope": g.scope, "expiry": g.expiry_epoch}
+        draw = F.sortition.draw(list(args.get("candidates", ["a", "b", "c", "d"])),
+                                int(args.get("size", 2)), str(args.get("seed", "s")))
+        return draw
+
+    def _redteam(args, ctx):
+        op = str(args.get("op", "falsify"))
+        if op == "contradict":
+            from eci.redteam import contradiction_scan
+            return {"disputes": contradiction_scan(list(args.get("facts", [])))}
+        if op == "forecast":
+            fid = F.forecasters.predict(str(args.get("who", "anon")), str(args.get("claim", "x")),
+                                        float(args.get("p", 0.5)))
+            return {"fid": fid}
+        return {"probes": [p.to_dict() for p in
+                           F.challenger.falsify(str(args.get("hypothesis", "H")),
+                                                str(args.get("context", "")))]}
+
+    T("ever.caps", "Mint/verify attenuable capability tokens", {"op": "str"}, _caps, cost=1.0, mutating=True)
+    T("ever.proof", "Seal/verify proof-carrying receipts", {"op": "str"}, _proof, cost=1.0, mutating=True)
+    reg.register(_MT(name="ever.mapek", description="Autonomic MAPE-K cycle",
+                     handler=_mapek, inputSchema=_B({"metrics": "dict"}),
+                     version="7.0.0", cost=2.0, mutating=True), overwrite=True)
+    T("ever.continuum", "Snapshot/verify/story of temporal continuity", {"op": "str"}, _continuum, cost=1.0, mutating=True)
+    T("ever.compat", "Fail-closed interface compat check", {"interface": "str"}, _compat, cost=1.0)
+    T("ever.futura", "Futarchy/sortition/emergency ops", {"op": "str"}, _futura, cost=2.0, mutating=True)
+    T("ever.redteam", "Falsify/forecast/contradiction probes", {"op": "str"}, _redteam, cost=1.0, mutating=True)
     return reg

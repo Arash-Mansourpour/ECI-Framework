@@ -44,8 +44,15 @@ from eci.core.registry import GLOBAL_REGISTRY, register_component
 from eci.core.types import ConsciousnessLevel, ConsciousnessProfile
 from eci.cybernetics.autopoiesis import AutopoieticNetwork
 from eci.cognition import Cognition
+from eci.caps import Issuer as CapIssuer
+from eci.compat import CompatRegistry
+from eci.continuum import Continuum
 from eci.data import DataPlane
+from eci.futura import EmergencyPowers, Futarchy, Sortition
+from eci.mapek import MAPEK
 from eci.morph import Morphogenesis
+from eci.redteam import Challenger, ForecasterRegistry
+from eci.verify import Watchtower
 from eci.economy import Economy
 from eci.governance.dao import ECIDataDAO
 from eci.governance.treasury import Treasury
@@ -162,6 +169,22 @@ class ECIFramework:
         self.morph = Morphogenesis(seed=self.config.experiment.random_seed, bus=self.bus,
                                    provenance=self.provenance,
                                    audit=self.observability.audit)
+        # v7 everlasting: capability security, proofs, continuity, autonomics,
+        # interface evolution, governance futures, adversarial epistemology
+        self.caps = CapIssuer()
+        self.watchtower = Watchtower()
+        self.watchtower.bind_bus(self.bus)
+        self.continuum = Continuum()
+        self.mapek = MAPEK(bus=self.bus, provenance=self.provenance,
+                           audit=self.observability.audit)
+        self.mapek.defaults()
+        self.compat = CompatRegistry()
+        self._publish_baseline_interfaces()
+        self.futarchy = Futarchy()
+        self.sortition = Sortition()
+        self.emergency = EmergencyPowers(epoch_fn=lambda: self.continuum.epoch)
+        self.challenger = Challenger(seed=self.config.experiment.random_seed)
+        self.forecasters = ForecasterRegistry()
         # agent role needs mcp-relevant grants for pipeline auth
         try:
             from eci.authz import Permission as _Perm
@@ -179,7 +202,7 @@ class ECIFramework:
                     self.plugins, self.authz, self.streaming, self.mlops,
                     self.provenance, self.secrets, self.tenancy, self.gateway,
                     self.economy, self.treasury, self.data, self.agents, self.cognition,
-                    self.morph, self.mcp):
+                    self.morph, self.mcp, self.continuum, self.mapek, self.compat):
             try:
                 self.kernel.lifecycle.register(svc)
             except Exception:  # noqa: BLE001
@@ -193,7 +216,8 @@ class ECIFramework:
                           ("economy", self.economy), ("treasury", self.treasury),
                           ("data", self.data), ("agents", self.agents),
                           ("cognition", self.cognition), ("mcp", self.mcp),
-                          ("morph", self.morph)):
+                          ("morph", self.morph), ("continuum", self.continuum),
+                          ("mapek", self.mapek), ("compat", self.compat)):
             try:
                 self.kernel.container.register(name, instance=obj)
             except Exception:  # noqa: BLE001
@@ -209,6 +233,19 @@ class ECIFramework:
         self.logger.info("Wallet: %s", ARCHITECT.wallet)
         self.logger.info("Paper: %s | Device: %s", self.paper_version, self.device)
         self.logger.info("=" * 72)
+
+    # ------------------------------------------------------------------
+    # v7 everlasting: baseline interface contracts (fail-closed evolution)
+    # ------------------------------------------------------------------
+    def _publish_baseline_interfaces(self) -> None:
+        from eci.compat import Interface
+        for name, ver in (("eci.bus", "1.0.0"), ("eci.gateway", "1.0.0"),
+                          ("eci.mcp", "1.0.0"), ("eci.ledger", "1.0.0"),
+                          ("eci.policy", "1.0.0"), ("eci.treasury", "1.0.0")):
+            try:
+                self.compat.publish(Interface(name, ver, {"framework": self.version}))
+            except Exception:  # noqa: BLE001
+                pass
 
     # ------------------------------------------------------------------
     # v6 defaults: policies + routes
@@ -507,6 +544,12 @@ class ECIFramework:
             "agents": _safe(self.agents.health),
             "cognition": _safe(self.cognition.health),
             "morph": _safe(self.morph.health),
+            "caps": lambda: {"ok": True, "minted": self.caps.minted},
+            "watchtower": _safe(self.watchtower.health),
+            "continuum": _safe(self.continuum.health),
+            "mapek": _safe(self.mapek.health),
+            "compat": _safe(self.compat.health),
+            "futarchy": _safe(self.futarchy.health),
             "mcp": _safe(self.mcp.health),
         }
 
