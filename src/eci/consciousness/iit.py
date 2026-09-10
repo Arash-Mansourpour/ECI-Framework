@@ -8,11 +8,17 @@ References
 * The ``quantum`` method links to the quantum core: the normalized
   covariance matrix is treated as a density matrix and Phi is computed
   from von Neumann entropies of the whole system vs. bipartitions.
+
+Unification note (AIK Phase 2b): ``calculate_phi`` accepts an opt-in
+``state: GenerativeState``. Both the raw-tensor path and the state path
+funnel into the same covariance-core helpers, so the state path is a
+*thin, exact* wrapper (no resampling noise in the Phi value itself).
+See ``consciousness/LIMITATIONS.md`` for what Phi is and is not.
 """
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TYPE_CHECKING
 
 import torch
 
@@ -21,7 +27,10 @@ from eci.core.device import get_device
 from eci.logging import get_logger
 from eci.quantum import density as qd
 
-__all__ = ["IntegratedInformationTheory"]
+if TYPE_CHECKING:
+    from eci.aikernel.generative_model import GenerativeState
+
+__all__ = ["IntegratedInformationTheory", "sample_neural_state"]
 
 
 class IntegratedInformationTheory:
@@ -34,10 +43,11 @@ class IntegratedInformationTheory:
     # ------------------------------------------------------------------
     def calculate_phi(
         self,
-        neural_state: torch.Tensor,
+        neural_state: Optional[torch.Tensor] = None,
         connectivity: Optional[torch.Tensor] = None,
         method: str = "gaussian",
         exhaustive: bool = False,
+        state: Optional["GenerativeState"] = None,
     ) -> Dict[str, float]:
         """Compute Phi and its causal decomposition.
 
@@ -48,7 +58,18 @@ class IntegratedInformationTheory:
             method: ``"gaussian"``, ``"quantum"`` or ``"discrete"``.
             exhaustive: if True and neurons <= 8, search all 2^n
                 bipartitions for the true MIP instead of contiguous cuts.
+            state: opt-in ``GenerativeState`` (AIK unification). When given
+                (and ``neural_state`` is None), the working covariance is
+                ``state.cov`` directly — the SAME covariance-core helpers
+                run, so this path agrees with the raw-tensor path exactly
+                (see ``sample_neural_state`` for time-series needs).
         """
+        if state is not None:
+            if neural_state is not None:
+                raise ValueError("pass either neural_state or state, not both")
+            return self._phi_from_state(state, connectivity, method, exhaustive)
+        if neural_state is None:
+            raise ValueError("neural_state or state is required")
         neural_state = neural_state.to(self.device).double()
         neural_state = torch.nan_to_num(neural_state, nan=0.0, posinf=1.0, neginf=-1.0)
         if connectivity is None:
@@ -78,6 +99,44 @@ class IntegratedInformationTheory:
         }
 
     # ------------------------------------------------------------------
+    # GenerativeState path (AIK Phase 2b): exact thin wrapper, no resampling.
+    # ------------------------------------------------------------------
+    def _phi_from_state(
+        self,
+        state: "GenerativeState",
+        connectivity: Optional[torch.Tensor],
+        method: str,
+        exhaustive: bool,
+    ) -> Dict[str, float]:
+        cov = state.cov.to(self.device).double()
+        cov = 0.5 * (cov + cov.T)
+        n = cov.shape[0]
+        cov = cov + torch.eye(n, device=cov.device, dtype=cov.dtype) * COVARIANCE_REGULARIZER
+        if method == "gaussian":
+            phi = self._phi_gaussian_from_cov(cov, exhaustive=exhaustive)
+        elif method == "quantum":
+            phi = self._phi_quantum_from_cov(cov)
+        elif method == "discrete":
+            # Discrete needs a time series: seeded reconstruction whose only
+            # role is feeding the binary predictive-information proxy.
+            phi = self._phi_discrete(sample_neural_state(state, seed=0).to(self.device))
+        else:
+            raise ValueError(f"unknown phi method: {method}")
+        if connectivity is None:
+            connectivity = _cov_to_corr(cov)
+        else:
+            connectivity = connectivity.to(self.device).double()
+            connectivity = torch.nan_to_num(connectivity, nan=0.0, posinf=1.0, neginf=-1.0)
+        components = self._decompose_phi(
+            sample_neural_state(state, seed=1).to(self.device).double(), connectivity
+        )
+        return {
+            "phi_total": float(max(0.0, phi)),
+            "phi_cause": components["cause"],
+            "phi_effect": components["effect"],
+            "phi_intrinsic": components["intrinsic"],
+        }
+
     def _covariance(self, neural_state: torch.Tensor) -> torch.Tensor:
         n_time = neural_state.shape[0]
         centered = neural_state - neural_state.mean(dim=0, keepdim=True)
@@ -101,7 +160,10 @@ class IntegratedInformationTheory:
         that upper-bounds the true MIP cost). With exhaustive=True and
         n <= 8 all bipartitions are searched for the exact minimum.
         """
-        cov = self._covariance(neural_state)
+        return self._phi_gaussian_from_cov(self._covariance(neural_state), exhaustive=exhaustive)
+
+    def _phi_gaussian_from_cov(self, cov: torch.Tensor, exhaustive: bool = False) -> float:
+        """Covariance-core of gaussian Phi (shared by both input paths)."""
         n = cov.shape[0]
         if n < 2:
             return 0.0
@@ -153,7 +215,10 @@ class IntegratedInformationTheory:
         mutual-information gap; the covariance matrix (normalized) plays
         the role of a density matrix.
         """
-        cov = self._covariance(neural_state)
+        return self._phi_quantum_from_cov(self._covariance(neural_state))
+
+    def _phi_quantum_from_cov(self, cov: torch.Tensor) -> float:
+        """Covariance-core of quantum Phi (shared by both input paths)."""
         rho = cov / torch.trace(cov).real.clamp_min(EPS)
         entropy = qd.von_neumann_entropy(rho.unsqueeze(0))[0].item()
         n = rho.shape[0]
@@ -210,3 +275,23 @@ class IntegratedInformationTheory:
             (connectivity.abs().sum() / max(1, connectivity.numel())).item()
         )
         return {"cause": cause, "effect": effect, "intrinsic": intrinsic}
+
+
+def sample_neural_state(state: "GenerativeState", n_time: int = 256, seed: int = 0) -> torch.Tensor:
+    """Draw a [time, neurons] series from Q(s) = N(mu, cov) (seeded).
+
+    Used ONLY where a time series is structurally required (discrete Phi
+    proxy, cause/effect decomposition) — never for the gaussian/quantum
+    Phi values themselves, which run on the covariance directly.
+    """
+    g = torch.Generator().manual_seed(seed)
+    L = torch.linalg.cholesky(state.cov.double().to("cpu") + 1e-9 * torch.eye(state.dim, dtype=torch.float64))
+    z = torch.randn(n_time, state.dim, dtype=torch.float64, generator=g)
+    return (state.mu.double().to("cpu") + z @ L.T).float()
+
+
+def _cov_to_corr(cov: torch.Tensor) -> torch.Tensor:
+    """Exact correlation matrix of a covariance (for connectivity)."""
+    v = torch.diag(cov).clamp_min(EPS)
+    s = v.sqrt().outer(v.sqrt())
+    return (cov / s).clamp(-1.0, 1.0)

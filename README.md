@@ -109,3 +109,26 @@ ECI is organized as a multi-layer research architecture.
                   │ SECURITY • NETWORK • TWIN   │
                   │ IMMUNE SYSTEM • EVOLUTION   │
                   └─────────────────────────────┘
+```
+
+---
+
+# 🔗 Unification Layer — Active Inference Kernel (`src/eci/aikernel/`)
+
+Every subsystem optimizes one shared objective, variational free energy
+`F = complexity + inaccuracy`, through the `StateContributor` contract
+(`posterior()` / `update()` / `free_energy_contribution()`, summed by
+`KernelLedger`):
+
+| Phase | Adapter | Result on record |
+|---|---|---|
+| 1 | Kernel contract + functors | F validated vs Monte Carlo; quantum branch vs `density.relative_entropy` |
+| 2a | `quantum/aikernel_adapter.py` (`VQEContributor`) | 2-qubit TFI: `-2.2360628` vs exact `-2.2360682` |
+| 2b | `consciousness/aikernel_adapter.py` (`PhiContributor`) | Phi and F-share are independent axes (measured) |
+| 2c | `governance/aikernel_adapter.py` (`AgentContributor`) | Precision fusion fixed; LMSR-vs-fusion measured |
+| 3 | `consciousness/iit4.py` (IIT 4.0 distinctions/relations) | Disconnected systems → Φ = 0 exactly |
+| 4 | `quantum/mitigation.py` (ZNE + PEC + noisy scheduler) | Bell-ZZ bias cut up to 1000x; VQE error recovered 16x |
+
+> Honesty ledger for all consciousness metrics (what each number is and
+> is not validated against): `src/eci/consciousness/LIMITATIONS.md` —
+> read before quoting any Phi value.

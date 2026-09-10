@@ -3,7 +3,17 @@
 from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
 from eci.consciousness.free_energy import FreeEnergyAgent, expected_free_energy
 from eci.consciousness.gnwt import GNWTWorkspace, gnwt_ignition_curve
-from eci.consciousness.iit import IntegratedInformationTheory
+from eci.consciousness.iit import IntegratedInformationTheory, sample_neural_state
+from eci.consciousness.iit4 import (
+    DiscreteSubstrate,
+    cause_repertoire,
+    crosscheck_pyphi,
+    distinction,
+    effect_repertoire,
+    intrinsic_information,
+    phi_structure,
+    relation_phi,
+)
 from eci.consciousness.metrics import (
     autocorrelation,
     lempel_ziv_complexity,
@@ -24,6 +34,15 @@ from eci.consciousness.challenge import Transcript, grade, issue as issue_challe
 
 __all__ = [
     "IntegratedInformationTheory",
+    "sample_neural_state",
+    "DiscreteSubstrate",
+    "cause_repertoire",
+    "effect_repertoire",
+    "intrinsic_information",
+    "distinction",
+    "relation_phi",
+    "phi_structure",
+    "crosscheck_pyphi",
     "AdvancedConsciousnessAnalyzer",
     "ConsciousnessProtocol",
     "ConsciousnessMeasurement",

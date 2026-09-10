@@ -118,6 +118,20 @@ def _embed_single_qubit(
     return embedded
 
 
+def _as_density(rho: torch.Tensor, n_qubits: int) -> torch.Tensor:
+    """Statevector (D,)/(1,D) -> density; (D,D)/(B,D,D) passes through.
+
+    The old ``rho.dim() == 2`` check misclassified unbatched (D,D) density
+    matrices as statevectors (both are dim-2) and corrupted them. Shape-
+    based dispatch fixes that; a batch of exactly D statevectors remains
+    ambiguous by construction and is documented as unsupported input.
+    """
+    D = 2 ** n_qubits
+    if rho.shape == (D,) or rho.shape == (1, D):
+        return qd.from_statevector(rho)
+    return rho
+
+
 def apply_channel_on_qubit(
     rho: torch.Tensor,
     n_qubits: int,
@@ -129,8 +143,7 @@ def apply_channel_on_qubit(
     ``rho`` may be a statevector (converted to density matrix) or a density
     matrix. Returns a density matrix.
     """
-    if rho.dim() == 2:  # statevector
-        rho = qd.from_statevector(rho)
+    rho = _as_density(rho, n_qubits)
     dtype = rho.dtype
     embedded = _embed_single_qubit(kraus_ops, n_qubits, qubit, dtype)
     return qd.apply_kraus(rho, embedded)
@@ -153,8 +166,7 @@ class NoiseModel:
 
     def apply(self, rho: torch.Tensor, n_qubits: int) -> torch.Tensor:
         """Apply the configured noise to every qubit of ``rho``."""
-        if rho.dim() == 2:
-            rho = qd.from_statevector(rho)
+        rho = _as_density(rho, n_qubits)
         for q in range(n_qubits):
             channel, param = self._per_qubit.get(q, [self.default_channel, str(self.default_param)])
             kraus = CHANNEL_FACTORIES[channel](float(param), rho.dtype)
