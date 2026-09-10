@@ -1,12 +1,20 @@
-"""ECIFramework v5 — Quantum-Supremacy orchestrating facade.
+"""ECIFramework v6 — OMNIVERSE orchestrating facade.
 
-Wires the full v5 stack into one architect-stamped system:
+Wires the full v5 stack plus the v6 hyper-architecture into one
+architect-stamped system:
 
 * Infrastructure: Dirac operator algebra → statevector/density → channels/
   Lindblad → VQE/QAOA/QFT/Grover/QPE → surface/BB topological QEC →
   tensor-networks / metrology / quantum information → unified H_ECI field
 * Coordination: PBFT/WBFT + aggregation + Data-DAO governance + autopoiesis
 * Consciousness: IIT Φ + iPDF + GNWT ignition + Friston FEP + Orch-OR audit
+* v6 Kernel: event bus + DI container + lifecycle manager (ordered start/stop)
+* v6 Ops: observability (tracing/metrics/audit) + persistence (event-store +
+  repository/UoW) + resilience (breaker/retry/limiter/saga) + streaming
+* v6 Control: orchestration (DAG/scheduler) + plugins (capability-gated) +
+  authz (RBAC/ABAC over Protocol-0) + tenancy (namespaces/quotas)
+* v6 Intelligence: mlops (registry/drift) + provenance (decision traces) +
+  api gateway + secrets + hybrid TLS/ML-KEM channel + chaos plans
 
 Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour
 Wallet: GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW
@@ -19,6 +27,8 @@ from typing import Any, Dict, Optional
 
 import torch
 
+from eci.api import Gateway
+from eci.authz import PolicyEngine
 from eci.benchmarking.benchmark import ResearchBenchmark
 from eci.config import ECIConfig
 from eci.constants import ARCHITECT_NAME, CREATOR_WALLET
@@ -33,9 +43,21 @@ from eci.core.identity import ARCHITECT
 from eci.core.registry import GLOBAL_REGISTRY, register_component
 from eci.core.types import ConsciousnessLevel, ConsciousnessProfile
 from eci.cybernetics.autopoiesis import AutopoieticNetwork
+from eci.cognition import Cognition
+from eci.data import DataPlane
+from eci.morph import Morphogenesis
+from eci.economy import Economy
 from eci.governance.dao import ECIDataDAO
+from eci.governance.treasury import Treasury
+from eci.kernel import Kernel
 from eci.logging import get_logger
+from eci.mlops import MLOps
 from eci.network.manager import AutonomousNetworkManager
+from eci.observability import Observability
+from eci.orchestration import Orchestration
+from eci.persistence import Persistence
+from eci.plugins import PluginManager
+from eci.provenance import ProvenanceGraph
 from eci.quantum import algorithms as qalg
 from eci.quantum import density as qdensity
 from eci.quantum import entanglement as qent
@@ -50,7 +72,12 @@ from eci.quantum.gates import CNOT, H
 from eci.quantum.hamiltonian import PauliSum, PauliTerm
 from eci.quantum.statevector import StatevectorSimulator
 from eci.quantum.unified_field import ECIFieldConfig, eci_hamiltonian_expectation, eci_unified_hamiltonian
+from eci.resilience import Resilience
 from eci.security.pqc import PQCSuite
+from eci.security.secrets import SecretManager
+from eci.security.secure_channel import HybridSecureChannel, SecureChannelConfig
+from eci.streaming import StreamBus
+from eci.tenancy import TenancyManager
 from eci.version import FRAMEWORK_VERSION, PAPER_VERSION
 
 __all__ = ["ECIFramework", "ECIFrameworkResearch"]
@@ -58,7 +85,7 @@ __all__ = ["ECIFramework", "ECIFrameworkResearch"]
 
 @register_component("eci-framework", protocol="facade")
 class ECIFramework:
-    """Main ECI Framework — Quantum-Supremacy Edition (v5)."""
+    """Main ECI Framework — OMNIVERSE Edition (v6)."""
 
     def __init__(self, config: Optional[ECIConfig] = None) -> None:
         self.config = config or ECIConfig()
@@ -71,7 +98,7 @@ class ECIFramework:
         self.architect_name = ARCHITECT_NAME
         self.creator_wallet = CREATOR_WALLET
 
-        # Core subsystems
+        # Core subsystems (v5 lineage)
         self.iit = IntegratedInformationTheory(self.device)
         self.consciousness_analyzer = AdvancedConsciousnessAnalyzer(
             self.device, phi_method=self.config.consciousness.phi_method
@@ -99,16 +126,118 @@ class ECIFramework:
         self.benchmark = ResearchBenchmark(self.config.experiment.experiment_name)
         self.pqc = PQCSuite()
 
+        # v6 hyper-architecture
+        self.kernel = Kernel(replay_capacity=self.config.kernel.replay_capacity)
+        self.bus = self.kernel.bus
+        self.observability = Observability(
+            service=self.config.observability.service_name,
+            audit_path=self.config.observability.audit_path,
+        )
+        self.observability.bind_bus(self.bus)
+        sqlite_path = self.config.persistence.sqlite_path if self.config.persistence.backend == "sqlite" else None
+        self.persistence = Persistence(sqlite_path=sqlite_path)
+        self.resilience = Resilience()
+        self.resilience.retry.attempts = self.config.resilience.retry_attempts
+        self.orchestration = Orchestration(bus=self.bus)
+        self.plugins = PluginManager(bus=self.bus)
+        self.authz = PolicyEngine()
+        self._install_default_policies()
+        self.streaming = StreamBus()
+        self.mlops = MLOps()
+        self.provenance = ProvenanceGraph()
+        self.secrets = SecretManager()
+        self.secure_channel = HybridSecureChannel(SecureChannelConfig(psk=b"eci-v6-hybrid"))
+        self.tenancy = TenancyManager()
+        # v6.1 deep systems: economy + treasury + data-plane + agents + MCP fabric
+        self.economy = Economy()
+        self.economy.fund("agent-0", 100.0, stake=10.0)
+        self.treasury = Treasury()
+        self.treasury.fund(10000.0)
+        self.data = DataPlane()
+        from eci.agents import Agents
+        self.agents = Agents(authz=self.authz, economy=self.economy, tenancy=self.tenancy,
+                             provenance=self.provenance, audit=self.observability.audit, bus=self.bus)
+        self.cognition = Cognition(bus=self.bus, provenance=self.provenance,
+                                   vectors=self.agents.vectors)
+        self.morph = Morphogenesis(seed=self.config.experiment.random_seed, bus=self.bus,
+                                   provenance=self.provenance,
+                                   audit=self.observability.audit)
+        # agent role needs mcp-relevant grants for pipeline auth
+        try:
+            from eci.authz import Permission as _Perm
+            self.authz.rbac.grant("agent-0", "agent")
+        except Exception:  # noqa: BLE001
+            pass
+        self.gateway = Gateway(authz=self.authz,
+                               limiter=self.resilience.limiter("api", rate_per_s=self.config.api.default_rate_per_s,
+                                                               capacity=self.config.api.default_rate_per_s * 2),
+                               tracer=self.observability.tracer, audit=self.observability.audit)
+        self._install_default_routes()
+        from eci.mcp import McpFabric
+        self.mcp = McpFabric(self)
+        for svc in (self.observability, self.persistence, self.resilience, self.orchestration,
+                    self.plugins, self.authz, self.streaming, self.mlops,
+                    self.provenance, self.secrets, self.tenancy, self.gateway,
+                    self.economy, self.treasury, self.data, self.agents, self.cognition,
+                    self.morph, self.mcp):
+            try:
+                self.kernel.lifecycle.register(svc)
+            except Exception:  # noqa: BLE001
+                pass
+        # container bindings for plugins / extensions
+        for name, obj in (("config", self.config), ("observability", self.observability),
+                          ("persistence", self.persistence), ("resilience", self.resilience),
+                          ("authz", self.authz), ("provenance", self.provenance),
+                          ("mlops", self.mlops), ("gateway", self.gateway),
+                          ("tenancy", self.tenancy), ("streaming", self.streaming),
+                          ("economy", self.economy), ("treasury", self.treasury),
+                          ("data", self.data), ("agents", self.agents),
+                          ("cognition", self.cognition), ("mcp", self.mcp),
+                          ("morph", self.morph)):
+            try:
+                self.kernel.container.register(name, instance=obj)
+            except Exception:  # noqa: BLE001
+                pass
+
         self.system_state = "initialized"
         self.integration_score = 0.0
         self.consciousness_level = ConsciousnessLevel.NONE
 
         self.logger.info("=" * 72)
-        self.logger.info("ECI FRAMEWORK %s - QUANTUM-SUPREMACY EDITION", self.version)
+        self.logger.info("ECI FRAMEWORK %s - OMNIVERSE EDITION", self.version)
         self.logger.info("Sovereign Architect (Ma'mar-e A'zam): %s", ARCHITECT.name)
         self.logger.info("Wallet: %s", ARCHITECT.wallet)
         self.logger.info("Paper: %s | Device: %s", self.paper_version, self.device)
         self.logger.info("=" * 72)
+
+    # ------------------------------------------------------------------
+    # v6 defaults: policies + routes
+    # ------------------------------------------------------------------
+    def _install_default_policies(self) -> None:
+        from eci.authz import Permission, PolicyRule, Role
+        try:
+            self.authz.rbac.add_role(Role("operator", [Permission("*", "*")]))
+            self.authz.rbac.add_role(Role("agent", [Permission("tool.*", "*"), Permission("ledger.append", "*"),
+                                                   Permission("workflow.run", "*"), Permission("model.read", "*")]))
+            self.authz.rbac.add_role(Role("observer", [Permission("*.read", "*"), Permission("metrics.read", "*")]))
+            self.authz.add_rule(PolicyRule("ops-allow", "*", "*", {}, 0.0, 0.0, 0.0))
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _install_default_routes(self) -> None:
+        gw = self.gateway
+
+        def _ping(params: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+            return {"pong": True, "version": self.version}
+
+        def _system_status(params: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+            return self.system_status()
+
+        def _workflow_run(params: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+            return asyncio.run(self.workflow_demo()) if not asyncio.iscoroutinefunction(self.workflow_demo) else {}
+
+        gw.add("v1/ping", _ping, summary="liveness probe")
+        gw.add("v1/system.status", _system_status, summary="full hyper-architecture status")
 
     # ------------------------------------------------------------------
     # Consciousness (multi-theory)
@@ -337,10 +466,67 @@ class ECIFramework:
                                  "Data-DAO governance", "autopoietic cybernetics"],
                 "consciousness": ["IIT Phi", "iPDF protocol", "GNWT ignition",
                                   "Friston FEP", "Orch-OR audit", "analyzer"],
+                "kernel": ["event-bus", "di-container", "lifecycle-manager"],
+                "ops": ["tracing", "metrics", "audit", "event-store", "repository/uow",
+                        "breaker/retry/limiter/saga", "streaming"],
+                "control": ["dag-workflows", "scheduler", "plugins", "rbac/abac", "tenancy"],
+                "intelligence": ["model-registry", "drift", "provenance", "api-gateway",
+                                 "secrets", "hybrid-tls-channel", "chaos"],
             },
             "registry_components": GLOBAL_REGISTRY.names(),
             "system_state": self.system_state,
         }
+
+    def system_status(self) -> Dict[str, Any]:
+        """Full v6 hyper-architecture health snapshot (for `eci system`)."""
+        def _safe(fn):
+            try:
+                return fn()
+            except Exception as exc:  # noqa: BLE001
+                return {"ok": False, "error": repr(exc)}
+        return {
+            "version": self.version, "system_state": self.system_state,
+            "kernel": _safe(self.kernel.stats),
+            "lifecycle": _safe(self.kernel.lifecycle.health),
+            "observability": _safe(self.observability.health),
+            "persistence": _safe(self.persistence.health),
+            "resilience": _safe(self.resilience.health),
+            "orchestration": _safe(self.orchestration.health),
+            "plugins": _safe(self.plugins.health),
+            "authz": _safe(self.authz.health),
+            "streaming": _safe(self.streaming.health),
+            "mlops": _safe(self.mlops.health),
+            "provenance": _safe(self.provenance.health),
+            "secrets": _safe(self.secrets.health),
+            "secure_channel": _safe(self.secure_channel.health),
+            "tenancy": _safe(self.tenancy.health),
+            "gateway": _safe(self.gateway.health),
+            "economy": lambda: {"ok": True, **self.economy.settlement()},
+            "treasury": _safe(self.treasury.health),
+            "data": _safe(self.data.health),
+            "agents": _safe(self.agents.health),
+            "cognition": _safe(self.cognition.health),
+            "morph": _safe(self.morph.health),
+            "mcp": _safe(self.mcp.health),
+        }
+
+    async def workflow_demo(self) -> Dict[str, Any]:
+        """End-to-end v6 slice: DAG + event-bus + stream + provenance + audit."""
+        from eci.kernel.bus import Event
+        dag = self.orchestration.dag("v6-demo")
+        dag.add("sense", lambda ctx: {"n": ctx.get("n", 4)})
+        dag.add("reason", lambda ctx: {"doubled": ctx["sense"]["n"] * 2}, depends_on=["sense"])
+        dag.add("act", lambda ctx: {"result": ctx["reason"]["doubled"] + 1}, depends_on=["reason"])
+        run = await dag.run({"n": 4})
+        self.bus.publish(Event(type="workflow.demo.done", source="framework",
+                               payload={"ok": run.ok, "outputs": run.outputs}))
+        self.streaming.publish("workflow", {"dag": "v6-demo", "ok": run.ok})
+        node = self.provenance.record("workflow.demo", "framework",
+                                      {"n": 4}, {"ok": run.ok, **run.outputs}, {"dag": "v6-demo"})
+        self.observability.audit.append("framework", "workflow.demo", {"ok": run.ok})
+        self.observability.metrics.counter("eci_workflows_total").inc()
+        return {"ok": run.ok, "outputs": run.outputs, "errors": run.errors,
+                "provenance_id": node.id, "explanation": self.provenance.explain(node.id)}
 
     def run_benchmark(self) -> str:
         self.benchmark.start_experiment()
@@ -350,6 +536,10 @@ class ECIFramework:
             asyncio.run(self.analyze_consciousness())
         with self.benchmark.timer("activation_seconds"):
             self.activation_protocol()
+        with self.benchmark.timer("v6_workflow_seconds"):
+            asyncio.run(self.workflow_demo())
+        with self.benchmark.timer("v6_system_status_seconds"):
+            self.system_status()
         self.benchmark.end_experiment()
         return self.benchmark.generate_report()
 

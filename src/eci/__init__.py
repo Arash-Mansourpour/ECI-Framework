@@ -117,6 +117,36 @@ from eci.genome import Gene, Genome, life_cycle, mutate
 from eci.governance.dao import ECIDataDAO
 from eci.cybernetics.autopoiesis import AutopoieticNetwork
 
+# v6 hyper-architecture (kernel / ops / control / intelligence)
+from eci.kernel import Kernel, EventBus, Event, Container, LifecycleManager
+from eci.observability import Observability, Tracer, MetricsRegistry, AuditLogger
+from eci.persistence import Persistence, EventStore, Repository, UnitOfWork
+from eci.resilience import Resilience, CircuitBreaker, RetryPolicy, TokenBucket, Saga
+from eci.orchestration import Orchestration, DAG, Scheduler
+from eci.plugins import PluginManager, PluginManifest
+from eci.authz import PolicyEngine, PolicyRule, RBAC, Role, Permission
+from eci.streaming import StreamBus
+from eci.mlops import MLOps, ModelRegistry, drift_report
+from eci.provenance import ProvenanceGraph
+from eci.api import Gateway
+from eci.tenancy import TenancyManager
+from eci.chaos import ChaosPlan, Fault, run_plan
+from eci.security.secrets import SecretManager
+from eci.security.secure_channel import HybridSecureChannel, SecureChannelConfig
+
+# v6.1 deep systems (agents / data-plane / treasury / eval / supply / mcp)
+from eci.agents import Agents, AgentLoop, ToolRegistry, EpisodicMemory, VectorMemory
+from eci.data import DataPlane, Cache, BlobStore
+from eci.governance.treasury import Treasury, Envelope
+from eci.eval import run_gates, EvalReport
+from eci.supply import sbom
+from eci.network.tcp import FramedTcpTransport
+from eci.quantum.backend import SimBackend, transpile, zne_extrapolate
+from eci import mcp as mcp
+from eci.mcp import McpFabric, McpServer, McpRegistry
+from eci.cognition import Cognition, CognitionConfig
+from eci.morph import Morphogenesis
+
 # Security & benchmarking
 from eci.security.pqc import PQCSuite, HashBasedSigner, derive_key
 from eci.benchmarking.benchmark import ResearchBenchmark
@@ -250,6 +280,24 @@ __all__ = [
     "AutonomousNetworkManager",
     "ECIDataDAO",
     "AutopoieticNetwork",
+    "Kernel", "EventBus", "Event", "Container", "LifecycleManager",
+    "Observability", "Tracer", "MetricsRegistry", "AuditLogger",
+    "Persistence", "EventStore", "Repository", "UnitOfWork",
+    "Resilience", "CircuitBreaker", "RetryPolicy", "TokenBucket", "Saga",
+    "Orchestration", "DAG", "Scheduler",
+    "PluginManager", "PluginManifest",
+    "PolicyEngine", "PolicyRule", "RBAC", "Role", "Permission",
+    "StreamBus", "MLOps", "ModelRegistry", "drift_report",
+    "ProvenanceGraph", "Gateway", "TenancyManager",
+    "ChaosPlan", "Fault", "run_plan",
+    "SecretManager", "HybridSecureChannel", "SecureChannelConfig",
+    "Agents", "AgentLoop", "ToolRegistry", "EpisodicMemory", "VectorMemory",
+    "DataPlane", "Cache", "BlobStore",
+    "Treasury", "Envelope",
+    "run_gates", "EvalReport", "sbom",
+    "FramedTcpTransport", "SimBackend", "transpile", "zne_extrapolate",
+    "mcp", "McpFabric", "McpServer", "McpRegistry",
+    "Cognition", "CognitionConfig", "Morphogenesis",
     "PQCSuite",
     "HashBasedSigner",
     "derive_key",

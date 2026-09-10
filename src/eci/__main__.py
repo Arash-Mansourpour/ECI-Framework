@@ -1,4 +1,4 @@
-"""ECI Framework v5 command-line interface.
+"""ECI Framework v6 command-line interface.
 
 Subcommands
 -----------
@@ -11,6 +11,14 @@ field         : unified H_ECI field energies
 mind          : Orch-OR decoherence audit
 activate      : Sovereign Architect activation protocol
 benchmark     : timing benchmark report
+system        : v6 hyper-architecture health snapshot
+workflow      : v6 DAG slice (bus + stream + provenance + audit)
+mcp           : Omniverse MCP fabric (stdio | http)
+agent         : ReAct agent run with guardrails
+eval          : golden regression gates
+think         : AGI cognitive beat (charter+imagine+plan)
+dream         : sleep consolidation cycle
+morph         : living-graph evolve steps (self-evolving networks)
 """
 
 from __future__ import annotations
@@ -133,6 +141,69 @@ def cmd_health(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_system(args: argparse.Namespace) -> int:
+    _print_json(ECIFramework().system_status())
+    return 0
+
+
+def cmd_workflow(args: argparse.Namespace) -> int:
+    _print_json(asyncio.run(ECIFramework().workflow_demo()))
+    return 0
+
+
+def cmd_mcp(args: argparse.Namespace) -> int:
+    fw = ECIFramework()
+    if args.list:
+        _print_json({"tools": fw.mcp.server.registry.names()})
+        return 0
+    if args.transport == "http":
+        fw.mcp.serve_http(host=args.host, port=args.port)
+        return 0
+    fw.mcp.serve_stdio()
+    return 0
+
+
+def cmd_agent(args: argparse.Namespace) -> int:
+    fw = ECIFramework()
+    out = asyncio.run(fw.agents.loop.run(args.goal, agent_id="agent-0",
+                                         budget=args.budget, max_steps=args.steps))
+    _print_json(out)
+    return 0
+
+
+def cmd_eval(args: argparse.Namespace) -> int:
+    from eci.eval import run_gates
+    _print_json(run_gates().to_dict())
+    return 0
+
+
+def cmd_think(args: argparse.Namespace) -> int:
+    import torch
+    torch.manual_seed(args.seed)
+    fw = ECIFramework()
+    obs = [float(x) for x in args.obs.split(",")] if args.obs else [0.0] * 16
+    _print_json(fw.cognition.think(obs, goal=args.goal, stakes=args.stakes,
+                                   action_name=args.action, precog_tier=args.precog))
+    return 0
+
+
+def cmd_dream(args: argparse.Namespace) -> int:
+    fw = ECIFramework()
+    for i in range(args.episodes):
+        fw.cognition.dream.wake([float(i)] * 4, [0.1], rew=float(i % 3 - 1), surprise=0.1 * i)
+    _print_json(fw.cognition.dream_cycle(seed=args.seed))
+    return 0
+
+
+def cmd_morph(args: argparse.Namespace) -> int:
+    fw = ECIFramework()
+    probe = lambda g: float(len(g.edges)) / max(1, len(g.nodes))
+    outs = [fw.morph.evolve_step([probe], reward=1.0, surprise=0.6, seed=s)
+            for s in range(args.steps)]
+    _print_json({"steps": outs, "health": fw.morph.health()})
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="eci",
@@ -166,6 +237,37 @@ def build_parser() -> argparse.ArgumentParser:
     hh.add_argument("--once", action="store_true", help="print one JSON status and exit")
     hh.add_argument("--port", type=int, default=8777, help="serve port")
 
+    sub.add_parser("system", help="v6 hyper-architecture health snapshot")
+    sub.add_parser("workflow", help="v6 DAG slice demo")
+
+    m = sub.add_parser("mcp", help="Omniverse MCP fabric server")
+    m.add_argument("--transport", choices=["stdio", "http"], default="stdio")
+    m.add_argument("--host", default="127.0.0.1")
+    m.add_argument("--port", type=int, default=8899)
+    m.add_argument("--list", action="store_true", help="list MCP tools and exit")
+
+    a = sub.add_parser("agent", help="ReAct agent run")
+    a.add_argument("--goal", default="demo goal")
+    a.add_argument("--budget", type=float, default=50.0)
+    a.add_argument("--steps", type=int, default=4)
+
+    sub.add_parser("eval", help="golden regression gates")
+
+    t = sub.add_parser("think", help="AGI cognitive beat")
+    t.add_argument("--goal", default="act")
+    t.add_argument("--stakes", type=float, default=0.5)
+    t.add_argument("--action", default="actuate")
+    t.add_argument("--precog", default="none")
+    t.add_argument("--obs", default="")
+    t.add_argument("--seed", type=int, default=0)
+
+    d = sub.add_parser("dream", help="sleep consolidation cycle")
+    d.add_argument("--episodes", type=int, default=8)
+    d.add_argument("--seed", type=int, default=0)
+
+    mo = sub.add_parser("morph", help="living-graph evolve steps")
+    mo.add_argument("--steps", type=int, default=3)
+
     return parser
 
 
@@ -185,6 +287,14 @@ def main(argv: List[str] | None = None) -> int:
         "activate": cmd_activate,
         "benchmark": cmd_benchmark,
         "health": cmd_health,
+        "system": cmd_system,
+        "workflow": cmd_workflow,
+        "mcp": cmd_mcp,
+        "agent": cmd_agent,
+        "eval": cmd_eval,
+        "think": cmd_think,
+        "dream": cmd_dream,
+        "morph": cmd_morph,
     }
     handler = handlers.get(args.command)
     if handler is None:

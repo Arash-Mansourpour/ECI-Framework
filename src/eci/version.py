@@ -1,9 +1,9 @@
 """Version metadata for the ECI Framework."""
 
-__version__ = "5.9.0"
+__version__ = "6.3.0"
 
 # Code release channel
-FRAMEWORK_VERSION = "5.9.0-ECOSYSTEM"
+FRAMEWORK_VERSION = "6.3.0-MORPHOGENESIS"
 
 # Companion paper revision (ECI_Framework.md / PDF)
-PAPER_VERSION = "infinity.15.0"
+PAPER_VERSION = "infinity.18.0"

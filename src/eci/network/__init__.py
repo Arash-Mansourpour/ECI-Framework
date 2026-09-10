@@ -15,6 +15,7 @@ from eci.network.gossip import GossipNode, anti_entropy, gossip_round
 from eci.network.reputation import Reputation, ReputationBoard
 from eci.network.dht import DHTNode, lookup, xor_distance
 from eci.network.membership import Member, Membership
+from eci.network.tcp import FramedTcpTransport, TcpPeer
 
 __all__ = [
     "PBFTConsensus", "WBFTConsensus", "ConsensusResult",
@@ -25,4 +26,5 @@ __all__ = [
     "Reputation", "ReputationBoard",
     "DHTNode", "lookup", "xor_distance",
     "Member", "Membership",
+    "FramedTcpTransport", "TcpPeer",
 ]

@@ -1,9 +1,19 @@
-# ECI Framework v5.9 — Eternal Codex Infinitus (Ecosystem Justice)
+# ECI Framework v6.3 — Eternal Codex Infinitus (MORPHOGENESIS Living Networks)
 
 **Sovereign Architect (Ma'mar-e A'zam): Arash Mansourpour**
 **Wallet:** `GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW`
-**Paper:** `ECI_Framework.md` v∞.14.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
-**Code:** `5.9.0-ECOSYSTEM`
+**Paper:** `ECI_Framework.md` v∞.18.0 · **PDF:** `ECI_Framework.pdf` (live-validated, complete)
+**Code:** `6.3.0-MORPHOGENESIS`
+
+> **v6.3 What is new (living self-evolving graphs):**
+> tissue graph (`morph/graph.py` — exact λ2/radius/resistance/modularity/triads);
+> self-modifying grammar (`grammar.py` — rules learn their own utility + mining);
+> Darwin selection (`selection.py` — λ2 leave-one-out + Shapley-lite + energy pool);
+> motif genome (`motifs.py` — block crossover, bounded mutation, 7 circuits);
+> self-repair (`repair.py` — measurable heal fraction + immortal scars);
+> coevolution (`coevolve.py` — population × curriculum + DAO-gated champion).
+> `eci morph` · `morph.*` MCP tools · 9 new tests (111 total).
+> See `docs/MORPHOGENESIS.md`.
 
 Quantum-supremacy autonomous AI with a machine-readable obedience layer:
 Dirac operator algebra → statevector/density → channels/Lindblad →

@@ -15,6 +15,11 @@ __all__ = [
     "NetworkConfig",
     "LearningConfig",
     "ExperimentConfig",
+    "KernelConfig",
+    "ObservabilityConfig",
+    "PersistenceConfig",
+    "ResilienceConfig",
+    "ApiConfig",
     "ECIConfig",
 ]
 
@@ -95,6 +100,58 @@ class LearningConfig:
 
 
 @dataclass
+class KernelConfig:
+    """v6 kernel plumbing."""
+
+    replay_capacity: int = 512
+    enable_bus: bool = True
+    enable_lifecycle: bool = True
+
+
+@dataclass
+class ObservabilityConfig:
+    """v6 observability."""
+
+    service_name: str = "eci"
+    trace_capacity: int = 2048
+    audit_path: Optional[str] = None  # JSONL file or None (memory)
+    metrics_prefix: str = "eci_"
+
+
+@dataclass
+class PersistenceConfig:
+    """v6 persistence."""
+
+    backend: str = "memory"  # memory | sqlite
+    sqlite_path: str = ":memory:"
+    docs_kind: str = "docs"
+
+    def __post_init__(self) -> None:
+        if self.backend not in ("memory", "sqlite"):
+            raise ValueError(f"unknown persistence backend: {self.backend}")
+
+
+@dataclass
+class ResilienceConfig:
+    """v6 resilience defaults."""
+
+    failure_threshold: int = 5
+    reset_timeout_s: float = 30.0
+    retry_attempts: int = 3
+    rate_per_s: float = 100.0
+    rate_capacity: float = 200.0
+
+
+@dataclass
+class ApiConfig:
+    """v6 API gateway."""
+
+    version: str = "v1"
+    default_rate_per_s: float = 100.0
+    require_auth_default: bool = False
+
+
+@dataclass
 class ExperimentConfig:
     """Configuration for research experiments."""
 
@@ -126,6 +183,15 @@ class ECIConfig:
     network: NetworkConfig = field(default_factory=NetworkConfig)
     learning: LearningConfig = field(default_factory=LearningConfig)
     experiment: ExperimentConfig = field(default_factory=ExperimentConfig)
+    kernel: KernelConfig = field(default_factory=KernelConfig)
+    observability: ObservabilityConfig = field(default_factory=ObservabilityConfig)
+    persistence: PersistenceConfig = field(default_factory=PersistenceConfig)
+    resilience: ResilienceConfig = field(default_factory=ResilienceConfig)
+    api: ApiConfig = field(default_factory=ApiConfig)
+    feature_flags: Dict[str, bool] = field(default_factory=lambda: {
+        "secure_channel": True, "provenance": True, "mlops": True,
+        "chaos": True, "plugins": True, "streaming": True,
+    })
 
     # ------------------------------------------------------------------
     # (de)serialization
@@ -148,7 +214,52 @@ class ECIConfig:
             network=NetworkConfig(**data.get("network", {})),
             learning=LearningConfig(**data.get("learning", {})),
             experiment=ExperimentConfig(**data.get("experiment", {})),
+            kernel=KernelConfig(**data.get("kernel", {})),
+            observability=ObservabilityConfig(**data.get("observability", {})),
+            persistence=PersistenceConfig(**data.get("persistence", {})),
+            resilience=ResilienceConfig(**data.get("resilience", {})),
+            api=ApiConfig(**data.get("api", {})),
+            feature_flags=data.get("feature_flags", {
+                "secure_channel": True, "provenance": True, "mlops": True,
+                "chaos": True, "plugins": True, "streaming": True}),
         )
+
+    @classmethod
+    def from_env(cls, prefix: str = "ECI_") -> "ECIConfig":
+        """Overlay environment variables (e.g. ECI_QUANTUM_N_QUBITS=12).
+
+        Keys are UPPER_SNAKE of ``<section>_<field>``; values are JSON-decoded
+        when possible, else raw strings. Unknown keys are ignored so the
+        function is forward-compatible with new sections.
+        """
+        import json as _json
+        import os as _os
+
+        cfg = cls()
+        sections: Dict[str, Any] = {
+            "quantum": cfg.quantum, "consciousness": cfg.consciousness,
+            "network": cfg.network, "learning": cfg.learning,
+            "experiment": cfg.experiment, "kernel": cfg.kernel,
+            "observability": cfg.observability, "persistence": cfg.persistence,
+            "resilience": cfg.resilience, "api": cfg.api,
+        }
+        for env_k, env_v in _os.environ.items():
+            if not env_k.startswith(prefix):
+                continue
+            rest = env_k[len(prefix):].lower()
+            for sec_name, sec_obj in sections.items():
+                if rest.startswith(sec_name + "_"):
+                    field_name = rest[len(sec_name) + 1:]
+                    if hasattr(sec_obj, field_name):
+                        try:
+                            val = _json.loads(env_v)
+                        except Exception:  # noqa: BLE001
+                            val = env_v
+                        try:
+                            setattr(sec_obj, field_name, val)
+                        except Exception:  # noqa: BLE001
+                            pass
+        return cfg
 
     @classmethod
     def from_yaml(cls, path: Path | str) -> "ECIConfig":

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "5.9.0"
-description = "ECI Framework v5.9 - Ecosystem Justice (court, markets, commons, privacy, genome)"
+version = "6.3.0"
+description = "ECI Framework v6.3 MORPHOGENESIS - living self-evolving graphs (spectral health, self-modifying grammar, Darwin selection, motif genome, self-repair, coevolution) over the AGI cognition stack"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
