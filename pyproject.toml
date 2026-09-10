@@ -50,6 +50,7 @@ paper = ["matplotlib>=3.9", "reportlab>=4.0", "pyyaml>=6.0"]
 qec = ["stim", "pymatching"]  # scale-up QEC: circuit Monte Carlo + Blossom MWPM
 eeg = ["mne"]  # real EEG recordings for awareness calibration
 pqc = ["liboqs-python"]  # NIST ML-KEM/ML-DSA via liboqs adapter
+validation = ["pyphi"]  # external IIT cross-checks (Phase 10 bridge; needs collections shim on 3.10+)
 
 [project.scripts]
 eci = "eci.__main__:main"

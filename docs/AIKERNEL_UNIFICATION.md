@@ -1,0 +1,50 @@
+# AIK Unification — consolidated record (Phases 1–10)
+
+One shared objective (`F = complexity + inaccuracy`), one contract
+(`StateContributor`: posterior / update / free_energy_contribution),
+one ledger (`KernelLedger` sums shares), one transport (MCP `aik.*`).
+
+## Contract
+
+`src/eci/aikernel/`: `GenerativeState` (Gaussian + quantum branches;
+quantum→Gaussian via the metrology covariance map) · closed-form VFE
+(torch-autograd) + quantum F (relative entropy, exact) · precision-split
+belief functors (exact round-trip) · `StateContributor` protocol +
+`KernelLedger` · MCP bridge (shared schema, rho-preserving wire format).
+
+## Results on record
+
+| Phase | Adapter / work | Number |
+|---|---|---|
+| 1 | kernel + functors | F vs Monte Carlo Δ<0.05; autograd vs analytic 1e-4; F=evidence 1e-4; quantum vs `density.relative_entropy` 1e-3 |
+| 2a | quantum VQE | E −2.2360628 vs exact −2.2360682; F 3.81→1.89, 90% monotonic |
+| 2b | consciousness Phi | Phi↔complexity: no monotone link (Bell both-high; product complex-only; mixed neither) |
+| 2c | governance agents | shared-prior fusion fix; identical-info dF≈0; asymmetric dF≈0.841; b=50 limit cycle reported |
+| 3 | IIT 4.0 (iit4.py) | disconnected Φ=0 exact; photodiode 1.0; XOR 0.5; mutual-copy 3.0 |
+| 4 | mitigation (ZNE+PEC) | Bell-ZZ bias cut up to 1028x; VQE err recovered 16x; PEC exact ±σ |
+| 5 | MCP transport | MCP total == direct total exactly; rho round-trips exactly |
+| 6 | world-model + scientist | weighted-F parts reported; conjugate belief vs hand calc |
+| 7 | FEP + audit + 7-ledger | own-F share; trajectory [10.32, 9.86, 8.81, 8.88] |
+| 8 | EWC weights | Fisher posterior; displacement-priced share |
+| 9 | 8-member default mesh | total == sum; describe covers all |
+| 10 | hardening + PyPhi bridge | hygiene gate; PEC table q≤0.2; repertoires agree 1e-9 (see below) |
+
+## PyPhi cross-check (Phase 10 — first EXTERNAL validation)
+
+PyPhi 1.2.0 (IIT 3.0) installed as `validation` extra (needs a
+`collections.abc` backfill shim on Python ≥3.10, function-scoped).
+Bit-ordering bridge validated on asymmetric probes, not assumed.
+
+| probe (mutual-copy / AND, state (1,1)) | PyPhi | ours | Δ |
+|---|---|---|---|
+| cause m{0}/p{0} | [0.5, 0.5] | same | 0 |
+| cause m{0}/p{1} (cross constraint) | [0, 1] | same | 0 |
+| effect m{0}/p{0} | [0.5, 0.5] | same | 0 |
+| full-purview AND cause/effect | point / uniform | same | 0 |
+| big-Phi mutual-copy | 1.0 (IIT 3.0 EMD) | 3.0 (IIT 4.0 composition) | incommensurate by design |
+
+## Audit
+
+Full subsystem table: `docs/AIKERNEL_AUDIT.md` (8 adapters, 6 packages;
+everything else explicitly poor-fit with reasons). Honesty ledger:
+`src/eci/consciousness/LIMITATIONS.md`.

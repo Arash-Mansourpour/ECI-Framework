@@ -451,17 +451,75 @@ def _system_mip(sub: DiscreteSubstrate, composition: float) -> Tuple[float, Any]
     return max(0.0, composition - best_kept), best_cut
 
 
-def crosscheck_pyphi(sub: DiscreteSubstrate) -> Dict[str, Any]:
-    """Run PyPhi IF installed (mirrors consciousness/validation.py pattern).
+def crosscheck_pyphi(sub: DiscreteSubstrate, run_sia: bool = True) -> Dict[str, Any]:
+    """Cross-check against PyPhi 1.2.0 (IIT 3.0) — validated Phase 10.
 
-    Currently ALWAYS reports skip-with-reason: either PyPhi is absent, or
-    present but the TPM-convention bridge (our LSB-first past indexing vs
-    PyPhi's state-by-node layout) has not been validated — and unverified
-    numbers are refused, not printed. The day the bridge is validated,
-    this function grows a real comparison; the harness shape stays.
+    Compares cause/effect repertoires (pre-measure machinery, where the
+    two versions MUST agree — and do, to 1e-9) and reports both big-Phi
+    numbers side by side (where they must NOT agree: EMD-based IIT 3.0
+    vs composition-sum IIT 4.0 are incommensurate measures).
+
+    Validated bridge (bit ordering): our LSB-first past indexing ≡
+    PyPhi's state tuples element-wise (unit i ↔ position i), purview
+    arrays in big-endian tuple order. Pinned by asymmetric probes
+    (mutual-copy cross constraints), not just symmetric cases.
+
+    Environment notes (honest): PyPhi 1.2.0 predates Python 3.10, so a
+    function-scoped ``collections.abc`` backfill shim runs first (test-env
+    compat only; touches nothing when PyPhi is absent). Multiprocessing
+    is disabled (spawned workers would re-import without the shim).
+    Refuses n > 3 (sia cost) and missing PyPhi (skip-with-reason).
     """
     import importlib.util
     if importlib.util.find_spec("pyphi") is None:
         return {"ok": True, "skipped": True, "reason": "pyphi not installed"}
-    return {"ok": True, "skipped": True,
-            "reason": "pyphi present but TPM-convention bridge not yet validated; refusing unverified numbers"}
+    if sub.n > 3:
+        return {"ok": True, "skipped": True, "reason": "refused: sia cost above n=3"}
+    import collections
+    import collections.abc
+    for _n in ("Iterable", "Mapping", "Sequence", "MutableMapping"):
+        if not hasattr(collections, _n):
+            setattr(collections, _n, getattr(collections.abc, _n))
+    import numpy as _np
+    import pyphi as _pyphi
+    _flags = ("PARALLEL_COMPLEX_EVALUATION", "PARALLEL_CONCEPT_EVALUATION",
+              "PARALLEL_CUT_EVALUATION")
+    _saved = {k: getattr(_pyphi.config, k) for k in _flags}
+    try:
+        for k in _flags:
+            setattr(_pyphi.config, k, False)
+        tpm = _np.zeros((2,) * sub.n + (sub.n,))
+        for past in range(2 ** sub.n):
+            bits = tuple((past >> i) & 1 for i in range(sub.n))
+            for j in range(sub.n):
+                tpm[bits + (j,)] = sub.prob1(j, past)
+        net = _pyphi.Network(tpm)
+        pym = _pyphi.Subsystem(net, state=tuple(sub.state), nodes=tuple(range(sub.n)))
+        full = tuple(range(sub.n))
+        probes = [((0,), (0,)), ((0,), full), (full, full)]
+        diffs = []
+        for mech, purv in probes:
+            for direction in ("cause", "effect"):
+                fn = pym.cause_repertoire if direction == "cause" else pym.effect_repertoire
+                mine = (cause_repertoire if direction == "cause" else effect_repertoire)(
+                    sub, mech, tuple(sub.state[j] for j in mech), purv)
+                ref = _np.asarray(fn(mech, purv)).ravel()
+                order = sorted(purv)
+                got = _np.array([mine[tuple(b)] for b in
+                                 itertools.product((0, 1), repeat=len(order))])
+                # NOTE: purview tuples here are already sorted, so big-endian
+                # tuple order == _statespace enumeration order used by _extend.
+                diffs.append({"mech": mech, "purview": purv, "side": direction,
+                              "max_abs_diff": float(_np.abs(got - ref).max())})
+        worst = max(d["max_abs_diff"] for d in diffs)
+        out: Dict[str, Any] = {"ok": True, "skipped": False, "probes": diffs,
+                               "worst_abs_diff": worst}
+        if run_sia:
+            out["pyphi_phi_30"] = float(_pyphi.compute.sia(pym).phi)
+            out["iit4_phi_40"] = float(phi_structure(sub)["phi"])
+            out["caveat"] = ("different measures (EMD IIT 3.0 vs composition "
+                             "IIT 4.0): reported side by side, never equated")
+        return out
+    finally:
+        for k, v in _saved.items():
+            setattr(_pyphi.config, k, v)

@@ -123,6 +123,14 @@ def test_three_node_chain_runs():
 
 
 def test_crosscheck_reports_skip_honestly():
-    from eci.consciousness.iit4 import disconnected_system, crosscheck_pyphi
+    """Without PyPhi: skip-with-reason. With PyPhi (Phase 10): real bridge —
+    repertoires agree, sia runs, version caveat attached."""
+    import importlib.util
+    from eci.consciousness.iit4 import crosscheck_pyphi, disconnected_system
     out = crosscheck_pyphi(disconnected_system())
-    assert out["skipped"] is True and "reason" in out
+    if importlib.util.find_spec("pyphi") is None:
+        assert out["skipped"] is True and "reason" in out
+    else:
+        assert out["ok"] is True and out.get("skipped") is not True, out
+        assert out["worst_abs_diff"] < 1e-9, out["probes"]
+        assert "caveat" in out

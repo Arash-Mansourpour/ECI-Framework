@@ -56,7 +56,7 @@ import torch
 from eci.aikernel.generative_model import GenerativeState, Prior
 from eci.consciousness.iit import IntegratedInformationTheory
 
-__all__ = ["PhiContributor", "gaussian_complexity"]
+__all__ = ["PhiContributor", "FEPContributor", "gaussian_complexity"]
 
 
 def gaussian_complexity(mu: torch.Tensor, cov: torch.Tensor, prior: Prior) -> torch.Tensor:
@@ -136,3 +136,57 @@ class PhiContributor:
     def free_energy_contribution(self) -> torch.Tensor:
         st = self._state
         return gaussian_complexity(st.mu, st.cov, self.prior)
+
+
+class FEPContributor:
+    """StateContributor over the native FEP agent (Phase 7 audit: good-fit).
+
+    Framing (Laplace/MAP reading, stated not smuggled): FreeEnergyAgent
+    keeps a POINT belief mu (MAP via gradient descent on its own F) with
+    FIXED precisions (likelihood precision Π, unit prior precision). For
+    its linear-Gaussian model o = A·s + N(0, Π⁻¹I), s ~ N(0, I), the implied
+    posterior is EXACTLY N(mu, (Π·AᵀA + I)⁻¹) — Laplace with a quadratic
+    log-joint needs no approximation. posterior() returns that Gaussian
+    (float32); update(obs) runs perceive() (20 GD steps by default, cost
+    documented) and returns the refreshed posterior; share = the agent's
+    OWN free_energy() value — the strongest possible instance (no
+    likelihood construction needed, unlike Phase 2a). Pre-evidence share
+    is F(zeros): finite, documented, never NaN-gated.
+    """
+
+    def __init__(self, n_hidden: int = 4, n_obs: int = 4,
+                 precision: float = 1.0, lr: float = 0.05,
+                 perceive_steps: int = 20) -> None:
+        from eci.consciousness.free_energy import FreeEnergyAgent
+        self.agent = FreeEnergyAgent(n_hidden=n_hidden, n_obs=n_obs,
+                                     precision=precision, lr=lr)
+        self.perceive_steps = perceive_steps
+        self._last_obs: torch.Tensor | None = None
+        self._last_F: float | None = None
+
+    def _laplace_cov(self) -> torch.Tensor:
+        A = self.agent.A.double()
+        P = self.agent.precision
+        return torch.linalg.inv(P * (A.T @ A) + torch.eye(A.size(1), dtype=torch.float64))
+
+    # -- StateContributor contract ------------------------------------------
+    def posterior(self) -> GenerativeState:
+        from eci.aikernel.generative_model import GenerativeState as _GS
+        mu = self.agent.mu.double()
+        return _GS(mu.float(), self._laplace_cov().float())
+
+    def update(self, observation: torch.Tensor) -> GenerativeState:
+        obs = torch.as_tensor(observation, dtype=torch.float64).reshape(-1)
+        if obs.numel() != self.agent.n_obs:
+            raise ValueError(f"observation needs {self.agent.n_obs} values, "
+                             f"got {obs.numel()}")
+        rep = self.agent.perceive(obs, steps=self.perceive_steps)
+        self._last_obs = obs.clone()
+        self._last_F = float(rep["F"])
+        return self.posterior()
+
+    def free_energy_contribution(self) -> torch.Tensor:
+        if self._last_F is None:
+            self._last_F = float(self.agent.free_energy(
+                torch.zeros(self.agent.n_obs)).item())
+        return torch.as_tensor(self._last_F, dtype=torch.float32)

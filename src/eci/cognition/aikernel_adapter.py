@@ -88,11 +88,19 @@ class WorldModelContributor:
 
     def free_energy_contribution(self) -> torch.Tensor:
         if not self._parts:
-            o = torch.zeros(1, self.cfg.obs_dim)
-            a = torch.zeros(1, self.cfg.act_dim)
-            r = torch.zeros(1)
-            L = self.model.loss(o, a, r, o)
-            return L["total"]
+            # Cold start: no transitions observed yet. Forward-only loss on a
+            # null transition under a FORKED rng (fixed seed): deterministic
+            # across calls, zero global side effects. An unseeded global
+            # sample here would make the ledger nondeterministic — caught
+            # during Phase 7 calibration (share drifted 0.24 -> 0.94
+            # between identical reads).
+            with torch.random.fork_rng():
+                torch.manual_seed(0)
+                o = torch.zeros(1, self.cfg.obs_dim)
+                a = torch.zeros(1, self.cfg.act_dim)
+                r = torch.zeros(1)
+                L = self.model.loss(o, a, r, o)
+            return L["total"].detach().clone()
         return torch.as_tensor(self._parts["total"], dtype=torch.float32)
 
     def last_parts(self) -> Dict[str, float]:

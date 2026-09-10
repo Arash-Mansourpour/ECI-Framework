@@ -93,3 +93,16 @@ def test_bridge_accepts_new_adapters_with_shared_schema():
     assert "aik.world.free_energy" in reg.names()
     built = build_unification()
     assert set(built["ledger"].members()) >= {"quantum", "phi", "agent"}
+
+
+def test_world_cold_start_share_is_deterministic():
+    """Regression (Phase 7 calibration): pre-update share read twice must
+    agree exactly — an unseeded forward sample drifted 0.24 -> 0.94."""
+    import torch
+    from eci.cognition.aikernel_adapter import WorldModelContributor
+    from eci.cognition.world_model import WorldModelConfig
+    torch.manual_seed(0)
+    w = WorldModelContributor(WorldModelConfig(4, 2, 16, 4))
+    a = float(w.free_energy_contribution().item())
+    b = float(w.free_energy_contribution().item())
+    assert a == b and a == a and abs(a) < 1e6, (a, b)

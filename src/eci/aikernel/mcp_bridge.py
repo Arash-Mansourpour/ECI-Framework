@@ -138,38 +138,96 @@ def register_ledger(registry: Any, ledger: Any,
         return {"total_free_energy": float(tot),
                 "members": sorted(ledger.members())}
 
+    def _describe(args: Dict[str, Any], ctx: Dict[str, Any]) -> Any:
+        """Per-member share + audit category + what the share measures.
+
+        Categories/notes paraphrased (short) from each adapter's framing
+        docstring — the docstring stays the source of truth. Members whose
+        class isn't listed report 'unlisted' rather than a guess.
+        """
+        notes = _adapter_notes()
+        out: Dict[str, Any] = {}
+        for name, member in ledger.members().items():
+            hit = notes.get(type(member))
+            share = ledger.shares().get(name)
+            out[name] = {"share": float(share) if share is not None else None,
+                         "category": hit[0] if hit else "unlisted",
+                         "note": hit[1] if hit else ""}
+        return {"members": out}
+
     tools = [
         McpTool(f"{namespace}.shares", "per-subsystem F shares",
                 _shares, dict(EMPTY_SCHEMA), mutating=False, idempotent=True),
         McpTool(f"{namespace}.total", "unified total free energy",
                 _total, dict(EMPTY_SCHEMA), mutating=False, idempotent=True),
+        McpTool(f"{namespace}.describe", "F-share meanings + audit categories",
+                _describe, dict(EMPTY_SCHEMA), mutating=False, idempotent=True),
     ]
     for t in tools:
         registry.register(t, overwrite=True)
     return [t.name for t in tools]
 
 
-def build_unification(registry: Any = None) -> Dict[str, Any]:
-    """Default 4-member unification mesh: quantum + phi + agent + noisy.
+def _adapter_notes() -> Dict[Any, Any]:
+    from eci.cognition.aikernel_adapter import ScientistContributor, WorldModelContributor
+    from eci.consciousness.aikernel_adapter import FEPContributor, PhiContributor
+    from eci.governance.aikernel_adapter import AgentContributor
+    from eci.learning.aikernel_adapter import EWCContributor
+    from eci.quantum.aikernel_adapter import VQEContributor
+    from eci.quantum.mitigation import NoisyVQEContributor
+    return {
+        VQEContributor: ("good-fit",
+                         "VQE loss is F exactly (energy-target likelihood)"),
+        NoisyVQEContributor: ("good-fit",
+                              "same F under ideal/noisy/ZNE routing; entropy term unmitigated"),
+        PhiContributor: ("adaptable",
+                         "share is complexity KL, NOT Phi (independent axes)"),
+        AgentContributor: ("good-fit",
+                           "conjugate posterior; consensus is shared-prior fusion"),
+        WorldModelContributor: ("good-fit",
+                                "native loss is weighted-F variant (0.1KL+0.5ens), parts reported"),
+        ScientistContributor: ("good-fit",
+                               "KL of conjugate belief vs N(0,1) prior"),
+        FEPContributor: ("good-fit",
+                         "its own F; Laplace posterior from MAP + fixed precisions"),
+        EWCContributor: ("good-fit",
+                         "EWC penalty as weight-posterior share; Fisher refreshed via consolidate()"),
+    }
 
+
+def build_unification(registry: Any = None) -> Dict[str, Any]:
+    """Default 8-member unification mesh (Phase 9: complete).
+
+    quantum + noisy (quantum/) · phi + fep (consciousness/) · agent
+    (governance/) · world + sci (cognition/) · ewc (learning/).
     Cheap to construct (no optimizer steps run here); the E2E test drives
     observations through afterwards. Returns ledger + contributors +
     registered tool names.
     """
     from eci.aikernel.state_contract import KernelLedger
-    from eci.consciousness.aikernel_adapter import PhiContributor
+    from eci.cognition.aikernel_adapter import ScientistContributor, WorldModelContributor
+    from eci.cognition.world_model import WorldModelConfig
+    from eci.consciousness.aikernel_adapter import FEPContributor, PhiContributor
     from eci.governance.aikernel_adapter import AgentContributor
+    from eci.learning.aikernel_adapter import EWCContributor
+    from eci.learning.continual import ElasticWeightConsolidation
     from eci.mcp.registry import McpRegistry
     from eci.quantum.aikernel_adapter import VQEContributor, tfi_hamiltonian
     from eci.quantum.mitigation import NoisyVQEContributor
 
     reg = registry or McpRegistry()
     ham = tfi_hamiltonian(2)
+    import torch.nn as _nn
     contributors = {
         "quantum": VQEContributor(ham, 2, e_target=-3.2),
         "phi": PhiContributor(dim=2),
         "agent": AgentContributor("aik-agent-0", dim=1),
         "noisy": NoisyVQEContributor(ham, 2, e_target=-3.2, mode="noisy", noise_q=0.02),
+        "world": WorldModelContributor(WorldModelConfig(obs_dim=4, act_dim=2,
+                                                        hidden=16, latent=4)),
+        "sci": ScientistContributor("aik-default", "y = a*x + b", 2),
+        "fep": FEPContributor(2, 2),
+        "ewc": EWCContributor(ElasticWeightConsolidation(_nn.Linear(2, 2))),
     }
     ledger = KernelLedger()
     for name, member in contributors.items():

@@ -128,6 +128,12 @@ Every subsystem optimizes one shared objective, variational free energy
 | 2c | `governance/aikernel_adapter.py` (`AgentContributor`) | Precision fusion fixed; LMSR-vs-fusion measured |
 | 3 | `consciousness/iit4.py` (IIT 4.0 distinctions/relations) | Disconnected systems → Φ = 0 exactly |
 | 4 | `quantum/mitigation.py` (ZNE + PEC + noisy scheduler) | Bell-ZZ bias cut up to 1000x; VQE error recovered 16x |
+| 5 | `aikernel/mcp_bridge.py` (MCP transport + ledger tools) | MCP total == direct total exactly |
+| 6 | `cognition/aikernel_adapter.py` (world-model + scientist) | Weighted-F share; conjugate belief vs hand calc |
+| 7 | `consciousness/aikernel_adapter.py` (`FEPContributor`) + audit | Own-F share; 7-member ledger coheres; full audit: `docs/AIKERNEL_AUDIT.md` |
+| 8 | `learning/aikernel_adapter.py` (`EWCContributor`) | Weight-posterior share; displacement-priced consolidation |
+| 9 | Default mesh completion (no new adapter) | All 8 adapters in `build_unification()` + full `describe` coverage |
+| 10 | Hardening + PyPhi bridge (no new adapter) | Hygiene gate; PEC table q≤0.2; repertoires agree 1e-9; see `docs/AIKERNEL_UNIFICATION.md` |
 
 > Honesty ledger for all consciousness metrics (what each number is and
 > is not validated against): `src/eci/consciousness/LIMITATIONS.md` —
