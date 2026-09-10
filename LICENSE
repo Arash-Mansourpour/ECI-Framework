@@ -4,110 +4,231 @@ Copyright (c) 2026 Arash Mansourpour
 All Rights Reserved.
 
 Project: ECI Framework
-Name: Eternal Codex Infinitus
+Full Name: Eternal Codex Infinitus
+Original Author and Copyright Holder: Arash Mansourpour
 
 
-1. GRANT OF PERMISSION
+1. DEFINITIONS
 
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-(the "Software"), to use, copy, study, execute, and modify the
-Software solely for personal, educational, academic, research,
-and other non-commercial purposes.
+"Software" means the ECI Framework, Eternal Codex Infinitus,
+including its source code, object code, architecture, algorithms,
+protocols, documentation, specifications, examples, configurations,
+and associated materials.
+
+"Derivative Work" means any modification, extension, enhancement,
+adaptation, translation, fork, or other work based upon or derived
+from the Software.
+
+"Commercial Use" means any use intended primarily for commercial
+advantage, monetary compensation, revenue generation, paid services,
+commercial products, or business operations.
 
 
-2. PERMITTED USE
+2. PERMISSION FOR NON-COMMERCIAL USE
 
-The Software may be used for:
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Software, to use, copy, study, execute, modify, and
+experiment with the Software solely for personal, educational,
+academic, scientific, and other non-commercial purposes.
+
+Permitted uses include, but are not limited to:
 
 - Personal learning and experimentation;
-- Educational and academic activities;
-- University and classroom projects;
-- Non-commercial research;
+- Educational and university projects;
+- Academic and scientific research;
+- Non-commercial publications and demonstrations;
 - Personal development and testing;
-- Non-commercial demonstrations and publications.
+- Non-commercial research involving artificial intelligence,
+  machine learning, quantum computing, or related fields.
 
 
-3. PROHIBITED COMMERCIAL USE
+3. COMMERCIAL USE RESTRICTION
 
-Without prior written permission from the copyright holder,
-the Software may NOT be used, directly or indirectly, for:
+Commercial Use of the Software is NOT permitted without prior
+written permission from the copyright holder.
 
-- Commercial purposes;
-- Commercial products or services;
-- Paid software or applications;
-- Commercial consulting or client projects;
-- Revenue-generating systems or services;
-- Internal commercial business operations;
-- Selling, licensing, sublicensing, or monetizing the Software;
-- Providing the Software as a paid service;
-- Creating and selling derivative works based on the Software;
-- Incorporating the Software into proprietary commercial products.
+Without such permission, the Software may not be:
+
+- Sold, licensed, sublicensed, or monetized;
+- Included in a commercial product or service;
+- Used in a paid client or consulting project;
+- Used to provide a paid service or hosted service;
+- Used as part of a commercial business operation;
+- Distributed for monetary compensation;
+- Used to create or distribute a commercial Derivative Work;
+- Incorporated into proprietary commercial software;
+- Used by a commercial organization for revenue-generating purposes.
+
+A separate written commercial license may be obtained from the
+copyright holder.
 
 
-4. REDISTRIBUTION
+4. MODIFICATION AND DERIVATIVE WORKS
+
+Modification, extension, enhancement, and creation of Derivative
+Works are permitted only for non-commercial purposes.
+
+Any publicly distributed Derivative Work must:
+
+- Clearly state that it is derived from ECI Framework;
+- Preserve the original copyright notice;
+- Preserve the original author attribution;
+- Preserve this license;
+- Clearly distinguish the original ECI Framework from subsequent
+  modifications or contributions.
+
+Derivative Works may not be commercially distributed, sold,
+licensed, sublicensed, or monetized without prior written permission
+from the copyright holder.
+
+
+5. ATTRIBUTION AND PRESERVATION OF AUTHORSHIP
+
+The original authorship and copyright attribution must remain
+intact in all copies, forks, modifications, extensions, and
+Derivative Works of the Software.
+
+The following attribution must not be removed, obscured, altered,
+or replaced:
+
+"ECI Framework — Eternal Codex Infinitus"
+"Original Author and Copyright Holder: Arash Mansourpour"
+"Copyright (c) 2026 Arash Mansourpour"
+
+Any publicly distributed Derivative Work must clearly identify
+Arash Mansourpour as the original author and copyright holder of
+the ECI Framework.
+
+Additional contributors may identify themselves as contributors
+or developers of their respective modifications, but such
+attribution does not replace or supersede the original authorship
+of Arash Mansourpour.
+
+
+6. FORKS AND EXTENSIONS
+
+Forks, extensions, and modified versions of the Software may be
+created for permitted non-commercial purposes.
+
+Any public fork or extension must retain the original project name
+and attribution where reasonably possible and must include a clear
+statement such as:
+
+"Based on ECI Framework — Eternal Codex Infinitus,
+originally created by Arash Mansourpour."
+
+No fork, extension, or Derivative Work may falsely represent itself
+as the original ECI Framework or claim the original work as the
+exclusive creation of another person or organization.
+
+
+7. REDISTRIBUTION
 
 Non-commercial redistribution is permitted provided that:
 
-- This license remains included;
+- This license is included with the redistributed Software;
 - The original copyright notice is preserved;
-- Proper attribution to Arash Mansourpour is maintained;
-- The redistributed Software is not sold or monetized;
+- Arash Mansourpour is identified as the original author;
+- The Software is not sold or monetized;
 - No additional rights are granted beyond this license.
 
+Redistribution does not transfer ownership or copyright.
 
-5. DERIVATIVE WORKS
 
-Modification of the Software is permitted solely for
+8. ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING
+
+The Software may be used for non-commercial academic and scientific
+research involving artificial intelligence and machine learning.
+
+Commercial use of the Software for training, fine-tuning,
+evaluation, development, deployment, or operation of commercial
+AI, machine learning, foundation, generative, or autonomous-agent
+systems requires prior written permission from the copyright holder.
+
+
+9. ORGANIZATIONAL AND INSTITUTIONAL USE
+
+Use by universities, researchers, students, and non-commercial
+educational or scientific institutions is permitted for
 non-commercial purposes.
 
-Any derivative work distributed publicly must clearly state
-that it is derived from ECI Framework and must retain this
-license and the original copyright notice.
-
-Derivative works may not be commercially distributed,
-licensed, sold, or monetized without prior written permission.
+Use by companies, corporations, commercial organizations, or other
+revenue-generating entities in connection with their commercial
+activities requires prior written permission from the copyright
+holder.
 
 
-6. ARTIFICIAL INTELLIGENCE AND MODEL TRAINING
+10. OWNERSHIP
 
-The Software may not be used for training, fine-tuning,
-or development of commercial artificial intelligence,
-machine learning, foundation, or generative models
-without prior written permission from the copyright holder.
+The Software and its original source code, architecture, algorithms,
+design, documentation, protocols, and associated intellectual
+property remain the property of Arash Mansourpour, except for
+third-party components that are separately identified and governed
+by their respective licenses.
 
-Non-commercial academic AI research may use the Software
-subject to the terms of this license.
-
-
-7. COMMERCIAL LICENSE
-
-Commercial use may be permitted only through a separate
-written commercial license issued by the copyright holder.
-
-For commercial licensing inquiries, contact:
-
-Arash Mansourpour
+This license does not transfer ownership, copyright, or intellectual
+property rights to any recipient.
 
 
-8. OWNERSHIP
+11. THIRD-PARTY COMPONENTS
 
-The Software and its original source code, architecture,
-design, documentation, algorithms, protocols, and associated
-intellectual property remain the property of the copyright holder.
+Any third-party software, libraries, datasets, models, or other
+materials included with or referenced by the Software remain subject
+to their respective licenses and terms.
 
-This license does not transfer ownership or copyright.
+This license does not supersede or modify the rights granted by
+third-party licenses.
 
 
-9. NO WARRANTY
+12. NO TRADEMARK RIGHTS
+
+This license does not grant permission to use the name "ECI
+Framework", "Eternal Codex Infinitus", or the name "Arash
+Mansourpour" as a trademark, brand, endorsement, or affiliation
+without prior written permission, except where necessary for
+accurate attribution as required by this license.
+
+
+13. NO WARRANTY
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR
-NON-INFRINGEMENT.
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY,
+NON-INFRINGEMENT, OR SUITABILITY FOR ANY PARTICULAR USE.
+
+THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES,
+OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
 
 
-10. COPYRIGHT
+14. TERMINATION
+
+Any rights granted under this license automatically terminate if
+the recipient violates any material term of this license.
+
+Upon termination, the recipient must cease the unauthorized use,
+distribution, and commercial exploitation of the Software.
+
+
+15. COMMERCIAL LICENSING
+
+Commercial licensing, institutional licensing, enterprise use,
+commercial integration, commercial deployment, and other uses
+outside the permissions granted by this license may be authorized
+under a separate written agreement with the copyright holder.
+
+Commercial licensing inquiries:
+
+Arash Mansourpour
+Original Author and Copyright Holder of ECI Framework
+
+
+16. COPYRIGHT
 
 Copyright (c) 2026 Arash Mansourpour
 All Rights Reserved.
+
+ECI Framework
+Eternal Codex Infinitus
+
+This license applies to the ECI Framework unless a separate written
+license explicitly states otherwise.
