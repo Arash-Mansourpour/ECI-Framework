@@ -11,19 +11,20 @@ deterministic without hardware.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any
 
 __all__ = ["BackendResult", "SimBackend", "transpile", "zne_extrapolate"]
 
 
 @dataclass
 class BackendResult:
-    counts: Dict[str, int]
+    counts: dict[str, int]
     expectation: float = 0.0
     shots: int = 0
     backend: str = "sim"
-    meta: Dict[str, Any] = field(default_factory=dict)
+    meta: dict[str, Any] = field(default_factory=dict)
 
 
 class SimBackend:
@@ -37,7 +38,7 @@ class SimBackend:
     def run(self, probs: Sequence[float]) -> BackendResult:
         import random
         rng = random.Random(self.seed)
-        counts: Dict[str, int] = {}
+        counts: dict[str, int] = {}
         for _ in range(self.shots):
             r, acc, idx = rng.random(), 0.0, 0
             for i, p in enumerate(probs):
@@ -50,13 +51,13 @@ class SimBackend:
         exp = sum(int(k, 2) * v for k, v in counts.items()) / max(1, self.shots)
         return BackendResult(counts, exp, self.shots, self.name)
 
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "backend": self.name, "qubits": self.n_qubits}
 
 
-def transpile(ops: List[str]) -> Dict[str, Any]:
+def transpile(ops: list[str]) -> dict[str, Any]:
     """Toy transpiler: counts 1q/2q, cancels adjacent duplicate CNOTs."""
-    stack: List[str] = []
+    stack: list[str] = []
     cancelled = 0
     for op in ops:
         if op == "CNOT" and stack and stack[-1] == "CNOT":
@@ -70,7 +71,7 @@ def transpile(ops: List[str]) -> Dict[str, Any]:
             "depth": len(stack)}
 
 
-def zne_extrapolate(scale_factors: Sequence[float], expectations: Sequence[float]) -> Dict[str, Any]:
+def zne_extrapolate(scale_factors: Sequence[float], expectations: Sequence[float]) -> dict[str, Any]:
     """Linear Richardson extrapolation to zero noise (least-squares)."""
     import statistics
     n = len(scale_factors)

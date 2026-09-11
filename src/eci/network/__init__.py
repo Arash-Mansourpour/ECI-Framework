@@ -1,21 +1,21 @@
 """Distributed coordination layer: consensus, aggregation, node lifecycle."""
 
 from eci.network.aggregation import (
+    bulyan,
     byzantine_robust_aggregate,
     geometric_median,
     krum,
-    bulyan,
 )
 from eci.network.consensus import ConsensusResult, PBFTConsensus, WBFTConsensus
-from eci.network.manager import AutonomousNetworkManager
-from eci.network.nodes import NodeFactory
-from eci.network.transport import AsyncMemoryChannel
-from eci.network.envelope import Envelope, ReplayGuard, seal, open_envelope
-from eci.network.gossip import GossipNode, anti_entropy, gossip_round
-from eci.network.reputation import Reputation, ReputationBoard
 from eci.network.dht import DHTNode, lookup, xor_distance
+from eci.network.envelope import Envelope, ReplayGuard, open_envelope, seal
+from eci.network.gossip import GossipNode, anti_entropy, gossip_round
+from eci.network.manager import AutonomousNetworkManager
 from eci.network.membership import Member, Membership
+from eci.network.nodes import NodeFactory
+from eci.network.reputation import Reputation, ReputationBoard
 from eci.network.tcp import FramedTcpTransport, TcpPeer
+from eci.network.transport import AsyncMemoryChannel
 
 __all__ = [
     "PBFTConsensus", "WBFTConsensus", "ConsensusResult",

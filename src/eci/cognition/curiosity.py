@@ -12,8 +12,7 @@ Welford running stats so the scale is self-calibrating across tasks.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Sequence
+from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
@@ -70,7 +69,7 @@ class IntrinsicMotivation(nn.Module):
         return float(loss.item())
 
     def bonus(self, obs: torch.Tensor, disagreement: torch.Tensor | None = None,
-              surprise: torch.Tensor | None = None) -> Dict[str, torch.Tensor]:
+              surprise: torch.Tensor | None = None) -> dict[str, torch.Tensor]:
         c = self.cfg
         nov = self.novelty(obs).detach()
         dis = disagreement.detach() if disagreement is not None else torch.zeros_like(nov)

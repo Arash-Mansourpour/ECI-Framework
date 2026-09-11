@@ -28,8 +28,9 @@ The observation (likelihood) model is linear-Gaussian and shared:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
 import torch
 
@@ -66,7 +67,7 @@ class Prior:
     Sigma0: torch.Tensor  # (d, d) PD
 
     @classmethod
-    def standard(cls, d: int) -> "Prior":
+    def standard(cls, d: int) -> Prior:
         return cls(torch.zeros(d), torch.eye(d))
 
 
@@ -76,10 +77,10 @@ class GenerativeState:
 
     mu: torch.Tensor              # (d,) posterior mean
     cov: torch.Tensor             # (d, d) posterior covariance, PD
-    rho: Optional[torch.Tensor] = None   # (D, D) density matrix, if quantum-backed
+    rho: torch.Tensor | None = None   # (D, D) density matrix, if quantum-backed
     n_qubits: int = 0
-    paulis: List[str] = field(default_factory=list)  # observable labels for mu/cov coords
-    meta: Dict[str, Any] = field(default_factory=dict)
+    paulis: list[str] = field(default_factory=list)  # observable labels for mu/cov coords
+    meta: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if self.mu.dim() != 1 or self.cov.dim() != 2:
@@ -96,16 +97,16 @@ class GenerativeState:
     @classmethod
     def gaussian(cls, mu: Sequence[float] | torch.Tensor,
                  cov: Sequence[Sequence[float]] | torch.Tensor,
-                 paulis: List[str] | None = None) -> "GenerativeState":
+                 paulis: list[str] | None = None) -> GenerativeState:
         mu_t = torch.as_tensor(mu, dtype=torch.float32)
         cov_t = torch.as_tensor(cov, dtype=torch.float32)
         return cls(mu_t, cov_t, paulis=list(paulis or []))
 
     @classmethod
     def from_density(cls, rho: torch.Tensor, n_qubits: int,
-                     paulis: List[str] | None = None) -> "GenerativeState":
+                     paulis: list[str] | None = None) -> GenerativeState:
         """Quantum-backed state; Gaussian coords via the metrology mapping."""
-        from eci.aikernel.functors import density_to_cov, pauli_expectations
+        from eci.aikernel.functors import density_to_cov
         labels = list(paulis or ["X", "Y", "Z"][: 3 if n_qubits == 1 else 0])
         if not labels:
             from eci.aikernel.functors import default_paulis
@@ -117,7 +118,7 @@ class GenerativeState:
     def precision(self) -> torch.Tensor:
         return torch.linalg.inv(self.cov)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Wire format (Phase 5): JSON-safe, round-trippable via from_dict.
 
         The density matrix serializes as row-major ``rho_real``/``rho_imag``
@@ -128,8 +129,8 @@ class GenerativeState:
         """
         return self.to_dict_with_rho(include_rho=True)
 
-    def to_dict_with_rho(self, include_rho: bool = True) -> Dict[str, Any]:
-        d: Dict[str, Any] = {"dim": self.dim, "mu": self.mu.tolist(),
+    def to_dict_with_rho(self, include_rho: bool = True) -> dict[str, Any]:
+        d: dict[str, Any] = {"dim": self.dim, "mu": self.mu.tolist(),
                              "cov": self.cov.tolist(), "n_qubits": self.n_qubits,
                              "paulis": self.paulis, "meta": self.meta,
                              "rho_real": None, "rho_imag": None}
@@ -139,7 +140,7 @@ class GenerativeState:
         return d
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "GenerativeState":
+    def from_dict(cls, d: dict[str, Any]) -> GenerativeState:
         """Inverse of to_dict (accepts dicts that predate rho_* keys too)."""
         mu = torch.as_tensor(d["mu"], dtype=torch.float32)
         cov = torch.as_tensor(d["cov"], dtype=torch.float32)

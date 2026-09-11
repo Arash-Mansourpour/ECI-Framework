@@ -18,15 +18,15 @@ import random
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Any, Deque, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Episode", "DreamReport", "DreamConsolidator"]
 
 
 @dataclass
 class Episode:
-    obs: List[float]
-    act: List[float]
+    obs: list[float]
+    act: list[float]
     rew: float
     surprise: float = 0.0
     ts: float = field(default_factory=time.time)
@@ -42,7 +42,7 @@ class DreamReport:
     replay_batches: int
     duration_s: float
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"selected": self.selected, "distilled": self.distilled,
                 "facts": self.facts, "forgotten": self.forgotten,
                 "replay_batches": self.replay_batches, "duration_s": self.duration_s}
@@ -51,12 +51,12 @@ class DreamReport:
 class DreamConsolidator:
     def __init__(self, capacity: int = 2048, salience_alpha: float = 0.6,
                  forget_threshold: float = 0.05) -> None:
-        self._eps: Deque[Episode] = deque(maxlen=capacity)
+        self._eps: deque[Episode] = deque(maxlen=capacity)
         self.alpha = salience_alpha
         self.forget_threshold = forget_threshold
         self.dreams = 0
 
-    def wake(self, obs: List[float], act: List[float], rew: float, surprise: float = 0.0) -> None:
+    def wake(self, obs: list[float], act: list[float], rew: float, surprise: float = 0.0) -> None:
         self._eps.append(Episode(obs, act, rew, surprise))
 
     def sleep(self, vectors: Any | None = None, replay_batches: int = 4,
@@ -65,7 +65,7 @@ class DreamConsolidator:
         rng = random.Random(seed)
         now = time.time()
         # 1. forget: Ebbinghaus retention below threshold
-        kept: Deque[Episode] = deque(maxlen=self._eps.maxlen)
+        kept: deque[Episode] = deque(maxlen=self._eps.maxlen)
         forgotten = 0
         for e in self._eps:
             r = math.exp(-(now - e.ts) / max(1e-6, 3600.0 * e.strength))
@@ -74,11 +74,14 @@ class DreamConsolidator:
             else:
                 kept.append(e)
         self._eps = kept
-        # 2. select salient
-        scored = sorted(self._eps, key=lambda e: (max(e.surprise, 1e-6) ** self.alpha) * (1 + abs(e.rew)),
+        # 2. select salient (seeded tie-breaks: shuffle first, then the
+        # stable sort keeps salience ranking while ties resolve by seed)
+        order = list(self._eps)
+        rng.shuffle(order)
+        scored = sorted(order, key=lambda e: (max(e.surprise, 1e-6) ** self.alpha) * (1 + abs(e.rew)),
                         reverse=True)[:top_k]
         # 3. distill into semantic vectors + fact proposals
-        facts: List[Dict[str, Any]] = []
+        facts: list[dict[str, Any]] = []
         distilled = 0
         for e in scored:
             if vectors is not None:
@@ -98,7 +101,7 @@ class DreamConsolidator:
         return DreamReport(len(scored), distilled, len(facts), forgotten,
                            replay_batches, time.time() - t0)
 
-    def replay_batch(self, n: int = 32, seed: int = 0) -> List[Episode]:
+    def replay_batch(self, n: int = 32, seed: int = 0) -> list[Episode]:
         rng = random.Random(seed)
         eps = list(self._eps)
         return rng.sample(eps, min(n, len(eps)))

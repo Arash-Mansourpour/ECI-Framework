@@ -16,7 +16,8 @@ Usage:
 from __future__ import annotations
 
 import functools
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 from eci.logging import get_logger
 from eci.protocol0.ledger import Ledger
@@ -27,17 +28,17 @@ __all__ = ["Middleware"]
 
 
 class Middleware:
-    def __init__(self, spec: Protocol0Spec, mode: str = "enforce", ledger: Optional[Ledger] = None) -> None:
+    def __init__(self, spec: Protocol0Spec, mode: str = "enforce", ledger: Ledger | None = None) -> None:
         if mode not in ("enforce", "audit-only", "permissive"):
             raise ValueError(f"unknown middleware mode {mode!r}")
         self.spec = spec
         self.mode = mode
         self.ledger = ledger
         self.logger = get_logger("protocol0.middleware")
-        self.context: Dict[str, Dict[str, float]] = {}
+        self.context: dict[str, dict[str, float]] = {}
 
     def bind(self, agent_id: str, awareness: float, obedience: float, trust: float,
-             coherence: Optional[float] = None, divergence: Optional[float] = None) -> None:
+             coherence: float | None = None, divergence: float | None = None) -> None:
         self.context[agent_id] = {
             "awareness": awareness, "obedience": obedience, "trust": trust,
             "coherence": coherence if coherence is not None else 1.0,

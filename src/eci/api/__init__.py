@@ -7,10 +7,9 @@ adds auth (via PolicyEngine), rate limiting, tracing spans and audit.
 
 from __future__ import annotations
 
-import fnmatch
-import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["Route", "Gateway"]
 
@@ -28,7 +27,7 @@ class Gateway:
 
     def __init__(self, authz: Any | None = None, limiter: Any | None = None,
                  tracer: Any | None = None, audit: Any | None = None) -> None:
-        self._routes: Dict[str, Route] = {}
+        self._routes: dict[str, Route] = {}
         self.authz = authz
         self.limiter = limiter
         self.tracer = tracer
@@ -45,15 +44,15 @@ class Gateway:
     def add(self, path: str, handler: Callable[..., Any], auth_action: str = "", summary: str = "") -> None:
         self._routes[path] = Route(path, handler, auth_action, summary or path)
 
-    def paths(self) -> List[str]:
+    def paths(self) -> list[str]:
         return sorted(self._routes)
 
-    def schema(self) -> Dict[str, Any]:
+    def schema(self) -> dict[str, Any]:
         return {"version": "v1", "routes": [
             {"path": r.path, "auth": r.auth_action, "summary": r.summary} for r in self._routes.values()]}
 
-    def call(self, path: str, params: Dict[str, Any] | None = None,
-             ctx: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    def call(self, path: str, params: dict[str, Any] | None = None,
+             ctx: dict[str, Any] | None = None) -> dict[str, Any]:
         params, ctx = params or {}, ctx or {}
         if path not in self._routes:
             return {"ok": False, "error": f"unknown route {path}"}
@@ -91,5 +90,5 @@ class Gateway:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "routes": len(self._routes), "calls": self.calls, "denied": self.denied}

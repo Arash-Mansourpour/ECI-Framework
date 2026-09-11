@@ -8,12 +8,12 @@ Stdlib-only so it runs on edge profiles.
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Sequence
+from collections.abc import Sequence
 
 __all__ = ["psi", "ks_distance", "drift_report"]
 
 
-def _hist(x: Sequence[float], bins: int = 10, lo: float | None = None, hi: float | None = None) -> List[float]:
+def _hist(x: Sequence[float], bins: int = 10, lo: float | None = None, hi: float | None = None) -> list[float]:
     xs = list(x)
     if not xs:
         return [0.0] * bins
@@ -56,7 +56,7 @@ def ks_distance(a: Sequence[float], b: Sequence[float]) -> float:
     return best
 
 
-def drift_report(expected: Sequence[float], actual: Sequence[float]) -> Dict[str, object]:
+def drift_report(expected: Sequence[float], actual: Sequence[float]) -> dict[str, object]:
     p = psi(expected, actual)
     k = ks_distance(expected, actual)
     level = "none" if p < 0.1 and k < 0.1 else ("watch" if p < 0.25 and k < 0.2 else "drift")

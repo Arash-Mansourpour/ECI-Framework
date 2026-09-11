@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import asyncio
 import fnmatch
-import itertools
 import time
 import uuid
-from collections import defaultdict, deque
+from collections import deque
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Deque, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Event", "Subscription", "EventBus"]
 
@@ -24,14 +24,14 @@ class Event:
     """Immutable domain event."""
 
     type: str
-    payload: Dict[str, Any] = field(default_factory=dict)
+    payload: dict[str, Any] = field(default_factory=dict)
     source: str = "unknown"
     correlation_id: str = ""
     causation_id: str = ""
     event_id: str = field(default_factory=lambda: uuid.uuid4().hex[:16])
     ts: float = field(default_factory=time.time)
 
-    def child(self, type: str, payload: Dict[str, Any] | None = None, source: str = "") -> "Event":
+    def child(self, type: str, payload: dict[str, Any] | None = None, source: str = "") -> Event:
         return Event(
             type=type,
             payload=payload or {},
@@ -54,9 +54,9 @@ class EventBus:
     """In-process event bus with wildcard routing and DLQ."""
 
     def __init__(self, replay_capacity: int = 512, dlq_capacity: int = 128) -> None:
-        self._subs: List[Subscription] = []
-        self._replay: Deque[Event] = deque(maxlen=replay_capacity)
-        self._dlq: Deque[Dict[str, Any]] = deque(maxlen=dlq_capacity)
+        self._subs: list[Subscription] = []
+        self._replay: deque[Event] = deque(maxlen=replay_capacity)
+        self._dlq: deque[dict[str, Any]] = deque(maxlen=dlq_capacity)
         self._published = 0
 
     # -- subscription -------------------------------------------------
@@ -68,7 +68,7 @@ class EventBus:
     def unsubscribe(self, sub: Subscription) -> None:
         self._subs = [s for s in self._subs if s is not sub]
 
-    def matching(self, event_type: str) -> List[Subscription]:
+    def matching(self, event_type: str) -> list[Subscription]:
         return [s for s in self._subs if fnmatch.fnmatchcase(event_type, s.pattern)]
 
     # -- publish ------------------------------------------------------
@@ -111,15 +111,15 @@ class EventBus:
         return delivered
 
     # -- introspection -------------------------------------------------
-    def replay(self, pattern: str = "*", limit: int = 100) -> List[Event]:
+    def replay(self, pattern: str = "*", limit: int = 100) -> list[Event]:
         out = [e for e in self._replay if fnmatch.fnmatchcase(e.type, pattern)]
         return out[-limit:]
 
     @property
-    def dead_letters(self) -> List[Dict[str, Any]]:
+    def dead_letters(self) -> list[dict[str, Any]]:
         return list(self._dlq)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         return {
             "subscriptions": len(self._subs),
             "published": self._published,

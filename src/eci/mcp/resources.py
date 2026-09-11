@@ -10,16 +10,16 @@ subscriptions (resources/subscribe -> SSE/bus events). URIs:
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 __all__ = ["RESOURCES", "read_resource"]
 
 
-def _r(uri: str, name: str, mime: str = "application/json") -> Dict[str, Any]:
+def _r(uri: str, name: str, mime: str = "application/json") -> dict[str, Any]:
     return {"uri": uri, "name": name, "mimeType": mime}
 
 
-RESOURCES: List[Dict[str, Any]] = [
+RESOURCES: list[dict[str, Any]] = [
     _r("eci://info", "framework info"),
     _r("eci://system.status", "hyper-architecture status"),
     _r("eci://metrics", "prometheus metrics", "text/plain"),
@@ -30,7 +30,7 @@ RESOURCES: List[Dict[str, Any]] = [
 ]
 
 
-def read_resource(uri: str, framework: Any) -> Dict[str, Any]:
+def read_resource(uri: str, framework: Any) -> dict[str, Any]:
     try:
         if uri == "eci://info":
             return {"ok": True, "data": framework.info()}

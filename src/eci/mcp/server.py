@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from eci.mcp.prompts import PROMPTS, get_prompt
 from eci.mcp.resources import RESOURCES, read_resource
@@ -44,11 +44,11 @@ class McpServer:
         self.calls = 0
 
     # -- sync wrapper ---------------------------------------------------
-    def handle(self, msg: Dict[str, Any]) -> Dict[str, Any]:
+    def handle(self, msg: dict[str, Any]) -> dict[str, Any]:
         res = self.handle_async(msg)
         if asyncio.iscoroutine(res):
             try:
-                loop = asyncio.get_running_loop()
+                _loop = asyncio.get_running_loop()
             except RuntimeError:
                 return asyncio.run(res)
             # inside a loop (rare for stdio): run in a fresh thread-less way is
@@ -57,7 +57,7 @@ class McpServer:
             return {"id": msg.get("id"), "error": "use handle_async inside event loops"}
         return res
 
-    async def handle_async(self, msg: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_async(self, msg: dict[str, Any]) -> dict[str, Any]:
         mid, method, params = msg.get("id"), msg.get("method"), msg.get("params", {}) or {}
         try:
             if method == "initialize":
@@ -103,7 +103,7 @@ class McpServer:
         except Exception as exc:  # noqa: BLE001
             return {"id": mid, "error": f"{type(exc).__name__}: {exc}"}
 
-    async def _call(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def _call(self, params: dict[str, Any]) -> dict[str, Any]:
         self.calls += 1
         name = params.get("name", "")
         args = params.get("arguments", {}) or {}
@@ -128,7 +128,7 @@ class McpServer:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "tools": len(self.registry.names()) if self.registry else 0,
                 "calls": self.calls,
                 "sessions": self.sessions.stats() if self.sessions else {}}

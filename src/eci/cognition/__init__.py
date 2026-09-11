@@ -13,7 +13,8 @@ council), provenance-recorded end-to-end cognition.
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import torch
 
@@ -27,7 +28,8 @@ from eci.cognition.scientist import Hypothesis, Scientist
 from eci.cognition.tom import TheoryOfMind
 from eci.cognition.world_model import LatentWorldModel, WorldModelConfig
 
-__all__ = ["CognitionConfig", "Cognition", "DUTIES"]
+__all__ = ["CognitionConfig", "Cognition", "DUTIES", "CausalGraph",
+           "ate_backdoor", "discover", "DreamReport", "Hypothesis"]
 
 
 class CognitionConfig:
@@ -60,7 +62,7 @@ class Cognition:
     @torch.no_grad()
     def think(self, obs: Sequence[float], goal: str = "act",
               stakes: float = 0.5, action_name: str = "actuate",
-              precog_tier: str = "none") -> Dict[str, Any]:
+              precog_tier: str = "none") -> dict[str, Any]:
         """One full cognitive beat: charter -> strategy -> imagine+plan -> record."""
         t0 = time.time()
         c = self.cfg.wm
@@ -105,13 +107,13 @@ class Cognition:
             pass
         return out
 
-    def dream_cycle(self, vectors: Any | None = None, seed: int = 0) -> Dict[str, Any]:
+    def dream_cycle(self, vectors: Any | None = None, seed: int = 0) -> dict[str, Any]:
         rep = self.dream.sleep(vectors or self.vectors, seed=seed)
         return rep.to_dict()
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "thinks": self.thinks, "dreams": self.dream.dreams,
                 "world_steps": self.world.train_steps,
                 "executive": self.executive.health(), "charter": self.charter.health()}

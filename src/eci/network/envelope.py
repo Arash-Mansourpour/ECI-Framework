@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import json
 import time
-from collections import defaultdict, deque
-from dataclasses import dataclass, field
-from typing import Any, Deque, Dict, Tuple
+from collections import deque
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["Envelope", "EnvelopeError", "seal", "open_envelope", "ReplayGuard"]
 
@@ -37,7 +37,7 @@ class Envelope:
             sort_keys=True, separators=(",", ":"), default=str,
         ).encode()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"sender": self.sender, "seq": self.seq, "timestamp": self.timestamp,
                 "payload": self.payload, "public_hex": self.public_hex, "signature": self.signature}
 
@@ -46,8 +46,8 @@ class ReplayGuard:
     """Per-sender strictly-increasing seq + bounded memory."""
 
     def __init__(self, capacity: int = 4096) -> None:
-        self.last_seq: Dict[str, int] = {}
-        self.seen: Deque[Tuple[str, int]] = deque(maxlen=capacity)
+        self.last_seq: dict[str, int] = {}
+        self.seen: deque[tuple[str, int]] = deque(maxlen=capacity)
 
     def accept(self, sender: str, seq: int) -> bool:
         if (sender, seq) in self.seen:
@@ -68,8 +68,8 @@ def seal(sender: str, keypair, seq: int, payload: Any) -> Envelope:
     return env
 
 
-def open_envelope(env: Envelope, keys: Dict[str, bytes], guard: ReplayGuard,
-                  max_age_s: float = 300.0, private_hints: Dict[str, bytes] | None = None) -> Any:
+def open_envelope(env: Envelope, keys: dict[str, bytes], guard: ReplayGuard,
+                  max_age_s: float = 300.0, private_hints: dict[str, bytes] | None = None) -> Any:
     """Verify sender key + signature + freshness + seq. Returns payload or raises."""
     from eci.protocol0.keys import verify as _verify
 

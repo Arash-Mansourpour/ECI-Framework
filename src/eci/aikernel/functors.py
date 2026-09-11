@@ -20,7 +20,7 @@ Convention: big-endian qubits (q0 = MSB), matching eci.quantum.gates.
 
 from __future__ import annotations
 
-from typing import Dict, List, Sequence, Tuple
+from collections.abc import Sequence
 
 import torch
 
@@ -28,7 +28,7 @@ __all__ = ["pauli_1q", "pauli_string_matrix", "default_paulis",
            "pauli_expectations", "density_to_cov",
            "split_belief", "fuse_beliefs"]
 
-_PAULI_1Q: Dict[str, torch.Tensor] = {
+_PAULI_1Q: dict[str, torch.Tensor] = {
     "I": torch.tensor([[1, 0], [0, 1]], dtype=torch.complex64),
     "X": torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64),
     "Y": torch.tensor([[0, -1j], [1j, 0]], dtype=torch.complex64),
@@ -52,7 +52,7 @@ def pauli_string_matrix(label: str, n_qubits: int | None = None) -> torch.Tensor
         raise ValueError(f"bad pauli label {label!r}")
     # digitless letters consume successive free qubits from 0
     # ("ZZ" -> Z_0 Z_1; explicit digits pin first: "ZX1" -> Z_0 X_1)
-    assign: List[int] = [-1] * len(toks)
+    assign: list[int] = [-1] * len(toks)
     used: set = set()
     for i, (a, b) in enumerate(toks):
         if b:
@@ -67,7 +67,7 @@ def pauli_string_matrix(label: str, n_qubits: int | None = None) -> torch.Tensor
             used.add(q)
     need = max(assign) + 1
     n = max(need, n_qubits or 0)
-    ops: List[torch.Tensor] = [pauli_1q("I") for _ in range(n)]
+    ops: list[torch.Tensor] = [pauli_1q("I") for _ in range(n)]
     for (a, _), q in zip(toks, assign):
         if not torch.equal(ops[q], _PAULI_1Q["I"]):
             raise ValueError(f"qubit {q} assigned twice in {label!r}")
@@ -78,7 +78,7 @@ def pauli_string_matrix(label: str, n_qubits: int | None = None) -> torch.Tensor
     return M
 
 
-def default_paulis(n_qubits: int) -> List[str]:
+def default_paulis(n_qubits: int) -> list[str]:
     return [f"{P}{q}" for q in range(n_qubits) for P in ("X", "Y", "Z")]
 
 
@@ -93,7 +93,7 @@ def pauli_expectations(rho: torch.Tensor, n_qubits: int,
 
 
 def density_to_cov(rho: torch.Tensor, n_qubits: int,
-                   labels: Sequence[str]) -> Tuple[torch.Tensor, torch.Tensor]:
+                   labels: Sequence[str]) -> tuple[torch.Tensor, torch.Tensor]:
     """Quantum covariance matrix. Returns (mu (d,), cov (d,d)) float32."""
     labels = list(labels)
     d = len(labels)
@@ -116,7 +116,7 @@ def density_to_cov(rho: torch.Tensor, n_qubits: int,
 
 
 def split_belief(mu: torch.Tensor, cov: torch.Tensor,
-                 weights: Sequence[float]) -> List[Tuple[torch.Tensor, torch.Tensor]]:
+                 weights: Sequence[float]) -> list[tuple[torch.Tensor, torch.Tensor]]:
     """Precision-weighted split; weights must sum to 1 (checked)."""
     w = torch.as_tensor(list(weights), dtype=torch.float32)
     if abs(float(w.sum().item()) - 1.0) > 1e-5:
@@ -129,7 +129,7 @@ def split_belief(mu: torch.Tensor, cov: torch.Tensor,
     return out
 
 
-def fuse_beliefs(parts: Sequence[Tuple[torch.Tensor, torch.Tensor]]) -> Tuple[torch.Tensor, torch.Tensor]:
+def fuse_beliefs(parts: Sequence[tuple[torch.Tensor, torch.Tensor]]) -> tuple[torch.Tensor, torch.Tensor]:
     """Precision-sum fusion: the exact inverse of split_belief."""
     Lam = torch.zeros_like(parts[0][1])
     b = torch.zeros_like(parts[0][0])

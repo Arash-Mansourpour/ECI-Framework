@@ -8,12 +8,11 @@ size the LPU that guards Protocol-0 signing keys.
 from __future__ import annotations
 
 import math
-from typing import Dict
 
 __all__ = ["distance_for_target", "memory_cost"]
 
 
-def distance_for_target(p: float, target: float = 1e-12, p_th: float = 0.0075) -> Dict:
+def distance_for_target(p: float, target: float = 1e-12, p_th: float = 0.0075) -> dict:
     """Smallest odd distance with analytic pL <= target (infeasible above threshold)."""
     if p >= p_th:
         return {"feasible": False, "distance": None, "p_logical": 0.5}
@@ -26,7 +25,7 @@ def distance_for_target(p: float, target: float = 1e-12, p_th: float = 0.0075) -
     return {"feasible": False, "distance": None, "p_logical": 0.1 * (p / p_th) ** 16}
 
 
-def memory_cost(p: float, target: float = 1e-12, k_keys: int = 64) -> Dict:
+def memory_cost(p: float, target: float = 1e-12, k_keys: int = 64) -> dict:
     """Physical qubits for k logical key-qubits: surface (k*d^2) vs BB (k*d^2/12 rate edge)."""
     r = distance_for_target(p, target)
     if not r["feasible"]:

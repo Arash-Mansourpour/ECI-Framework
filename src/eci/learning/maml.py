@@ -15,8 +15,7 @@ switches to FOMAML (cheaper, no second derivatives).
 
 from __future__ import annotations
 
-import copy
-from typing import Callable, List, Optional, Sequence, Tuple
+from collections.abc import Callable, Sequence
 
 import torch
 import torch.nn as nn
@@ -38,8 +37,8 @@ class MetaMLP(nn.Module):
     ) -> None:
         super().__init__()
         dims = [in_features] + [hidden] * n_hidden_layers + [out_features]
-        self.shapes: List[Tuple[int, int]] = []
-        self.biases: List[int] = []
+        self.shapes: list[tuple[int, int]] = []
+        self.biases: list[int] = []
         for a, b in zip(dims[:-1], dims[1:]):
             self.shapes.append((a, b))
             self.biases.append(b)
@@ -57,12 +56,12 @@ class MetaMLP(nn.Module):
         for b in self._biases:
             nn.init.zeros_(b)
 
-    def param_vector(self) -> List[torch.Tensor]:
-        params: List[torch.Tensor] = [p for p in self._weights]
+    def param_vector(self) -> list[torch.Tensor]:
+        params: list[torch.Tensor] = [p for p in self._weights]
         params += [p for p in self._biases]
         return params
 
-    def functional_forward(self, x: torch.Tensor, params: List[torch.Tensor]) -> torch.Tensor:
+    def functional_forward(self, x: torch.Tensor, params: list[torch.Tensor]) -> torch.Tensor:
         """Forward with an explicit parameter list (enables MAML inner loop)."""
         n_w = len(self.shapes)
         weights = params[:n_w]
@@ -75,7 +74,7 @@ class MetaMLP(nn.Module):
         return h
 
 
-TaskBatch = Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+TaskBatch = tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
 
 
 class MAML:
@@ -87,7 +86,7 @@ class MAML:
         inner_lr: float = 0.01,
         outer_lr: float = 0.001,
         first_order: bool = False,
-        loss_fn: Optional[Callable[..., torch.Tensor]] = None,
+        loss_fn: Callable[..., torch.Tensor] | None = None,
     ) -> None:
         if not hasattr(model, "functional_forward"):
             raise TypeError(
@@ -106,7 +105,7 @@ class MAML:
         support_x: torch.Tensor,
         support_y: torch.Tensor,
         n_inner_steps: int = 5,
-    ) -> List[torch.Tensor]:
+    ) -> list[torch.Tensor]:
         """Adapt a *cloned* parameter list to the support set.
 
         Returns the adapted parameters; with ``first_order=False`` the

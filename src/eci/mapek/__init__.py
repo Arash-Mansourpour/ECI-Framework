@@ -11,10 +11,10 @@ auditable, reversible act — autonomy with a paper trail.
 from __future__ import annotations
 
 import asyncio
-import math
 import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["SLO", "Strategy", "MAPEK", "LADDER"]
 
@@ -31,7 +31,7 @@ class SLO:
     above: bool = True   # violate when metric > threshold (else < threshold)
     window: int = 8
 
-    def violated(self, series: List[float]) -> bool:
+    def violated(self, series: list[float]) -> bool:
         if not series:
             return False
         v = sum(series[-self.window:]) / min(len(series), self.window)
@@ -42,7 +42,7 @@ class SLO:
 class Strategy:
     name: str
     applies: Callable[[str], bool]          # slo name -> relevant?
-    dry: Callable[[], Dict[str, Any]]       # twin simulation
+    dry: Callable[[], dict[str, Any]]       # twin simulation
     apply: Callable[[], Any]                # real effect (sync or async)
     compensate: Callable[[], Any] | None = None
 
@@ -51,9 +51,9 @@ class MAPEK:
     name = "mapek"
 
     def __init__(self, bus=None, provenance=None, audit=None) -> None:
-        self.slos: List[SLO] = []
-        self.strategies: List[Strategy] = []
-        self.hist: Dict[str, List[float]] = {}
+        self.slos: list[SLO] = []
+        self.strategies: list[Strategy] = []
+        self.hist: dict[str, list[float]] = {}
         self.rung = "normal"
         self.bus = bus
         self.provenance = provenance
@@ -79,12 +79,12 @@ class MAPEK:
                                    lambda: self._set_rung("safe-mode"),
                                    lambda: self._set_rung("normal")))
 
-    def _set_rung(self, rung: str) -> Dict[str, str]:
+    def _set_rung(self, rung: str) -> dict[str, str]:
         old, self.rung = self.rung, rung
         return {"from": old, "to": rung, "live": LIVE_NS[rung]}
 
     # -- cycle ------------------------------------------------------------
-    async def cycle(self, metrics: Dict[str, float]) -> Dict[str, Any]:
+    async def cycle(self, metrics: dict[str, float]) -> dict[str, Any]:
         t0 = time.time()
         for k, v in metrics.items():
             self.hist.setdefault(k, []).append(float(v))
@@ -153,6 +153,6 @@ class MAPEK:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "rung": self.rung, "cycles": self.cycles,
                 "remediations": self.remediations, "slos": len(self.slos)}

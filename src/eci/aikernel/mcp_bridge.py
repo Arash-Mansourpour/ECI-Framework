@@ -38,13 +38,13 @@ Deliberately KEPT direct imports (Phase 5 §4 bypass list — file:line:reason):
 from __future__ import annotations
 
 import inspect
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["STATE_SCHEMA", "EMPTY_SCHEMA", "FREE_ENERGY_SCHEMA",
            "register_contributor", "register_ledger", "describe_ledger",
            "build_unification", "ADAPTER_NAMESPACES"]
 
-STATE_SCHEMA: Dict[str, Any] = {
+STATE_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
         "observation": {
@@ -60,9 +60,9 @@ STATE_SCHEMA: Dict[str, Any] = {
     "additionalProperties": True,
 }
 
-EMPTY_SCHEMA: Dict[str, Any] = {"type": "object", "properties": {}}
+EMPTY_SCHEMA: dict[str, Any] = {"type": "object", "properties": {}}
 
-FREE_ENERGY_SCHEMA: Dict[str, Any] = {
+FREE_ENERGY_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {"free_energy": {"type": "number"}},
 }
@@ -75,7 +75,7 @@ def _coerce_observation(raw: Any) -> Any:
     return torch.as_tensor(raw, dtype=torch.float32)
 
 
-def _filter_options(contributor: Any, options: Dict[str, Any]) -> Dict[str, Any]:
+def _filter_options(contributor: Any, options: dict[str, Any]) -> dict[str, Any]:
     try:
         params = inspect.signature(contributor.update).parameters
     except (TypeError, ValueError):
@@ -84,22 +84,22 @@ def _filter_options(contributor: Any, options: Dict[str, Any]) -> Dict[str, Any]
 
 
 def register_contributor(registry: Any, namespace: str, contributor: Any,
-                         version: str = "7.0.0") -> List[str]:
+                         version: str = "7.0.0") -> list[str]:
     """Expose posterior/update/free_energy with the shared schema."""
     from eci.mcp.registry import McpTool
     base = f"aik.{namespace}"
 
-    def _posterior(args: Dict[str, Any], ctx: Dict[str, Any]) -> Any:
+    def _posterior(args: dict[str, Any], ctx: dict[str, Any]) -> Any:
         return contributor.posterior().to_dict()
 
-    def _update(args: Dict[str, Any], ctx: Dict[str, Any]) -> Any:
+    def _update(args: dict[str, Any], ctx: dict[str, Any]) -> Any:
         if "observation" not in args:
             raise ValueError("update requires 'observation'")
         obs = _coerce_observation(args["observation"])
         opts = _filter_options(contributor, dict(args.get("options", {})))
         return contributor.update(obs, **opts).to_dict()
 
-    def _free(args: Dict[str, Any], ctx: Dict[str, Any]) -> Any:
+    def _free(args: dict[str, Any], ctx: dict[str, Any]) -> Any:
         import torch
         val = contributor.free_energy_contribution()
         if torch.is_tensor(val):
@@ -123,14 +123,14 @@ def register_contributor(registry: Any, namespace: str, contributor: Any,
 
 
 def register_ledger(registry: Any, ledger: Any,
-                    namespace: str = "aik.ledger") -> List[str]:
+                    namespace: str = "aik.ledger") -> list[str]:
     """Expose shares()/total_free_energy() for the whole unification state."""
     from eci.mcp.registry import McpTool
 
-    def _shares(args: Dict[str, Any], ctx: Dict[str, Any]) -> Any:
+    def _shares(args: dict[str, Any], ctx: dict[str, Any]) -> Any:
         return {"shares": {k: float(v) for k, v in ledger.shares().items()}}
 
-    def _total(args: Dict[str, Any], ctx: Dict[str, Any]) -> Any:
+    def _total(args: dict[str, Any], ctx: dict[str, Any]) -> Any:
         import torch
         tot = ledger.total_free_energy()
         if torch.is_tensor(tot):
@@ -138,7 +138,7 @@ def register_ledger(registry: Any, ledger: Any,
         return {"total_free_energy": float(tot),
                 "members": sorted(ledger.members())}
 
-    def _describe(args: Dict[str, Any], ctx: Dict[str, Any]) -> Any:
+    def _describe(args: dict[str, Any], ctx: dict[str, Any]) -> Any:
         """Per-member share + audit category + what the share measures.
 
         Categories/notes paraphrased (short) from each adapter's framing
@@ -160,14 +160,14 @@ def register_ledger(registry: Any, ledger: Any,
     return [t.name for t in tools]
 
 
-def describe_ledger(ledger: Any) -> Dict[str, Any]:
+def describe_ledger(ledger: Any) -> dict[str, Any]:
     """Shared describe logic for the MCP tool AND framework status/CLI.
 
     One implementation, three callers (tool handler, system_status, CLI) —
     so the meanings can never diverge between transports.
     """
     notes = _adapter_notes()
-    out: Dict[str, Any] = {}
+    out: dict[str, Any] = {}
     for name, member in ledger.members().items():
         hit = notes.get(type(member))
         share = ledger.shares().get(name)
@@ -177,7 +177,7 @@ def describe_ledger(ledger: Any) -> Dict[str, Any]:
     return {"members": out}
 
 
-def _adapter_notes() -> Dict[Any, Any]:
+def _adapter_notes() -> dict[Any, Any]:
     from eci.cognition.aikernel_adapter import ScientistContributor, WorldModelContributor
     from eci.consciousness.aikernel_adapter import FEPContributor, PhiContributor
     from eci.governance.aikernel_adapter import AgentContributor
@@ -204,7 +204,7 @@ def _adapter_notes() -> Dict[Any, Any]:
     }
 
 
-def build_unification(registry: Any = None) -> Dict[str, Any]:
+def build_unification(registry: Any = None) -> dict[str, Any]:
     """Default 8-member unification mesh (Phase 9: complete).
 
     quantum + noisy (quantum/) · phi + fep (consciousness/) · agent
@@ -241,7 +241,7 @@ def build_unification(registry: Any = None) -> Dict[str, Any]:
     ledger = KernelLedger()
     for name, member in contributors.items():
         ledger.register(name, member)
-    names: List[str] = []
+    names: list[str] = []
     for ns, member in contributors.items():
         names += register_contributor(reg, ns, member)
     names += register_ledger(reg, ledger)

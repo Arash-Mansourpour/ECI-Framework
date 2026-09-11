@@ -7,8 +7,6 @@ Supports the standard EWC penalty and the online variant (Schwarz et al.
 
 from __future__ import annotations
 
-from typing import Dict, Optional
-
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -27,7 +25,7 @@ class ElasticWeightConsolidation:
         lambda_ewc: float = 0.4,
         online: bool = False,
         gamma: float = 0.999,
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
     ) -> None:
         self.model = model
         self.lambda_ewc = lambda_ewc
@@ -35,14 +33,14 @@ class ElasticWeightConsolidation:
         self.gamma = gamma
         self.device = device
         self.logger = get_logger("learning.ewc")
-        self.fisher_dict: Dict[str, torch.Tensor] = {}
-        self.optpar_dict: Dict[str, torch.Tensor] = {}
+        self.fisher_dict: dict[str, torch.Tensor] = {}
+        self.optpar_dict: dict[str, torch.Tensor] = {}
         for name, param in model.named_parameters():
             self.fisher_dict[name] = torch.zeros_like(param)
             self.optpar_dict[name] = param.data.clone()
 
     # ------------------------------------------------------------------
-    def compute_fisher(self, data_loader: DataLoader, max_batches: Optional[int] = None) -> None:
+    def compute_fisher(self, data_loader: DataLoader, max_batches: int | None = None) -> None:
         """Estimate F ~ E[(d/dtheta -log p(y|x,theta))^2] on task data."""
         self.model.eval()
         for name in self.fisher_dict:

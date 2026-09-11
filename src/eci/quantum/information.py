@@ -12,7 +12,6 @@ Covers
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Tuple
 
 import torch
 
@@ -45,7 +44,7 @@ def shannon_entropy(probs: torch.Tensor, base: float = 2.0) -> torch.Tensor:
     return ent
 
 
-def quantum_mutual_information(rho_AB: torch.Tensor, n_qubits: int, keep_A: List[int]) -> float:
+def quantum_mutual_information(rho_AB: torch.Tensor, n_qubits: int, keep_A: list[int]) -> float:
     """I(A:B) = S(ρ_A) + S(ρ_B) - S(ρ_AB)."""
     keep_A = sorted(keep_A)
     keep_B = sorted(set(range(n_qubits)) - set(keep_A))
@@ -58,7 +57,7 @@ def quantum_mutual_information(rho_AB: torch.Tensor, n_qubits: int, keep_A: List
     return sA + sB - sAB
 
 
-def holevo_chi(ensemble: List[Tuple[float, torch.Tensor]]) -> float:
+def holevo_chi(ensemble: list[tuple[float, torch.Tensor]]) -> float:
     """Holevo χ = S(Σ pᵢρᵢ) - Σ pᵢ S(ρᵢ): upper bound on accessible info."""
     avg = sum(p * rho for p, rho in ensemble)
     if avg.dim() == 2:
@@ -71,7 +70,7 @@ def holevo_chi(ensemble: List[Tuple[float, torch.Tensor]]) -> float:
     return max(0.0, s_avg - sub)
 
 
-def coherent_information(rho_AB: torch.Tensor, n_qubits: int, keep_A: List[int]) -> float:
+def coherent_information(rho_AB: torch.Tensor, n_qubits: int, keep_A: list[int]) -> float:
     """I(A>B) = S(ρ_B) - S(ρ_AB): achievable quantum communication rate."""
     keep_A = sorted(keep_A)
     keep_B = sorted(set(range(n_qubits)) - set(keep_A))
@@ -94,7 +93,7 @@ def chsh_operator(
     )
 
 
-def chsh_value(rho: torch.Tensor, settings: Dict[str, torch.Tensor] | None = None) -> float:
+def chsh_value(rho: torch.Tensor, settings: dict[str, torch.Tensor] | None = None) -> float:
     """<B>_ρ for optimal qubit settings (defaults to maximal-violation angles).
 
     Classical (LHV): |S| ≤ 2.  Quantum (Tsirelson): |S| ≤ 2√2 ≈ 2.828.
@@ -123,9 +122,6 @@ def no_cloning_violation(U: torch.Tensor) -> float:
     {|0>,|1>,|+>} and return 1 - mean fidelity (0 = perfect, impossible
     by linearity; any physical U scores > 0 — the no-cloning theorem).
     """
-    from eci.quantum.statevector import StatevectorSimulator as _S
-
-    sim = _S(2)
     tests = [
         torch.tensor([[1.0, 0.0, 0.0, 0.0]], dtype=torch.complex64),
         torch.tensor([[0.0, 0.0, 0.0, 1.0]], dtype=torch.complex64),
@@ -141,7 +137,7 @@ def no_cloning_violation(U: torch.Tensor) -> float:
     return 1.0 - sum(fids) / len(fids)
 
 
-def teleportation_fidelity(n_trials: int = 8, seed: int = 7) -> Dict[str, float]:
+def teleportation_fidelity(n_trials: int = 8, seed: int = 7) -> dict[str, float]:
     """Simulate textbook teleportation on random single-qubit states.
 
     Alice holds unknown |ψ> + half EPR; Bell measurement + Pauli correction
@@ -150,7 +146,7 @@ def teleportation_fidelity(n_trials: int = 8, seed: int = 7) -> Dict[str, float]
     g = torch.Generator().manual_seed(seed)
     sim3 = StatevectorSimulator(3)
     sim1 = StatevectorSimulator(1)
-    fids: List[float] = []
+    fids: list[float] = []
     for _ in range(n_trials):
         psi = sim1.random_state(generator=g)[0]  # 2-dim
         # |ψ> ⊗ |Φ+>
@@ -193,7 +189,7 @@ def teleportation_fidelity(n_trials: int = 8, seed: int = 7) -> Dict[str, float]
     return {"mean_conditional_fidelity": sum(fids) / len(fids), "n_trials": float(n_trials)}
 
 
-def superdense_coding_capacity() -> Dict[str, float]:
+def superdense_coding_capacity() -> dict[str, float]:
     """Ideal superdense coding: 2 classical bits per transmitted qubit + EPR."""
     return {"cbits_per_qubit": 2.0, "ebits_consumed": 1.0, "classical_bound": 1.0}
 
@@ -204,7 +200,7 @@ def schumacher_limit(rho: torch.Tensor) -> float:
     return float(qd.von_neumann_entropy(r)[0].item())
 
 
-def entanglement_cost_bound(rho: torch.Tensor) -> Dict[str, float]:
+def entanglement_cost_bound(rho: torch.Tensor) -> dict[str, float]:
     """Distillable entanglement ≤ E_F; cost ≥ E_F (hashing / formation gap)."""
     from eci.quantum.entanglement import concurrence as _conc
 

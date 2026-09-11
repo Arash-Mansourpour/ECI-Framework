@@ -18,10 +18,9 @@ import asyncio
 import json
 import socket
 import ssl
-import threading
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["SecureChannelConfig", "HybridSecureChannel"]
 
@@ -43,7 +42,7 @@ class HybridSecureChannel:
 
     def __init__(self, config: SecureChannelConfig | None = None) -> None:
         self.config = config or SecureChannelConfig()
-        self._inboxes: Dict[str, asyncio.Queue] = {}
+        self._inboxes: dict[str, asyncio.Queue] = {}
         self.sent = 0
         self.delivered = 0
         self.dropped = 0
@@ -54,8 +53,8 @@ class HybridSecureChannel:
         if node_id not in self._inboxes:
             self._inboxes[node_id] = asyncio.Queue(maxsize=self.config.capacity)
 
-    def _seal(self, sender: str, message: Any) -> Dict[str, Any]:
-        frame: Dict[str, Any] = {"from": sender, "message": message, "t": time.time()}
+    def _seal(self, sender: str, message: Any) -> dict[str, Any]:
+        frame: dict[str, Any] = {"from": sender, "message": message, "t": time.time()}
         if self.config.psk:
             import hashlib
             mask = hashlib.sha256(self.config.psk + sender.encode()).digest()
@@ -79,10 +78,10 @@ class HybridSecureChannel:
         self.sent += delivered
         return delivered
 
-    async def drain(self, node_id: str, timeout: float = 0.1) -> List[Any]:
+    async def drain(self, node_id: str, timeout: float = 0.1) -> list[Any]:
         self.register(node_id)
         q = self._inboxes[node_id]
-        out: List[Any] = []
+        out: list[Any] = []
         while True:
             try:
                 out.append(await asyncio.wait_for(q.get(), timeout=timeout))
@@ -92,7 +91,7 @@ class HybridSecureChannel:
         return out
 
     # -- socket helpers -------------------------------------------------
-    def tls_context(self, server: bool = False) -> Optional[ssl.SSLContext]:
+    def tls_context(self, server: bool = False) -> ssl.SSLContext | None:
         if not self.config.use_tls:
             return None
         ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH if server else ssl.Purpose.SERVER_AUTH)
@@ -102,7 +101,7 @@ class HybridSecureChannel:
             ctx.load_verify_locations(self.config.cafile)
         return ctx
 
-    def socket_pair_ok(self) -> Dict[str, Any]:
+    def socket_pair_ok(self) -> dict[str, Any]:
         """Loopback TCP sanity probe (no TLS): verifies real-socket path."""
         if self.config.port == 0:
             return {"ok": True, "mode": "in-process", "sealed_frames": self.sealed_frames}
@@ -121,7 +120,7 @@ class HybridSecureChannel:
         except Exception as exc:  # noqa: BLE001
             return {"ok": False, "error": repr(exc)}
 
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "peers": len(self._inboxes), "sent": self.sent,
                 "delivered": self.delivered, "dropped": self.dropped,
                 "sealed_frames": self.sealed_frames,

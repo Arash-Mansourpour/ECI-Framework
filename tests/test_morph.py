@@ -1,5 +1,4 @@
 """Morphogenesis: living self-evolving graphs and networks."""
-import math
 
 
 def _path3():

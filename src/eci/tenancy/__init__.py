@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Quota", "Namespace", "TenancyManager"]
 
@@ -27,7 +27,7 @@ class Namespace:
     quota: Quota = field(default_factory=Quota)
     used_actions: int = 0
     used_bytes: int = 0
-    members: List[str] = field(default_factory=list)
+    members: list[str] = field(default_factory=list)
     created_at: float = field(default_factory=time.time)
 
     def admit(self, actions: int = 1, nbytes: int = 0) -> bool:
@@ -48,7 +48,7 @@ class TenancyManager:
     name = "tenancy"
 
     def __init__(self) -> None:
-        self._ns: Dict[str, Namespace] = {}
+        self._ns: dict[str, Namespace] = {}
         self.create("default")
 
     def create(self, ns_id: str, quota: Quota | None = None) -> Namespace:
@@ -66,6 +66,6 @@ class TenancyManager:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "namespaces": sorted(self._ns),
                 "usage": {k: {"actions": v.used_actions, "bytes": v.used_bytes} for k, v in self._ns.items()}}

@@ -14,8 +14,8 @@ latents (listed in docs/COGNITION_AGI.md as the upgrade path).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -39,7 +39,7 @@ class _DynamicsHead(nn.Module):
         self.mu = nn.Linear(hidden, latent)
         self.lv = nn.Linear(hidden, latent)
 
-    def forward(self, h: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, h: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         return self.mu(h), self.lv(h).clamp(-6.0, 2.0)
 
 
@@ -63,8 +63,7 @@ class LatentWorldModel(nn.Module):
 
     # -- core ----------------------------------------------------------
     def step(self, h: torch.Tensor, obs: torch.Tensor, act: torch.Tensor,
-             sample: bool = True) -> Dict[str, torch.Tensor]:
-        c = self.cfg
+             sample: bool = True) -> dict[str, torch.Tensor]:
         e = torch.tanh(self.enc(obs))
         h2 = self.gru(torch.cat([e, act], -1), h)
         mu_q, lv_q = self.post(h2)
@@ -82,7 +81,7 @@ class LatentWorldModel(nn.Module):
         return out
 
     def loss(self, obs: torch.Tensor, act: torch.Tensor, rew: torch.Tensor,
-             next_obs: torch.Tensor) -> Dict[str, torch.Tensor]:
+             next_obs: torch.Tensor) -> dict[str, torch.Tensor]:
         h = torch.zeros(obs.size(0), self.cfg.hidden)
         s = self.step(h, obs, act, sample=True)
         recon = ((s["obs_hat"] - next_obs) ** 2).mean()
@@ -94,7 +93,7 @@ class LatentWorldModel(nn.Module):
                 "kl": kl.detach(), "ensemble": ens.detach()}
 
     def train_step(self, obs: torch.Tensor, act: torch.Tensor,
-                   rew: torch.Tensor, next_obs: torch.Tensor) -> Dict[str, float]:
+                   rew: torch.Tensor, next_obs: torch.Tensor) -> dict[str, float]:
         self.opt.zero_grad()
         L = self.loss(obs, act, rew, next_obs)
         L["total"].backward()
@@ -105,7 +104,7 @@ class LatentWorldModel(nn.Module):
 
     @torch.no_grad()
     def imagine(self, h: torch.Tensor, z: torch.Tensor, policy: Any,
-                horizon: int = 8) -> Dict[str, torch.Tensor]:
+                horizon: int = 8) -> dict[str, torch.Tensor]:
         """Roll out latent trajectory with ``policy(h, z) -> act`` (prior path)."""
         B = h.size(0)
         zero_enc = torch.zeros(B, self.cfg.hidden)

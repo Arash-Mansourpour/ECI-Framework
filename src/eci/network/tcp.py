@@ -14,8 +14,8 @@ import asyncio
 import json
 import ssl
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["TcpPeer", "FramedTcpTransport"]
 
@@ -33,14 +33,14 @@ class FramedTcpTransport:
     name = "tcp"
 
     def __init__(self, node_id: str = "n0", host: str = "127.0.0.1", port: int = 0,
-                 ssl_ctx: Optional[ssl.SSLContext] = None) -> None:
+                 ssl_ctx: ssl.SSLContext | None = None) -> None:
         self.node_id = node_id
         self.host = host
         self.port = port
         self.ssl_ctx = ssl_ctx
-        self.peers: Dict[str, TcpPeer] = {}
+        self.peers: dict[str, TcpPeer] = {}
         self._inbox: asyncio.Queue = asyncio.Queue(maxsize=2048)
-        self._server: Optional[asyncio.AbstractServer] = None
+        self._server: asyncio.AbstractServer | None = None
         self.sent = 0
         self.received = 0
 
@@ -79,7 +79,7 @@ class FramedTcpTransport:
             await self._server.wait_closed()
             self._server = None
 
-    async def _send_one(self, peer: TcpPeer, frame: Dict[str, Any]) -> bool:
+    async def _send_one(self, peer: TcpPeer, frame: dict[str, Any]) -> bool:
         body = json.dumps(frame, default=str).encode()
         try:
             reader, writer = await asyncio.wait_for(
@@ -104,8 +104,8 @@ class FramedTcpTransport:
         self.sent += ok
         return ok
 
-    async def drain(self, node_id: str = "", timeout: float = 0.1) -> List[Any]:
-        out: List[Any] = []
+    async def drain(self, node_id: str = "", timeout: float = 0.1) -> list[Any]:
+        out: list[Any] = []
         while True:
             try:
                 out.append(await asyncio.wait_for(self._inbox.get(), timeout=timeout))
@@ -113,7 +113,7 @@ class FramedTcpTransport:
                 break
         return out
 
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "node": self.node_id, "port": self.port,
                 "peers": {k: {"errors": v.errors, "last_ok": v.last_ok} for k, v in self.peers.items()},
                 "sent": self.sent, "received": self.received}

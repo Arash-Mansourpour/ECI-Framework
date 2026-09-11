@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import torch
 
@@ -74,8 +74,8 @@ class QuantumState:
     significant bit; ``density_matrix`` has shape ``(batch, 2**n, 2**n)``.
     """
 
-    statevector: Optional[torch.Tensor] = None
-    density_matrix: Optional[torch.Tensor] = None
+    statevector: torch.Tensor | None = None
+    density_matrix: torch.Tensor | None = None
     coherence_time: float = 0.0  # T2 coherence time (seconds)
     fidelity: float = 0.0  # F = |<psi|phi>|^2 against a reference
     entanglement_entropy: float = 0.0  # Von Neumann entropy (bits)
@@ -93,7 +93,7 @@ class QuantumState:
                 .item()
             )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         for key in ("statevector", "density_matrix"):
             value = d.get(key)
@@ -109,7 +109,7 @@ class ConsciousnessProfile:
     """Consciousness profile based on IIT 4.0."""
 
     phi_value: float  # Integrated information Phi
-    phi_components: Dict[str, float] = field(default_factory=dict)
+    phi_components: dict[str, float] = field(default_factory=dict)
     consciousness_level: ConsciousnessLevel = ConsciousnessLevel.NONE
     neural_complexity: float = 0.0  # Lempel-Ziv / entropy mix
     quantum_coherence: float = 0.0  # Quantum contribution
@@ -117,10 +117,10 @@ class ConsciousnessProfile:
     temporal_consistency: float = 0.0
     information_integration: float = 0.0
     causal_density: float = 0.0
-    signature_pattern: Optional[torch.Tensor] = None  # Unique signature
-    architect_stamp: Optional[Dict[str, Any]] = None
+    signature_pattern: torch.Tensor | None = None  # Unique signature
+    architect_stamp: dict[str, Any] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["consciousness_level"] = self.consciousness_level.name
         if isinstance(self.signature_pattern, torch.Tensor):
@@ -134,21 +134,21 @@ class NetworkNode:
 
     node_id: str
     role: NetworkRole
-    consciousness_profile: Optional[ConsciousnessProfile] = None
+    consciousness_profile: ConsciousnessProfile | None = None
     quantum_signature: str = ""
-    capabilities: Dict[str, float] = field(default_factory=dict)
+    capabilities: dict[str, float] = field(default_factory=dict)
     trust_score: float = 1.0
     reputation_score: float = 1.0
     stake: float = 1.0  # weight for WBFT
-    contribution_history: List[Dict[str, Any]] = field(default_factory=list)
-    model_weights_hash: Optional[str] = None
+    contribution_history: list[dict[str, Any]] = field(default_factory=list)
+    model_weights_hash: str | None = None
     last_heartbeat: float = 0.0
     computational_power: float = 1.0  # TFLOPS
     memory_capacity: float = 8.0  # GB
     network_bandwidth: float = 100.0  # Mbps
-    architect_stamp: Optional[Dict[str, Any]] = None
+    architect_stamp: dict[str, Any] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["role"] = self.role.name
         if self.consciousness_profile is not None:

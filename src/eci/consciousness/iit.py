@@ -18,7 +18,7 @@ See ``consciousness/LIMITATIONS.md`` for what Phi is and is not.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import torch
 
@@ -36,19 +36,19 @@ __all__ = ["IntegratedInformationTheory", "sample_neural_state"]
 class IntegratedInformationTheory:
     """Integrated information (Phi) calculator with three estimators."""
 
-    def __init__(self, device: Optional[torch.device] = None) -> None:
+    def __init__(self, device: torch.device | None = None) -> None:
         self.device = device if device is not None else get_device()
         self.logger = get_logger("consciousness.iit")
 
     # ------------------------------------------------------------------
     def calculate_phi(
         self,
-        neural_state: Optional[torch.Tensor] = None,
-        connectivity: Optional[torch.Tensor] = None,
+        neural_state: torch.Tensor | None = None,
+        connectivity: torch.Tensor | None = None,
         method: str = "gaussian",
         exhaustive: bool = False,
-        state: Optional["GenerativeState"] = None,
-    ) -> Dict[str, float]:
+        state: GenerativeState | None = None,
+    ) -> dict[str, float]:
         """Compute Phi and its causal decomposition.
 
         Args:
@@ -103,11 +103,11 @@ class IntegratedInformationTheory:
     # ------------------------------------------------------------------
     def _phi_from_state(
         self,
-        state: "GenerativeState",
-        connectivity: Optional[torch.Tensor],
+        state: GenerativeState,
+        connectivity: torch.Tensor | None,
         method: str,
         exhaustive: bool,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         cov = state.cov.to(self.device).double()
         cov = 0.5 * (cov + cov.T)
         n = cov.shape[0]
@@ -174,7 +174,7 @@ class IntegratedInformationTheory:
 
         min_phi = float("inf")
 
-        def _gap(idx_a: List[int]) -> None:
+        def _gap(idx_a: list[int]) -> None:
             nonlocal min_phi
             idx_b = [i for i in range(n) if i not in idx_a]
             if not idx_a or not idx_b:
@@ -254,7 +254,7 @@ class IntegratedInformationTheory:
         self,
         neural_state: torch.Tensor,
         connectivity: torch.Tensor,
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """Cause / effect / intrinsic decomposition (correlation-based)."""
         n_time = neural_state.shape[0]
         if n_time < 3:
@@ -277,7 +277,7 @@ class IntegratedInformationTheory:
         return {"cause": cause, "effect": effect, "intrinsic": intrinsic}
 
 
-def sample_neural_state(state: "GenerativeState", n_time: int = 256, seed: int = 0) -> torch.Tensor:
+def sample_neural_state(state: GenerativeState, n_time: int = 256, seed: int = 0) -> torch.Tensor:
     """Draw a [time, neurons] series from Q(s) = N(mu, cov) (seeded).
 
     Used ONLY where a time series is structurally required (discrete Phi

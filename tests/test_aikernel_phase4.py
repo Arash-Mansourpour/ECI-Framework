@@ -113,10 +113,11 @@ def test_pec_exact_and_documented_cost():
 
 
 def test_scheduler_modes_and_vqe_under_noise():
+    import pytest
+
     from eci.aikernel.state_contract import KernelLedger, conforms
     from eci.quantum.aikernel_adapter import VQEContributor, tfi_hamiltonian
     from eci.quantum.mitigation import NoisyVQEContributor
-    import pytest
     H = tfi_hamiltonian(2)
     E0 = float(torch.linalg.eigvalsh(H.to_matrix(2)).min().item())
     with pytest.raises(ValueError):

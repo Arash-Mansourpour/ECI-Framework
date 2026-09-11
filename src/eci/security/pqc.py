@@ -21,7 +21,6 @@ import hmac
 import os
 import secrets
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
 
 from eci.core.identity import ARCHITECT
 from eci.logging import get_logger
@@ -81,13 +80,13 @@ def _chain(seed: bytes, steps: int) -> bytes:
 class HashBasedSigner:
     """WOTS+-style one-time hash-based signature (SLH-DSA family)."""
 
-    def __init__(self, seed: Optional[bytes] = None) -> None:
-        self.seed = seed if seed is not None else secrets.token_bytes(_N)
+    def __init__(self, seed: bytes | None = None) -> None:
+        self.seed: bytes | None = seed if seed is not None else secrets.token_bytes(_N)
         self.logger = get_logger("security.pqc")
 
     # Key layout: len = ceil(256 / 4) + 2 checksum chains
     @staticmethod
-    def _message_chunks(message: bytes) -> Tuple[list, int]:
+    def _message_chunks(message: bytes) -> tuple[list, int]:
         digest = hashlib.sha256(message).digest()
         chunks = [digest[i] // _W for i in range(_N)]
         checksum = sum((_W - 1 - c) for c in chunks)
@@ -101,7 +100,7 @@ class HashBasedSigner:
         # 32 message nibble-chains + up to 2 checksum chains
         return _N + 2
 
-    def sign(self, message: bytes) -> Dict[str, bytes]:
+    def sign(self, message: bytes) -> dict[str, bytes]:
         """One-time signature: publish the end-of-chain values for the message."""
         if self.seed is None:
             raise RuntimeError("signer already used (one-time key consumed)")
@@ -114,7 +113,7 @@ class HashBasedSigner:
         self.seed = None  # one-time use
         return {"signature": sig, "n_msg": n_msg.to_bytes(2, "big")}
 
-    def public_key(self) -> Dict[str, bytes]:
+    def public_key(self) -> dict[str, bytes]:
         """Public verification key: end-of-max-chain values for each chain."""
         pks = []
         for i in range(self._chain_len()):
@@ -122,7 +121,7 @@ class HashBasedSigner:
             pks.append(_chain(chain_seed, _W - 1))
         return {"public_chains": b"".join(pks)}
 
-    def verify_with_pk(self, message: bytes, signature: Dict[str, bytes], public_key: Dict[str, bytes]) -> bool:
+    def verify_with_pk(self, message: bytes, signature: dict[str, bytes], public_key: dict[str, bytes]) -> bool:
         """Verify the signature by completing each chain to the public end."""
         chunks, _ = self._message_chunks(message)
         sig = signature["signature"]
@@ -158,14 +157,14 @@ class SecureChannel:
             counter += 1
         return stream[:length]
 
-    def encrypt(self, plaintext: bytes) -> Tuple[bytes, bytes, bytes]:
+    def encrypt(self, plaintext: bytes) -> tuple[bytes, bytes, bytes]:
         nonce = os.urandom(16)
         ks = self._keystream(nonce, len(plaintext))
         ciphertext = bytes(a ^ b for a, b in zip(plaintext, ks))
         tag = hmac.new(self.mac_key, nonce + ciphertext, hashlib.sha256).digest()
         return nonce, ciphertext, tag
 
-    def decrypt(self, nonce: bytes, ciphertext: bytes, tag: bytes) -> Optional[bytes]:
+    def decrypt(self, nonce: bytes, ciphertext: bytes, tag: bytes) -> bytes | None:
         expected = hmac.new(self.mac_key, nonce + ciphertext, hashlib.sha256).digest()
         if not hmac.compare_digest(expected, tag):
             return None
@@ -190,7 +189,7 @@ class PQCSuite:
         self.logger.info("PQC suite ready (oqs_available=%s)", _OQS_AVAILABLE)
 
     @property
-    def capabilities(self) -> Dict[str, bool]:
+    def capabilities(self) -> dict[str, bool]:
         return {
             "hash_based_signatures": True,
             "ml_kem_adapter": _OQS_AVAILABLE,
@@ -199,13 +198,13 @@ class PQCSuite:
             "architect_bound": True,
         }
 
-    def architect_signed_token(self, payload: bytes) -> Dict[str, bytes]:
+    def architect_signed_token(self, payload: bytes) -> dict[str, bytes]:
         """Sign a payload under the architect's one-time hash-based key."""
         pk = self.signer.public_key()
         sig = self.signer.sign(ARCHITECT.name.encode() + b":" + payload)
         return {"payload": payload, "signature": sig["signature"], "public_key": pk["public_chains"]}
 
-    def verify_architect_token(self, token: Dict[str, bytes]) -> bool:
+    def verify_architect_token(self, token: dict[str, bytes]) -> bool:
         verifier = HashBasedSigner(seed=b"\x00")
         payload = token["payload"]
         return verifier.verify_with_pk(

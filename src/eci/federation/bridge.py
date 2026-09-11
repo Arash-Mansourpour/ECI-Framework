@@ -9,7 +9,7 @@ negotiated out-of-band; foreign votes count as weight*factor locally.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict
+from typing import Any
 
 __all__ = ["TranslationMap", "Bridge", "anchor", "translate_vote"]
 
@@ -18,7 +18,7 @@ __all__ = ["TranslationMap", "Bridge", "anchor", "translate_vote"]
 class TranslationMap:
     """Per-action foreign-weight factors for one direction (A->B)."""
 
-    factors: Dict[str, float] = field(default_factory=dict)
+    factors: dict[str, float] = field(default_factory=dict)
     default: float = 0.5
 
     def factor(self, action: str) -> float:
@@ -41,7 +41,7 @@ class Bridge:
         raise ValueError(f"unknown mesh {source!r} for this bridge")
 
 
-def anchor(bridge: Bridge, ledger_a, ledger_b) -> Dict[str, Any]:
+def anchor(bridge: Bridge, ledger_a, ledger_b) -> dict[str, Any]:
     """Cross-sign heads both ways; returns the anchor record pair."""
     ha, hb = ledger_a.snapshot(), ledger_b.snapshot()
     ra = ledger_a.append("federation_anchor", {"mesh": bridge.mesh_b, "head": hb})

@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["TokenBucket", "RateLimitExceeded", "Saga", "SagaStep"]
 
@@ -56,16 +57,16 @@ class Saga:
 
     def __init__(self, name: str = "saga") -> None:
         self.name = name
-        self.steps: List[SagaStep] = []
+        self.steps: list[SagaStep] = []
 
     def add(self, name: str, action: Callable[..., Any],
-            compensate: Callable[..., Any] | None = None) -> "Saga":
+            compensate: Callable[..., Any] | None = None) -> Saga:
         self.steps.append(SagaStep(name, action, compensate))
         return self
 
-    async def run(self, ctx: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    async def run(self, ctx: dict[str, Any] | None = None) -> dict[str, Any]:
         ctx = ctx or {}
-        done: List[SagaStep] = []
+        done: list[SagaStep] = []
         try:
             for st in self.steps:
                 res = st.action(ctx)
@@ -75,7 +76,7 @@ class Saga:
                 done.append(st)
             return {"ok": True, "ctx": ctx}
         except Exception as exc:  # noqa: BLE001
-            comp_errors: List[str] = []
+            comp_errors: list[str] = []
             for st in reversed(done):
                 if st.compensate is not None:
                     try:

@@ -23,42 +23,40 @@ Wallet: GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict, Optional
+from typing import Any
 
 import torch
 
 from eci.api import Gateway
 from eci.authz import PolicyEngine
 from eci.benchmarking.benchmark import ResearchBenchmark
+from eci.caps import Issuer as CapIssuer
+from eci.cognition import Cognition
+from eci.compat import CompatRegistry
 from eci.config import ECIConfig
-from eci.constants import ARCHITECT_NAME, CREATOR_WALLET
 from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
 from eci.consciousness.free_energy import FreeEnergyAgent
 from eci.consciousness.gnwt import GNWTWorkspace
 from eci.consciousness.iit import IntegratedInformationTheory
-from eci.consciousness.protocol import ConsciousnessProtocol, awareness_index_from_bits
+from eci.consciousness.protocol import ConsciousnessProtocol
 from eci.consciousness.quantum_mind import quantum_mind_audit
+from eci.constants import ARCHITECT_NAME, CREATOR_WALLET
+from eci.continuum import Continuum
 from eci.core.device import configure_seeds, device_dtype_info, get_device
 from eci.core.identity import ARCHITECT
 from eci.core.registry import GLOBAL_REGISTRY, register_component
 from eci.core.types import ConsciousnessLevel, ConsciousnessProfile
 from eci.cybernetics.autopoiesis import AutopoieticNetwork
-from eci.cognition import Cognition
-from eci.caps import Issuer as CapIssuer
-from eci.compat import CompatRegistry
-from eci.continuum import Continuum
 from eci.data import DataPlane
-from eci.futura import EmergencyPowers, Futarchy, Sortition
-from eci.mapek import MAPEK
-from eci.morph import Morphogenesis
-from eci.redteam import Challenger, ForecasterRegistry
-from eci.verify import Watchtower
 from eci.economy import Economy
+from eci.futura import EmergencyPowers, Futarchy, Sortition
 from eci.governance.dao import ECIDataDAO
 from eci.governance.treasury import Treasury
 from eci.kernel import Kernel
 from eci.logging import get_logger
+from eci.mapek import MAPEK
 from eci.mlops import MLOps
+from eci.morph import Morphogenesis
 from eci.network.manager import AutonomousNetworkManager
 from eci.observability import Observability
 from eci.orchestration import Orchestration
@@ -78,13 +76,18 @@ from eci.quantum import topological as qtopo
 from eci.quantum.gates import CNOT, H
 from eci.quantum.hamiltonian import PauliSum, PauliTerm
 from eci.quantum.statevector import StatevectorSimulator
-from eci.quantum.unified_field import ECIFieldConfig, eci_hamiltonian_expectation, eci_unified_hamiltonian
+from eci.quantum.unified_field import (
+    ECIFieldConfig,
+    eci_hamiltonian_expectation,
+)
+from eci.redteam import Challenger, ForecasterRegistry
 from eci.resilience import Resilience
 from eci.security.pqc import PQCSuite
 from eci.security.secrets import SecretManager
 from eci.security.secure_channel import HybridSecureChannel, SecureChannelConfig
 from eci.streaming import StreamBus
 from eci.tenancy import TenancyManager
+from eci.verify import Watchtower
 from eci.version import FRAMEWORK_VERSION, PAPER_VERSION
 
 __all__ = ["ECIFramework", "ECIFrameworkResearch"]
@@ -94,7 +97,7 @@ __all__ = ["ECIFramework", "ECIFrameworkResearch"]
 class ECIFramework:
     """Main ECI Framework — OMNIVERSE Edition (v6)."""
 
-    def __init__(self, config: Optional[ECIConfig] = None) -> None:
+    def __init__(self, config: ECIConfig | None = None) -> None:
         self.config = config or ECIConfig()
         configure_seeds(self.config.experiment.random_seed)
         self.device = get_device(self.config.experiment.device)
@@ -187,7 +190,6 @@ class ECIFramework:
         self.forecasters = ForecasterRegistry()
         # agent role needs mcp-relevant grants for pipeline auth
         try:
-            from eci.authz import Permission as _Perm
             self.authz.rbac.grant("agent-0", "agent")
         except Exception:  # noqa: BLE001
             pass
@@ -264,13 +266,13 @@ class ECIFramework:
     def _install_default_routes(self) -> None:
         gw = self.gateway
 
-        def _ping(params: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+        def _ping(params: dict[str, Any], ctx: dict[str, Any]) -> dict[str, Any]:
             return {"pong": True, "version": self.version}
 
-        def _system_status(params: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+        def _system_status(params: dict[str, Any], ctx: dict[str, Any]) -> dict[str, Any]:
             return self.system_status()
 
-        def _workflow_run(params: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+        def _workflow_run(params: dict[str, Any], ctx: dict[str, Any]) -> dict[str, Any]:
             return asyncio.run(self.workflow_demo()) if not asyncio.iscoroutinefunction(self.workflow_demo) else {}
 
         gw.add("v1/ping", _ping, summary="liveness probe")
@@ -323,7 +325,7 @@ class ECIFramework:
             self.logger.debug("awareness-protocol fusion skipped", exc_info=True)
         return profile
 
-    async def initialize_network(self) -> Dict[str, Any]:
+    async def initialize_network(self) -> dict[str, Any]:
         result = await self.network_manager.initialize_network()
         self.system_state = "network_active"
         return result
@@ -331,8 +333,8 @@ class ECIFramework:
     # ------------------------------------------------------------------
     # Quantum supremacy suite (v5)
     # ------------------------------------------------------------------
-    def run_quantum_suite(self) -> Dict[str, Any]:
-        results: Dict[str, Any] = {}
+    def run_quantum_suite(self) -> dict[str, Any]:
+        results: dict[str, Any] = {}
         # 1. Bell entanglement + CHSH violation (2-qubit register)
         bell_sim = StatevectorSimulator(2, device=self.device)
         bell = bell_sim.zero_state()
@@ -421,7 +423,7 @@ class ECIFramework:
     # ------------------------------------------------------------------
     # Activation protocol (Sovereign Architect ceremony)
     # ------------------------------------------------------------------
-    def activation_protocol(self) -> Dict[str, Any]:
+    def activation_protocol(self) -> dict[str, Any]:
         """Formal activation sequence binding all layers to the Architect.
 
         1. Verify architect identity key.
@@ -455,7 +457,7 @@ class ECIFramework:
         self,
         n_joins: int = 4,
         n_proposals: int = 3,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         init = await self.initialize_network()
         join_results = []
         for i in range(n_joins):
@@ -487,7 +489,7 @@ class ECIFramework:
     # ------------------------------------------------------------------
     # Info & benchmarking
     # ------------------------------------------------------------------
-    def info(self) -> Dict[str, Any]:
+    def info(self) -> dict[str, Any]:
         return {
             "name": "ECI Framework - Eternal Codex Infinitus",
             "version": self.version,
@@ -514,7 +516,7 @@ class ECIFramework:
             "system_state": self.system_state,
         }
 
-    def aik_status(self) -> Dict[str, Any]:
+    def aik_status(self) -> dict[str, Any]:
         """Unification-mesh observability (Phase 11).
 
         Reads the SAME KernelLedger instance the MCP tools read (built by
@@ -536,7 +538,7 @@ class ECIFramework:
                 "total_free_energy": total_f,
                 "describe": describe_ledger(ledger)["members"]}
 
-    def aik_snapshot(self, note: str = "") -> Dict[str, Any]:
+    def aik_snapshot(self, note: str = "") -> dict[str, Any]:
         """Phase 12: auditable F-trajectory point. Read-only by construction:
         it only READS shares/total (never steps/updates any contributor),
         then records the reading in provenance + audit. Two snapshots around
@@ -553,7 +555,7 @@ class ECIFramework:
         snap["provenance_id"] = node.id
         return {"ok": True, **snap}
 
-    def system_status(self) -> Dict[str, Any]:
+    def system_status(self) -> dict[str, Any]:
         """Full v6 hyper-architecture health snapshot (for `eci system`)."""
         def _safe(fn):
             try:
@@ -593,7 +595,7 @@ class ECIFramework:
             "aik": _safe(self.aik_status),
         }
 
-    async def workflow_demo(self) -> Dict[str, Any]:
+    async def workflow_demo(self) -> dict[str, Any]:
         """End-to-end v6 slice: DAG + event-bus + stream + provenance + audit."""
         from eci.kernel.bus import Event
         dag = self.orchestration.dag("v6-demo")

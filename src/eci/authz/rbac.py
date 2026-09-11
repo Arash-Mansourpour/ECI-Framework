@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import fnmatch
 from dataclasses import dataclass, field
-from typing import Dict, List, Set
 
 __all__ = ["Permission", "Role", "RBAC"]
 
@@ -18,13 +17,13 @@ class Permission:
 @dataclass
 class Role:
     name: str
-    permissions: List[Permission] = field(default_factory=list)
+    permissions: list[Permission] = field(default_factory=list)
 
 
 class RBAC:
     def __init__(self) -> None:
-        self.roles: Dict[str, Role] = {}
-        self.grants: Dict[str, Set[str]] = {}  # subject -> role names
+        self.roles: dict[str, Role] = {}
+        self.grants: dict[str, set[str]] = {}  # subject -> role names
 
     def add_role(self, role: Role) -> None:
         self.roles[role.name] = role
@@ -47,5 +46,5 @@ class RBAC:
                     return True
         return False
 
-    def roles_of(self, subject: str) -> List[str]:
+    def roles_of(self, subject: str) -> list[str]:
         return sorted(self.grants.get(subject, set()))

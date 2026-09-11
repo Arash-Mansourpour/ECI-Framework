@@ -19,9 +19,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict
-
-import torch
 
 from eci.constants import BOLTZMANN_CONSTANT, PLANCK_CONSTANT, REDUCED_PLANCK_CONSTANT
 
@@ -76,7 +73,7 @@ def froehlich_coherence_gain(pump_rate: float = 1.0, loss_rate: float = 0.5) -> 
     return 1.0 + 10.0 * math.log1p(pump_rate / loss_rate)
 
 
-def quantum_mind_audit(cfg: OrchORConfig | None = None) -> Dict[str, float]:
+def quantum_mind_audit(cfg: OrchORConfig | None = None) -> dict[str, float]:
     """Full quantitative audit: does quantum coherence survive for OR?
 
     Returns both timescales + verdict. Honest result for default biology:
@@ -100,6 +97,7 @@ def quantum_mind_audit(cfg: OrchORConfig | None = None) -> Dict[str, float]:
         "tau_decoherence_s": tau_dec,
         "tau_orch_or_s": tau_or,
         "ratio_or_over_dec": ratio,
+        "protected_ratio_or_over_t2": protected_ratio,
         "bare_microtubule_verdict": 1.0 if tau_dec >= tau_or else 0.0,
         "eci_lpu_T2_s": t2_lpu,
         "protected_feasible": 1.0 if t2_lpu * 100 >= tau_or / 1e6 else 0.0,

@@ -8,7 +8,7 @@ PII/secret scrub. Denied egress is logged, never silently dropped.
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any
 
 from eci.protocol0.ledger import Ledger
 from eci.protocol0.middleware import Middleware
@@ -35,12 +35,12 @@ def scrub(text: str) -> tuple[str, int]:
 class EgressFilter:
     """Gate outbound traffic by awareness/obedience/trust + challenge floor."""
 
-    def __init__(self, gate: Middleware, challenge_floor: float = 0.5, ledger: Optional[Ledger] = None) -> None:
+    def __init__(self, gate: Middleware, challenge_floor: float = 0.5, ledger: Ledger | None = None) -> None:
         self.gate = gate
         self.challenge_floor = challenge_floor
         self.ledger = ledger or gate.ledger
 
-    def inspect(self, agent_id: str, action: str, payload: Any, challenge_score: Optional[float] = None) -> Dict[str, Any]:
+    def inspect(self, agent_id: str, action: str, payload: Any, challenge_score: float | None = None) -> dict[str, Any]:
         allowed = self.gate.authorize(agent_id, action)
         if challenge_score is not None and challenge_score + 1e-9 < self.challenge_floor:
             if self.ledger:

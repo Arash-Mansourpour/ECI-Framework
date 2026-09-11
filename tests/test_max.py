@@ -5,7 +5,7 @@ from eci.benchmarking.obedience import BENCH_SUITE_V2, run_bench_v2
 from eci.consciousness.challenge import grade, issue, to_dict
 from eci.network.gossip import GossipNode, anti_entropy
 from eci.network.reputation import Reputation, ReputationBoard
-from eci.protocol0.egress import EgressFilter, scrub
+from eci.protocol0.egress import EgressFilter
 from eci.protocol0.ledger import Ledger
 from eci.protocol0.middleware import Middleware
 from eci.protocol0.spec import load_spec

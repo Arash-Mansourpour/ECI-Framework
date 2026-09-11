@@ -14,12 +14,13 @@ from __future__ import annotations
 
 import importlib.util
 import math
-from typing import Any, Dict, List, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 __all__ = ["pyphi_crosscheck", "eeg_closed_loop", "AdherenceHead", "train_adherence_head"]
 
 
-def pyphi_crosscheck(cov=None) -> Dict[str, Any]:
+def pyphi_crosscheck(cov=None) -> dict[str, Any]:
     """Compare ECI Phi with PyPhi when available; honest skip otherwise."""
     spec = importlib.util.find_spec("pyphi")
     if spec is None:
@@ -28,8 +29,9 @@ def pyphi_crosscheck(cov=None) -> Dict[str, Any]:
     try:
         import numpy as np
         import pyphi  # type: ignore
-        from eci.consciousness.iit import IntegratedInformationTheory
         import torch
+
+        from eci.consciousness.iit import IntegratedInformationTheory
         cov_m = np.array([[1.0, 0.4], [0.4, 1.0]])
         eci = IntegratedInformationTheory()
         eci_phi = float(eci.gaussian_phi(torch.tensor(cov_m, dtype=torch.float32)))
@@ -50,9 +52,10 @@ def pyphi_crosscheck(cov=None) -> Dict[str, Any]:
         return {"ok": False, "error": repr(exc)}
 
 
-def eeg_closed_loop(resting: Sequence[float], active: Sequence[float]) -> Dict[str, Any]:
-    from eci.consciousness.eeg import bandpower
+def eeg_closed_loop(resting: Sequence[float], active: Sequence[float]) -> dict[str, Any]:
     import numpy as np
+
+    from eci.consciousness.eeg import bandpower
     r = np.asarray(list(resting), dtype=float)
     a = np.asarray(list(active), dtype=float)
     pr = float(bandpower(r).mean()) if r.size else 0.0
@@ -77,11 +80,11 @@ class AdherenceHead:
         x = torch.tensor([phi_norm, awareness, broadcast], dtype=torch.float32)
         return float(torch.sigmoid(x @ self.w + self.b).item())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"w": [float(v) for v in self.w.tolist()], "b": self.b}
 
 
-def train_adherence_head(rows: List[Dict[str, float]], steps: int = 200, lr: float = 0.1) -> AdherenceHead:
+def train_adherence_head(rows: list[dict[str, float]], steps: int = 200, lr: float = 0.1) -> AdherenceHead:
     import torch
     head = AdherenceHead()
     w = head.w.clone().requires_grad_(True)

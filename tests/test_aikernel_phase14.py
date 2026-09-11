@@ -52,8 +52,10 @@ def test_sia_table_shared_theorems_and_ordering():
     sia, mine = {}, {}
     for name, (rules, st) in CASES.items():
         sia[name] = _pyphi_sia(rules, st)
-        sub = DiscreteSubstrate(2, _gate_tpm(2, {0: lambda b: rules[0](b[0], b[1]),
-                                                 1: lambda b: rules[1](b[0], b[1])}), st)
+        # default-arg binding (rules=rules): values bake at construction
+        # inside _gate_tpm, but explicit binding removes all doubt (B023).
+        sub = DiscreteSubstrate(2, _gate_tpm(2, {0: lambda b, r=rules: r[0](b[0], b[1]),
+                                                 1: lambda b, r=rules: r[1](b[0], b[1])}), st)
         mine[name] = round(iit4.phi_structure(sub)["phi"], 4)
     assert sia["disconn"] == 0.0 and mine["disconn"] == 0.0  # shared theorem
     assert max(sia, key=sia.get) == "mutCOPY" == max(mine, key=mine.get)

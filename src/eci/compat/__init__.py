@@ -12,13 +12,14 @@ can't silently break the past.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 __all__ = ["Interface", "CompatRegistry"]
 
 
-def _parse(v: str) -> Tuple[int, int, int]:
+def _parse(v: str) -> tuple[int, int, int]:
     parts = (v.split(".") + ["0", "0"])[:3]
     return int(parts[0]), int(parts[1]), int(parts[2])
 
@@ -27,7 +28,7 @@ def _parse(v: str) -> Tuple[int, int, int]:
 class Interface:
     name: str
     version: str = "1.0.0"
-    schema: Dict[str, Any] = field(default_factory=dict)
+    schema: dict[str, Any] = field(default_factory=dict)
     status: str = "stable"       # stable | deprecated | retired
     sunset_epoch: int = 0
     receipt: str = ""            # twin migration-test reference
@@ -37,13 +38,13 @@ class CompatRegistry:
     name = "compat"
 
     def __init__(self) -> None:
-        self.ifaces: Dict[str, Interface] = {}
-        self.adapters: Dict[Tuple[str, str, str], Callable[[Any], Any]] = {}
+        self.ifaces: dict[str, Interface] = {}
+        self.adapters: dict[tuple[str, str, str], Callable[[Any], Any]] = {}
 
     def publish(self, iface: Interface) -> None:
         self.ifaces[iface.name] = iface
 
-    def check(self, name: str, required: str, epoch: int = 0) -> Dict[str, Any]:
+    def check(self, name: str, required: str, epoch: int = 0) -> dict[str, Any]:
         """Fail-closed compatibility verdict for (interface, required version)."""
         cur = self.ifaces.get(name)
         if cur is None:
@@ -64,7 +65,7 @@ class CompatRegistry:
         to_ver = cur.version if cur else from_ver
         self.adapters[(name, from_ver, to_ver)] = fn
 
-    def migrate(self, name: str, data: Any, from_ver: str) -> Dict[str, Any]:
+    def migrate(self, name: str, data: Any, from_ver: str) -> dict[str, Any]:
         cur = self.ifaces.get(name)
         if cur is None:
             return {"ok": False, "error": "unknown interface"}
@@ -85,5 +86,5 @@ class CompatRegistry:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "interfaces": len(self.ifaces), "adapters": len(self.adapters)}

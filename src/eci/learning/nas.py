@@ -10,8 +10,7 @@ Fixes over the legacy version:
 
 from __future__ import annotations
 
-import itertools
-from typing import Dict, Iterator, List, Optional, Tuple
+from collections.abc import Iterator
 
 import torch
 import torch.nn as nn
@@ -79,7 +78,7 @@ class DARTSSearchSpace(nn.Module):
                 node_ops.append(ops)
             self.ops.append(node_ops)
 
-    def _build_ops(self, channels: int) -> List[nn.Module]:
+    def _build_ops(self, channels: int) -> list[nn.Module]:
         c = channels
         return [
             Zero(),
@@ -107,9 +106,9 @@ class DARTSSearchSpace(nn.Module):
             states.append(s)
         return torch.cat(states[-self.n_nodes:], dim=1)
 
-    def derive(self, keep_edges: int = 2) -> List[Tuple[int, int, str]]:
+    def derive(self, keep_edges: int = 2) -> list[tuple[int, int, str]]:
         """Discretize: top-``keep_edges`` inputs per node, best op per edge."""
-        architecture: List[Tuple[int, int, str]] = []
+        architecture: list[tuple[int, int, str]] = []
         for node in range(self.n_nodes):
             weights = F.softmax(self.alphas[node], dim=-1)
             edge_strength = weights.max(dim=1).values
@@ -122,7 +121,7 @@ class DARTSSearchSpace(nn.Module):
         return architecture
 
     # Backwards-compatible alias used by the legacy API.
-    def get_architecture(self) -> List[Tuple[str, int]]:
+    def get_architecture(self) -> list[tuple[str, int]]:
         return [(op, inp) for (_, inp, op) in self.derive()]
 
 
@@ -132,7 +131,7 @@ class AdvancedNAS:
     def __init__(
         self,
         search_space: str = "darts",
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
         w_lr: float = 0.025,
         alpha_lr: float = 3e-4,
     ) -> None:
@@ -143,7 +142,7 @@ class AdvancedNAS:
         self.logger = get_logger("learning.nas")
         self.w_lr = w_lr
         self.alpha_lr = alpha_lr
-        self.search_history: List[Dict[str, float]] = []
+        self.search_history: list[dict[str, float]] = []
 
     async def search(
         self,
@@ -152,7 +151,7 @@ class AdvancedNAS:
         n_epochs: int = 50,
         n_nodes: int = 4,
         channels: int = 16,
-    ) -> Dict[str, object]:
+    ) -> dict[str, object]:
         """Run DARTS search; returns the derived architecture and metrics."""
         model = DARTSSearchSpace(n_nodes=n_nodes, channels=channels).to(self.device)
         criterion = nn.CrossEntropyLoss()
@@ -167,7 +166,7 @@ class AdvancedNAS:
 
         val_iter: Iterator = iter(val_loader)
         best_val_acc = 0.0
-        best_architecture: Optional[List[Tuple[int, int, str]]] = None
+        best_architecture: list[tuple[int, int, str]] | None = None
 
         for epoch in range(n_epochs):
             model.train()

@@ -11,8 +11,9 @@ from __future__ import annotations
 
 import asyncio
 import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["Gate", "EvalReport", "GATES", "run_gates"]
 
@@ -20,7 +21,7 @@ __all__ = ["Gate", "EvalReport", "GATES", "run_gates"]
 @dataclass
 class Gate:
     name: str
-    fn: Callable[[], Dict[str, Any]]
+    fn: Callable[[], dict[str, Any]]
     golden: float
     tol: float
     key: str = "value"
@@ -30,16 +31,17 @@ class Gate:
 class EvalReport:
     passed: int
     failed: int
-    gates: List[Dict[str, Any]]
+    gates: list[dict[str, Any]]
     duration_s: float
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"passed": self.passed, "failed": self.failed,
                 "ok": self.failed == 0, "gates": self.gates, "duration_s": self.duration_s}
 
 
-def _g_chsh() -> Dict[str, Any]:
+def _g_chsh() -> dict[str, Any]:
     import torch
+
     from eci.quantum import density as qd
     from eci.quantum import information as qi
     bell = torch.zeros(1, 4, dtype=torch.complex64)
@@ -47,12 +49,12 @@ def _g_chsh() -> Dict[str, Any]:
     return {"value": float(qi.chsh_value(qd.from_statevector(bell)))}
 
 
-def _g_teleport() -> Dict[str, Any]:
+def _g_teleport() -> dict[str, Any]:
     from eci.quantum import information as qi
     return {"value": float(qi.teleportation_fidelity(n_trials=4)["mean_conditional_fidelity"])}
 
 
-def _g_pbft() -> Dict[str, Any]:
+def _g_pbft() -> dict[str, Any]:
     from eci.core.types import NetworkNode, NetworkRole
     from eci.network.consensus import PBFTConsensus
     c = PBFTConsensus(n_nodes=4, byzantine_rate=0.0)
@@ -63,7 +65,7 @@ def _g_pbft() -> Dict[str, Any]:
     return {"value": 1.0 if r.achieved else 0.0}
 
 
-def _g_workflow() -> Dict[str, Any]:
+def _g_workflow() -> dict[str, Any]:
     from eci.orchestration import DAG
     d = DAG("g")
     d.add("a", lambda ctx: 40)
@@ -72,7 +74,7 @@ def _g_workflow() -> Dict[str, Any]:
     return {"value": float(out.outputs.get("b", -1))}
 
 
-GATES: List[Gate] = [
+GATES: list[Gate] = [
     Gate("chsh-tsirelson", _g_chsh, 2.8284, 0.01),
     Gate("teleport-fidelity", _g_teleport, 1.0, 0.15),
     Gate("pbft-agreement", _g_pbft, 1.0, 0.0),
@@ -80,10 +82,10 @@ GATES: List[Gate] = [
 ]
 
 
-def run_gates(gates: List[Gate] | None = None) -> EvalReport:
+def run_gates(gates: list[Gate] | None = None) -> EvalReport:
     t0 = time.time()
     gates = gates or GATES
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     passed = failed = 0
     for g in gates:
         try:

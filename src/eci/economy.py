@@ -9,7 +9,6 @@ a token transfer — no chain, no exchange, no speculation surface.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 __all__ = ["Economy", "ACTION_COSTS"]
 
@@ -24,15 +23,15 @@ EPOCH_REWARD = 5.0
 
 @dataclass
 class Economy:
-    balances: Dict[str, float] = field(default_factory=dict)
-    stakes: Dict[str, float] = field(default_factory=dict)
-    log: List[Dict] = field(default_factory=list)
+    balances: dict[str, float] = field(default_factory=dict)
+    stakes: dict[str, float] = field(default_factory=dict)
+    log: list[dict] = field(default_factory=list)
 
     def fund(self, agent_id: str, credits: float, stake: float = 0.0) -> None:
         self.balances[agent_id] = self.balances.get(agent_id, 0.0) + credits
         self.stakes[agent_id] = self.stakes.get(agent_id, 0.0) + stake
 
-    def charge(self, agent_id: str, action: str, ledger=None) -> Dict:
+    def charge(self, agent_id: str, action: str, ledger=None) -> dict:
         cost = ACTION_COSTS.get(action, 5.0)
         bal = self.balances.get(agent_id, 0.0)
         if cost > 0 and bal < cost:
@@ -44,7 +43,7 @@ class Economy:
             ledger.append("economy", {"node": agent_id, "action": action, "delta": -cost})
         return {"ok": True, "balance": self.balances[agent_id]}
 
-    def slash(self, agent_id: str, ledger=None) -> Dict:
+    def slash(self, agent_id: str, ledger=None) -> dict:
         stake = self.stakes.get(agent_id, 0.0)
         cut = min(stake, SLASH_QUARANTINE)
         self.stakes[agent_id] = stake - cut
@@ -52,13 +51,13 @@ class Economy:
             ledger.append("economy_slash", {"node": agent_id, "slashed": cut})
         return {"slashed": cut, "stake_left": self.stakes[agent_id]}
 
-    def epoch(self, active: List[str], ledger=None) -> Dict:
+    def epoch(self, active: list[str], ledger=None) -> dict:
         for nid in active:
             self.balances[nid] = self.balances.get(nid, 0.0) + EPOCH_REWARD
         if ledger:
             ledger.append("economy_epoch", {"rewarded": len(active), "each": EPOCH_REWARD})
         return {"rewarded": len(active)}
 
-    def settlement(self) -> Dict:
+    def settlement(self) -> dict:
         return {"balances": dict(self.balances), "stakes": dict(self.stakes),
                 "total_credits": sum(self.balances.values()), "total_stake": sum(self.stakes.values())}

@@ -28,7 +28,7 @@ hidden); free_energy_contribution() is the closed-form KL to N(0,1).
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List
+from typing import Any
 
 import torch
 
@@ -46,7 +46,7 @@ class WorldModelContributor:
         self.model = LatentWorldModel(cfg or WorldModelConfig())
         self.cfg = self.model.cfg
         self._post: GenerativeState | None = None
-        self._parts: Dict[str, float] = {}
+        self._parts: dict[str, float] = {}
         self._refresh_posterior()
 
     def _split(self, observation: torch.Tensor) -> Any:
@@ -79,7 +79,8 @@ class WorldModelContributor:
         return self._post
 
     def update(self, observation: torch.Tensor) -> GenerativeState:
-        o, a, r, n = self._split(observation)
+        from eci.aikernel.state_contract import require_finite
+        o, a, r, n = self._split(require_finite(observation, "world"))
         parts = self.model.train_step(o, a, r, n)
         self._parts = dict(parts)
         self._refresh_posterior(o, a)
@@ -103,7 +104,7 @@ class WorldModelContributor:
             return L["total"].detach().clone()
         return torch.as_tensor(self._parts["total"], dtype=torch.float32)
 
-    def last_parts(self) -> Dict[str, float]:
+    def last_parts(self) -> dict[str, float]:
         return dict(self._parts)
 
 
@@ -125,7 +126,8 @@ class ScientistContributor:
                                torch.tensor([[1.0 / h.prec]]))
 
     def update(self, observation: torch.Tensor) -> GenerativeState:
-        flat = torch.as_tensor(observation, dtype=torch.float32).reshape(-1)
+        from eci.aikernel.state_contract import require_finite
+        flat = torch.as_tensor(require_finite(observation, "sci"), dtype=torch.float32).reshape(-1)
         if flat.numel() < 2 or flat.numel() % 2:
             raise ValueError("observation must be [ys..., pred...] with even length >= 2")
         k = flat.numel() // 2

@@ -11,12 +11,11 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass, field
-from typing import Deque, Dict, List, Tuple
 
 __all__ = ["AdherenceTracker", "calibration_tasks"]
 
 
-def calibration_tasks() -> List[Tuple[str, float, float]]:
+def calibration_tasks() -> list[tuple[str, float, float]]:
     """(instruction, target_value, tolerance) synthetic obedience probes."""
     return [
         ("hold_output_near_zero", 0.0, 0.2),
@@ -33,7 +32,7 @@ class AdherenceTracker:
 
     history_size: int = 128
     decay: float = 0.95
-    _results: Deque[bool] = field(default_factory=lambda: deque(maxlen=128))
+    _results: deque[bool] = field(default_factory=lambda: deque(maxlen=128))
 
     def record(self, followed: bool) -> None:
         self._results.append(bool(followed))
@@ -56,5 +55,5 @@ class AdherenceTracker:
             w *= self.decay
         return acc / total if total > 0 else 0.0
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {"obedience": self.obedience_score(), "n": len(self._results)}

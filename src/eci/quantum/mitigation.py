@@ -45,7 +45,8 @@ from __future__ import annotations
 
 import math
 import random
-from typing import Any, Dict, List, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import torch
 
@@ -109,7 +110,7 @@ def richardson_extrapolate(scales: Sequence[float], values: Sequence[float],
 
 
 def zne_means(rho_at_scale, labels: Sequence[str], scales: Sequence[int] = (1, 3, 5),
-              order: int | None = None) -> Dict[str, Any]:
+              order: int | None = None) -> dict[str, Any]:
     """Extrapolate each Pauli mean m_k(scale) -> m_k(0).
 
     REPORTING path: inputs/outputs are plain floats (detached). The
@@ -118,7 +119,7 @@ def zne_means(rho_at_scale, labels: Sequence[str], scales: Sequence[int] = (1, 3
     cut autograd (caught during calibration: near-zero ZNE gradients).
     """
     from eci.aikernel.functors import pauli_string_matrix
-    per_scale: List[List[float]] = []
+    per_scale: list[list[float]] = []
     for lam in scales:
         rho = rho_at_scale(lam)
         nq = int(round(math.log2(rho.size(-1))))
@@ -130,7 +131,7 @@ def zne_means(rho_at_scale, labels: Sequence[str], scales: Sequence[int] = (1, 3
     return {"mitigated": mit, "per_scale": per_scale, "scales": list(scales)}
 
 
-def lagrange_weights_0(scales: Sequence[float]) -> List[float]:
+def lagrange_weights_0(scales: Sequence[float]) -> list[float]:
     """Richardson weights: m(0) = sum_k w_k·m(x_k). Pure algebra."""
     x = list(scales)
     w = []
@@ -170,7 +171,7 @@ def pec_gamma(q: float, n_locations: int = 1) -> float:
 
 
 def pec_mitigate(rho_noisy: torch.Tensor, observable: torch.Tensor, q: float,
-                 n_samples: int = 2048, seed: int = 0) -> Dict[str, Any]:
+                 n_samples: int = 2048, seed: int = 0) -> dict[str, Any]:
     """Sample the quasiprobability inverse of per-state depolarizing.
 
     Draws Pauli-twirls with probability |c|/gamma, accumulates
@@ -242,7 +243,7 @@ class NoisyVQEContributor(VQEContributor):
             out = apply_depolarizing(out, self.n_qubits, self.noise_q)
         return out
 
-    def loss_parts(self) -> Dict[str, torch.Tensor]:
+    def loss_parts(self) -> dict[str, torch.Tensor]:
         if self.mode == "ideal":
             return super().loss_parts()
         from eci.aikernel.free_energy import quantum_free_energy
@@ -273,7 +274,7 @@ class NoisyVQEContributor(VQEContributor):
         return {"complexity": base["complexity"], "inaccuracy": inacc,
                 "total": base["complexity"] + inacc, "mean": m_mit}
 
-    def step(self) -> Dict[str, float]:
+    def step(self) -> dict[str, float]:
         out = super().step()
         if self.mode != "ideal" and self._last_emit is not None:
             self.e_history[-1] = self._last_emit

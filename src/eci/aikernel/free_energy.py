@@ -22,7 +22,7 @@ or a documented additive contribution to, this F (Phase 2 adapters).
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Optional, Sequence
+from collections.abc import Sequence
 
 import torch
 
@@ -33,7 +33,7 @@ __all__ = ["free_energy", "free_energy_parts", "quantum_free_energy", "neg_log_e
 
 
 def free_energy_parts(state: GenerativeState, obs: torch.Tensor,
-                      likelihood: Likelihood, prior: Prior) -> Dict[str, torch.Tensor]:
+                      likelihood: Likelihood, prior: Prior) -> dict[str, torch.Tensor]:
     mu, S = state.mu, state.cov
     mu0, S0 = prior.mu0, prior.Sigma0
     A, R = likelihood.A, likelihood.R
@@ -73,7 +73,7 @@ def neg_log_evidence(obs: torch.Tensor, likelihood: Likelihood,
 def quantum_free_energy(rho: torch.Tensor, observables: Sequence[str],
                         obs: Sequence[float] | torch.Tensor,
                         R: torch.Tensor,
-                        rho_prior: Optional[torch.Tensor] = None) -> Dict[str, torch.Tensor]:
+                        rho_prior: torch.Tensor | None = None) -> dict[str, torch.Tensor]:
     """F over a density matrix. All ops autograd-safe (eigvalsh backward)."""
     import math as _math
     D = rho.size(0)
@@ -88,7 +88,6 @@ def quantum_free_energy(rho: torch.Tensor, observables: Sequence[str],
     ent = -(vals * torch.log(vals)).sum()
     if rho_prior is None:
         rho_prior = torch.eye(D, dtype=rho.dtype) / D
-    pv = torch.linalg.eigvalsh(rho_prior).real.clamp_min(1e-12)
     # cross entropy -Tr[rho log sigma]: log sigma is diagonal in sigma's
     # eigenbasis, so by cyclicity of the trace this is EXACT, no approximation:
     #   Tr[rho log sigma] = Tr[U' rho U diag(log w)] = sum_i (rho_eb)_ii log w_i

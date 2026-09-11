@@ -9,7 +9,6 @@ for faithful simulation when ``surrogate=False``.
 from __future__ import annotations
 
 import math
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -45,7 +44,7 @@ class LIFNeuron(nn.Module):
         self.register_buffer("spike_history", torch.zeros(batch_size, n_neurons, 100))
 
     # ------------------------------------------------------------------
-    def reset_state(self, batch_size: Optional[int] = None) -> None:
+    def reset_state(self, batch_size: int | None = None) -> None:
         if batch_size is None:
             batch_size = self.membrane_potential.shape[0]
         device = self.membrane_potential.device

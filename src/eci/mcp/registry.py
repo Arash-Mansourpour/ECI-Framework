@@ -10,10 +10,11 @@ routes (``v1/system.status`` -> ``system.status``) and ToolRegistry
 
 from __future__ import annotations
 
+import builtins
 import fnmatch
-import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from eci.mcp.schema import build_input_schema
 
@@ -25,17 +26,17 @@ class McpTool:
     name: str
     description: str
     handler: Callable[..., Any]
-    inputSchema: Dict[str, Any] = field(default_factory=lambda: {"type": "object"})
+    inputSchema: dict[str, Any] = field(default_factory=lambda: {"type": "object"})
     version: str = "1.0.0"
-    capabilities: List[str] = field(default_factory=list)
+    capabilities: list[str] = field(default_factory=list)
     cost: float = 1.0
     mutating: bool = False
     idempotent: bool = True
     deprecated: str = ""
     calls: int = 0
 
-    def descriptor(self) -> Dict[str, Any]:
-        d: Dict[str, Any] = {"name": self.name, "description": self.description,
+    def descriptor(self) -> dict[str, Any]:
+        d: dict[str, Any] = {"name": self.name, "description": self.description,
                              "inputSchema": self.inputSchema, "version": self.version,
                              "capabilities": self.capabilities, "cost": self.cost,
                              "mutating": self.mutating, "idempotent": self.idempotent}
@@ -50,7 +51,7 @@ class McpTool:
 
 class McpRegistry:
     def __init__(self) -> None:
-        self._tools: Dict[str, McpTool] = {}
+        self._tools: dict[str, McpTool] = {}
 
     def register(self, tool: McpTool, overwrite: bool = False) -> None:
         if tool.name in self._tools and not overwrite:
@@ -58,20 +59,20 @@ class McpRegistry:
         self._tools[tool.name] = tool
 
     def tool(self, name: str, fn: Callable[..., Any], description: str = "",
-             params: Dict[str, str] | None = None, **kw: Any) -> McpTool:
+             params: dict[str, str] | None = None, **kw: Any) -> McpTool:
         t = McpTool(name=name, description=description or name, handler=fn,
                     inputSchema=build_input_schema(params or {}), **kw)
         self.register(t, overwrite=kw.pop("overwrite", False))
         return t
 
-    def get(self, name: str) -> Optional[McpTool]:
+    def get(self, name: str) -> McpTool | None:
         return self._tools.get(name)
 
-    def names(self) -> List[str]:
+    def names(self) -> builtins.list[str]:
         return sorted(self._tools)
 
     def list(self, prefix: str = "", capability: str = "",
-             include_deprecated: bool = False) -> List[Dict[str, Any]]:
+             include_deprecated: bool = False) -> builtins.list[dict[str, Any]]:
         out = []
         for t in self._tools.values():
             if prefix and not (t.name == prefix or t.name.startswith(prefix)):
@@ -87,7 +88,7 @@ class McpRegistry:
         return sorted(out, key=lambda d: d["name"])
 
     # -- bridges ------------------------------------------------------
-    def bridge_gateway(self, gateway: Any, prefix_map: Dict[str, str] | None = None,
+    def bridge_gateway(self, gateway: Any, prefix_map: dict[str, str] | None = None,
                        auth_default: str = "") -> int:
         """Expose Gateway routes as ``ns.action`` tools (read-only unless mutating)."""
         n = 0
@@ -109,7 +110,7 @@ class McpRegistry:
         n = 0
         for name in tools.names():
             spec = tools._tools[name]
-            async def _h(args: Dict[str, Any], ctx: Dict[str, Any], _n=name) -> Any:
+            async def _h(args: dict[str, Any], ctx: dict[str, Any], _n=name) -> Any:
                 out = await tools.call(_n, args, ctx)
                 if not out.get("ok"):
                     raise RuntimeError(out.get("error", "tool failed"))

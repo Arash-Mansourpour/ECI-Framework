@@ -11,8 +11,9 @@ import asyncio
 import heapq
 import itertools
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Job", "Scheduler"]
 
@@ -30,7 +31,7 @@ class Job:
     id: str
     fn: Callable[..., Any]
     args: tuple = ()
-    kwargs: Dict[str, Any] = field(default_factory=dict)
+    kwargs: dict[str, Any] = field(default_factory=dict)
     priority: int = 0
     period_s: float = 0.0  # >0 => periodic
     runs: int = 0
@@ -41,8 +42,8 @@ class Scheduler:
     name = "scheduler"
 
     def __init__(self, bus: Any | None = None) -> None:
-        self._heap: List[_Item] = []
-        self._jobs: Dict[str, Job] = {}
+        self._heap: list[_Item] = []
+        self._jobs: dict[str, Job] = {}
         self._seq = itertools.count()
         self.bus = bus
         self.completed = 0
@@ -64,10 +65,10 @@ class Scheduler:
     def pending(self) -> int:
         return len(self._heap)
 
-    async def run_due(self, limit: int = 32) -> Dict[str, Any]:
+    async def run_due(self, limit: int = 32) -> dict[str, Any]:
         now = time.time()
-        ran: List[str] = []
-        errs: Dict[str, str] = {}
+        ran: list[str] = []
+        errs: dict[str, str] = {}
         n = 0
         while self._heap and self._heap[0].run_at <= now and n < limit:
             item = heapq.heappop(self._heap)
@@ -98,5 +99,5 @@ class Scheduler:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "pending": len(self._heap), "completed": self.completed, "failed": self.failed}

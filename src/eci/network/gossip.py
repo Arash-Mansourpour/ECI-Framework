@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 __all__ = ["GossipNode", "gossip_round", "anti_entropy"]
 
@@ -18,21 +18,21 @@ __all__ = ["GossipNode", "gossip_round", "anti_entropy"]
 @dataclass
 class GossipNode:
     node_id: str
-    records: Dict[int, Any] = field(default_factory=dict)
+    records: dict[int, Any] = field(default_factory=dict)
 
-    def digest(self) -> Dict:
+    def digest(self) -> dict:
         import hashlib
         import json
 
         h = hashlib.sha256(json.dumps(sorted(self.records), default=str).encode()).hexdigest()[:16]
         return {"n": len(self.records), "hash": h, "seqs": sorted(self.records)}
 
-    def missing_vs(self, peer_digest: Dict) -> List[int]:
+    def missing_vs(self, peer_digest: dict) -> list[int]:
         mine = set(self.records)
         return [s for s in peer_digest.get("seqs", []) if s not in mine]
 
 
-def gossip_round(nodes: Dict[str, GossipNode], fanout: int = 2, seed: int = 0) -> int:
+def gossip_round(nodes: dict[str, GossipNode], fanout: int = 2, seed: int = 0) -> int:
     """One round: every node pushes its full record set to k random peers. Returns deliveries."""
     rng = random.Random(seed)
     ids = list(nodes)
@@ -47,7 +47,7 @@ def gossip_round(nodes: Dict[str, GossipNode], fanout: int = 2, seed: int = 0) -
     return delivered
 
 
-def anti_entropy(nodes: Dict[str, GossipNode], rounds: int = 8, fanout: int = 2, seed: int = 0) -> Dict:
+def anti_entropy(nodes: dict[str, GossipNode], rounds: int = 8, fanout: int = 2, seed: int = 0) -> dict:
     """Run rounds until all digests match or rounds exhaust. Returns convergence report."""
     for r in range(rounds):
         gossip_round(nodes, fanout=fanout, seed=seed + r)

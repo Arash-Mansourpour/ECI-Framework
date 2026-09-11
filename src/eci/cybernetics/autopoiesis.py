@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List
 
 import torch
 
@@ -25,13 +24,13 @@ class AutopoieticNetwork:
     decay_rate: float = 0.2
     boundary_threshold: float = 0.4
     concentrations: torch.Tensor | None = None
-    history: List[Dict] = field(default_factory=list)
+    history: list[dict] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.concentrations is None:
             self.concentrations = torch.full((self.n_components,), 0.6, dtype=torch.float64)
 
-    def step(self, environment: torch.Tensor | None = None) -> Dict[str, float]:
+    def step(self, environment: torch.Tensor | None = None) -> dict[str, float]:
         """c' = P·c(1-c) - D·c + coupling(env); boundary intact if mean(c)>θ."""
         c = self.concentrations.double()
         production = self.production_rate * c * (1 - c)
@@ -60,7 +59,7 @@ def viability_margin(state: torch.Tensor, lower: float = 0.1, upper: float = 0.9
     return float(d.min().item())
 
 
-def ashby_requisite_variety(disturbances: int, responses: int) -> Dict[str, float]:
+def ashby_requisite_variety(disturbances: int, responses: int) -> dict[str, float]:
     """Ashby's law: regulator needs H(R) ≥ H(D) - H(acceptable)."""
     import math as _m
 

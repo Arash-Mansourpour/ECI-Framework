@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 
 __all__ = ["HLC", "hlc_now", "sort_key", "merge_chains"]
 
@@ -22,11 +22,11 @@ class HLC:
     logical: int  # lamport counter
     node: str  # tie-break (total order)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"pt": self.pt, "logical": self.logical, "node": self.node}
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "HLC":
+    def from_dict(cls, d: dict[str, Any]) -> HLC:
         return cls(int(d["pt"]), int(d["logical"]), str(d["node"]))
 
 
@@ -40,12 +40,12 @@ def hlc_now(last: HLC | None, node: str, now_ms: int | None = None) -> HLC:
     return HLC(last.pt, last.logical + 1, node)
 
 
-def sort_key(record: Dict[str, Any]) -> tuple:
+def sort_key(record: dict[str, Any]) -> tuple:
     h = record.get("hlc") or {"pt": 0, "logical": record.get("seq", 0), "node": ""}
     return (int(h["pt"]), int(h["logical"]), str(h["node"]), str(record.get("hash", "")))
 
 
-def merge_chains(a: List[Dict[str, Any]], b: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def merge_chains(a: list[dict[str, Any]], b: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Union by hash, deterministic (hlc, hash) order, relinked prev chain.
 
     Both partitions run this after reconnect and converge bit-identically.

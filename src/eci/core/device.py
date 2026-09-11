@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import random
-from typing import Iterator, Optional
+from collections.abc import Iterator
 
 import numpy as np
 import torch
@@ -29,7 +29,7 @@ def get_device(prefer: str = "auto") -> torch.device:
 def configure_seeds(
     seed: int = 42,
     deterministic: bool = False,
-    device: Optional[torch.device] = None,
+    device: torch.device | None = None,
 ) -> None:
     """Seed python, numpy and torch (CPU + all CUDA devices) for reproducibility."""
     random.seed(seed)

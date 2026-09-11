@@ -75,7 +75,7 @@ def test_different_info_measurable_reduction():
 
 
 def test_four_agents_asymmetric():
-    from eci.governance.aikernel_adapter import market_vs_fusion, reconcile, AgentContributor
+    from eci.governance.aikernel_adapter import AgentContributor, market_vs_fusion, reconcile
     noises = [1.0, 0.5, 0.25, 2.0]
     obs = [1.1, 1.6, 1.7, 0.9]
     r = market_vs_fusion(1.5, _prior(), noises, obs)
@@ -91,7 +91,6 @@ def test_agent_contributor_contract_and_share():
     from eci.aikernel.free_energy import free_energy_parts
     from eci.aikernel.generative_model import Likelihood
     from eci.aikernel.state_contract import conforms
-    from eci.consciousness.aikernel_adapter import PhiContributor
     from eci.governance.aikernel_adapter import AgentContributor
     ag = AgentContributor("a0", 2, obs_noise=0.5)
     assert conforms(ag) is True  # prior-as-posterior is a valid belief

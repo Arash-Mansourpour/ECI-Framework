@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Sequence
+from collections.abc import Sequence
 
 import torch
 
@@ -17,7 +17,7 @@ __all__ = ["geometric_median", "byzantine_robust_aggregate", "krum", "bulyan"]
 
 def geometric_median(
     points: torch.Tensor,
-    weights: Optional[torch.Tensor] = None,
+    weights: torch.Tensor | None = None,
     tol: float = 1e-6,
     max_iter: int = 200,
 ) -> torch.Tensor:
@@ -54,10 +54,10 @@ def geometric_median(
 
 
 def byzantine_robust_aggregate(
-    updates: Sequence[Dict[str, torch.Tensor]],
+    updates: Sequence[dict[str, torch.Tensor]],
     method: str = "geometric_median",
     trim_ratio: float = 0.1,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """Aggregate stacked parameter updates robustly.
 
     Args:
@@ -79,7 +79,7 @@ def byzantine_robust_aggregate(
     if method in ("krum", "bulyan"):
         return _krum_family(updates, names, method=method)
 
-    aggregated: Dict[str, torch.Tensor] = {}
+    aggregated: dict[str, torch.Tensor] = {}
     for name in names:
         stacked = torch.stack([u[name].flatten() for u in updates], dim=0)
         if method == "geometric_median":
@@ -96,25 +96,25 @@ def byzantine_robust_aggregate(
     return aggregated
 
 
-def _flat_stack(updates: Sequence[Dict[str, torch.Tensor]], names: List[str]) -> torch.Tensor:
+def _flat_stack(updates: Sequence[dict[str, torch.Tensor]], names: list[str]) -> torch.Tensor:
     return torch.stack([
         torch.cat([u[n].flatten() for n in names]).to(torch.float64) for u in updates
     ], dim=0)
 
 
-def krum(updates: Sequence[Dict[str, torch.Tensor]], f: int = 1) -> Dict[str, torch.Tensor]:
+def krum(updates: Sequence[dict[str, torch.Tensor]], f: int = 1) -> dict[str, torch.Tensor]:
     """Krum (Blanchard et al. 2017): pick the update closest to its n-f-2 neighbours."""
     names = list(updates[0].keys())
     return _krum_family(updates, names, method="krum", f=f)
 
 
-def bulyan(updates: Sequence[Dict[str, torch.Tensor]], f: int = 1) -> Dict[str, torch.Tensor]:
+def bulyan(updates: Sequence[dict[str, torch.Tensor]], f: int = 1) -> dict[str, torch.Tensor]:
     """Bulyan (Mhamdi et al. 2018): Krum-select n-2f updates, then trimmed mean."""
     names = list(updates[0].keys())
     return _krum_family(updates, names, method="bulyan", f=f)
 
 
-def _krum_family(updates: Sequence[Dict[str, torch.Tensor]], names: List[str], method: str, f: int = 1) -> Dict[str, torch.Tensor]:
+def _krum_family(updates: Sequence[dict[str, torch.Tensor]], names: list[str], method: str, f: int = 1) -> dict[str, torch.Tensor]:
     flat = _flat_stack(updates, names)
     n = flat.shape[0]
     if n < 2 * f + 3:
@@ -133,7 +133,7 @@ def _krum_family(updates: Sequence[Dict[str, torch.Tensor]], names: List[str], m
         d, _ = torch.sort(dist[i])
         scores.append(float(d[1: n - f - 1].sum().item()))
     order = torch.argsort(torch.tensor(scores)).tolist()[: n - 2 * f]
-    out: Dict[str, torch.Tensor] = {}
+    out: dict[str, torch.Tensor] = {}
     for name in names:
         stacked = torch.stack([updates[i][name].flatten() for i in order], dim=0)
         sv, _ = torch.sort(stacked, dim=0)

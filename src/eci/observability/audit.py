@@ -10,9 +10,9 @@ from __future__ import annotations
 import hashlib
 import json
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["AuditRecord", "AuditLogger"]
 
@@ -23,11 +23,11 @@ class AuditRecord:
     ts: float
     actor: str
     action: str
-    details: Dict[str, Any]
+    details: dict[str, Any]
     prev_hash: str
     hash: str = ""
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -40,12 +40,12 @@ def _hash(rec: AuditRecord) -> str:
 
 class AuditLogger:
     def __init__(self, path: Path | str | None = None) -> None:
-        self._records: List[AuditRecord] = []
+        self._records: list[AuditRecord] = []
         self._path = Path(path) if path else None
         if self._path and self._path.exists():
             self._load()
 
-    def append(self, actor: str, action: str, details: Dict[str, Any] | None = None) -> AuditRecord:
+    def append(self, actor: str, action: str, details: dict[str, Any] | None = None) -> AuditRecord:
         prev = self._records[-1].hash if self._records else "GENESIS"
         rec = AuditRecord(seq=len(self._records), ts=time.time(), actor=actor,
                           action=action, details=details or {}, prev_hash=prev)
@@ -63,7 +63,7 @@ class AuditLogger:
                 d = json.loads(line)
                 self._records.append(AuditRecord(**d))
 
-    def verify(self) -> Dict[str, Any]:
+    def verify(self) -> dict[str, Any]:
         prev = "GENESIS"
         for rec in self._records:
             if rec.prev_hash != prev:
@@ -73,7 +73,7 @@ class AuditLogger:
             prev = rec.hash
         return {"ok": True, "records": len(self._records), "head": prev}
 
-    def query(self, actor: str = "", action: str = "", limit: int = 100) -> List[Dict[str, Any]]:
+    def query(self, actor: str = "", action: str = "", limit: int = 100) -> list[dict[str, Any]]:
         out = [r.to_dict() for r in self._records
                if (not actor or r.actor == actor) and (not action or r.action == action)]
         return out[-limit:]

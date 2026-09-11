@@ -1,10 +1,10 @@
 """Resilience facade: breaker registry + default retry + rate limiters + sagas."""
 
+from typing import Any
+
 from eci.resilience.circuit import CircuitBreaker, CircuitOpenError, CircuitState
 from eci.resilience.retry import RetryPolicy
 from eci.resilience.saga import RateLimitExceeded, Saga, SagaStep, TokenBucket
-
-from typing import Any, Dict
 
 __all__ = ["CircuitBreaker", "CircuitOpenError", "CircuitState", "RetryPolicy",
            "Saga", "SagaStep", "TokenBucket", "RateLimitExceeded", "Resilience"]
@@ -14,8 +14,8 @@ class Resilience:
     name = "resilience"
 
     def __init__(self) -> None:
-        self.breakers: Dict[str, CircuitBreaker] = {}
-        self.limiters: Dict[str, TokenBucket] = {}
+        self.breakers: dict[str, CircuitBreaker] = {}
+        self.limiters: dict[str, TokenBucket] = {}
         self.retry = RetryPolicy()
 
     def breaker(self, name: str, **kw: Any) -> CircuitBreaker:
@@ -29,6 +29,6 @@ class Resilience:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "breakers": {k: v.stats() for k, v in self.breakers.items()},
                 "limiters": len(self.limiters)}

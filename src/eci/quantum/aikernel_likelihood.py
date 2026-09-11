@@ -15,8 +15,6 @@ Identity is unit-tested (test_aikernel_phase2a). R is PD by construction
 
 from __future__ import annotations
 
-from typing import List, Tuple
-
 import torch
 
 from eci.quantum.hamiltonian import PauliSum
@@ -33,7 +31,7 @@ def term_label(paulis: dict, n_qubits: int) -> str:
 
 
 def energy_likelihood(hamiltonian: PauliSum, n_qubits: int, e_target: float,
-                      R_e: float = 1.0, eps: float = 1e-3) -> Tuple[List[str], torch.Tensor, torch.Tensor]:
+                      R_e: float = 1.0, eps: float = 1e-3) -> tuple[list[str], torch.Tensor, torch.Tensor]:
     if eps <= 0:
         raise ValueError("eps must be > 0 (R must stay positive-definite)")
     labels = [term_label(t.paulis, n_qubits) for t in hamiltonian.terms]

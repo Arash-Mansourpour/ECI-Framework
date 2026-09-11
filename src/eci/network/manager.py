@@ -9,7 +9,7 @@ the consensus engine is never recreated on membership changes (its
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import torch
 
@@ -29,9 +29,9 @@ class AutonomousNetworkManager:
 
     def __init__(
         self,
-        config: Optional[NetworkConfig] = None,
+        config: NetworkConfig | None = None,
         consensus_mode: str = "pbft",
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> None:
         if consensus_mode not in ("pbft", "wbft"):
             raise ValueError("consensus_mode must be 'pbft' or 'wbft'")
@@ -39,14 +39,14 @@ class AutonomousNetworkManager:
         self.consensus_mode = consensus_mode
         self.seed = seed
         self.logger = get_logger("network.manager")
-        self.nodes: Dict[str, NetworkNode] = {}
+        self.nodes: dict[str, NetworkNode] = {}
         self.network_state = "initializing"
-        self.network_metrics: Dict[str, List[float]] = {}
+        self.network_metrics: dict[str, list[float]] = {}
         self.node_factory = NodeFactory(seed=seed)
-        self.consensus_engine: Optional[PBFTConsensus] = None
+        self.consensus_engine: PBFTConsensus | None = None
 
     # ------------------------------------------------------------------
-    async def initialize_network(self) -> Dict[str, Any]:
+    async def initialize_network(self) -> dict[str, Any]:
         """Bootstrap the network with an architect-signed seed node."""
         profile = await self._measure_consciousness(seed=1)
         seed_node = self.node_factory.create_node(
@@ -111,9 +111,9 @@ class AutonomousNetworkManager:
 
     async def join_network(
         self,
-        capabilities: Dict[str, float],
+        capabilities: dict[str, float],
         role: NetworkRole = NetworkRole.VALIDATOR,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Consciousness-gated node admission."""
         if self.consensus_engine is None:
             return {"joined": False, "reason": "network not initialized"}
@@ -160,7 +160,7 @@ class AutonomousNetworkManager:
         return True
 
     # ------------------------------------------------------------------
-    def propose_and_vote(self, proposal: Any) -> Dict[str, Any]:
+    def propose_and_vote(self, proposal: Any) -> dict[str, Any]:
         """Propose an action and run a consensus round."""
         if self.consensus_engine is None:
             return {
@@ -192,7 +192,7 @@ class AutonomousNetworkManager:
             node.last_heartbeat = time.time()
 
     # ------------------------------------------------------------------
-    def sweep_heartbeats(self) -> List[str]:
+    def sweep_heartbeats(self) -> list[str]:
         """Prune nodes whose heartbeat timed out; returns removed ids."""
         now = time.time()
         stale = [
@@ -203,7 +203,7 @@ class AutonomousNetworkManager:
             self.leave_network(nid)
         return stale
 
-    def network_report(self) -> Dict[str, Any]:
+    def network_report(self) -> dict[str, Any]:
         """Aggregate network statistics."""
         if not self.nodes:
             return {"network_size": 0, "status": self.network_state}

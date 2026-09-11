@@ -13,8 +13,7 @@ import hmac
 import secrets
 import time
 from collections import deque
-from dataclasses import dataclass, field
-from typing import Deque, Dict, Optional
+from dataclasses import dataclass
 
 from eci.core.identity import ARCHITECT
 from eci.security.pqc import derive_key
@@ -32,7 +31,7 @@ class Attestation:
     timestamp: float
     nonce: str
     signature: str = ""
-    architect_stamp: Optional[Dict] = None
+    architect_stamp: dict | None = None
 
     def payload(self) -> str:
         return "|".join([
@@ -41,7 +40,7 @@ class Attestation:
             f"{self.timestamp:.3f}", self.nonce,
         ])
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "agent_id": self.agent_id, "spec_version": self.spec_version,
             "awareness": self.awareness, "obedience": self.obedience,
@@ -55,7 +54,7 @@ def _agent_key(agent_id: str) -> bytes:
     return derive_key(b"protocol0|" + agent_id.encode(), info=b"protocol0-attest", length=32)
 
 
-def architect_anchor_available() -> Dict:
+def architect_anchor_available() -> dict:
     """Report whether a NIST-standard anchor (ML-DSA via liboqs) exists.
 
     Per-message attestations stay HMAC (auditable, no new deps); the
@@ -91,7 +90,7 @@ class ReplayWindow:
     """Per-agent nonce memory (bounded deque)."""
 
     def __init__(self, capacity: int = 1024) -> None:
-        self.seen: Deque[str] = deque(maxlen=capacity)
+        self.seen: deque[str] = deque(maxlen=capacity)
 
     def check_and_add(self, nonce: str) -> bool:
         if nonce in self.seen:
@@ -100,7 +99,7 @@ class ReplayWindow:
         return True
 
 
-def verify_attestation(att: Attestation, spec_version: str, max_age_s: float, replay: Optional[ReplayWindow] = None, agent_key: Optional[bytes] = None) -> Dict:
+def verify_attestation(att: Attestation, spec_version: str, max_age_s: float, replay: ReplayWindow | None = None, agent_key: bytes | None = None) -> dict:
     """Verify schema + spec pin + freshness + replay + HMAC. Returns {ok, reason}."""
     if att.spec_version != spec_version:
         return {"ok": False, "reason": f"spec pin mismatch {att.spec_version} != {spec_version}"}

@@ -8,8 +8,9 @@ step is a ledger record. Rollouts stop being scary and start being routine.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 __all__ = ["RolloutPlan", "staged_rollout"]
 
@@ -17,10 +18,10 @@ __all__ = ["RolloutPlan", "staged_rollout"]
 @dataclass
 class RolloutPlan:
     version: str
-    batches: List[List[str]] = field(default_factory=list)
+    batches: list[list[str]] = field(default_factory=list)
 
     @classmethod
-    def plan(cls, node_ids: List[str], first_batch: float = 0.1) -> "RolloutPlan":
+    def plan(cls, node_ids: list[str], first_batch: float = 0.1) -> RolloutPlan:
         import math as _m
 
         n0 = max(1, _m.ceil(len(node_ids) * first_batch))
@@ -33,13 +34,13 @@ class RolloutPlan:
 
 def staged_rollout(
     plan: RolloutPlan,
-    gate_fn: Callable[[List[str]], Dict[str, Any]],
+    gate_fn: Callable[[list[str]], dict[str, Any]],
     apply_fn: Callable[[str], bool],
     rollback_fn: Callable[[str], bool],
     ledger=None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Execute batches; halt + rollback on degraded gate. Returns report."""
-    upgraded: List[str] = []
+    upgraded: list[str] = []
     for i, batch in enumerate(plan.batches):
         for nid in batch:
             if apply_fn(nid):

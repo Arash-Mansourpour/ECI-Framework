@@ -11,7 +11,7 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["TraceNode", "ProvenanceGraph"]
 
@@ -21,13 +21,13 @@ class TraceNode:
     id: str
     kind: str            # e.g. "authz.decision", "dao.vote", "court.verdict"
     actor: str
-    inputs: Dict[str, Any]
-    outputs: Dict[str, Any]
-    policy: Dict[str, Any] = field(default_factory=dict)
+    inputs: dict[str, Any]
+    outputs: dict[str, Any]
+    policy: dict[str, Any] = field(default_factory=dict)
     parent: str = ""
     ts: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -35,12 +35,12 @@ class ProvenanceGraph:
     name = "provenance"
 
     def __init__(self, capacity: int = 4096) -> None:
-        self._nodes: Dict[str, TraceNode] = {}
-        self._order: List[str] = []
+        self._nodes: dict[str, TraceNode] = {}
+        self._order: list[str] = []
         self._capacity = capacity
 
-    def record(self, kind: str, actor: str, inputs: Dict[str, Any],
-               outputs: Dict[str, Any], policy: Dict[str, Any] | None = None,
+    def record(self, kind: str, actor: str, inputs: dict[str, Any],
+               outputs: dict[str, Any], policy: dict[str, Any] | None = None,
                parent: str = "") -> TraceNode:
         node = TraceNode(id=uuid.uuid4().hex[:12], kind=kind, actor=actor,
                          inputs=inputs, outputs=outputs, policy=policy or {}, parent=parent)
@@ -51,8 +51,8 @@ class ProvenanceGraph:
             self._nodes.pop(old, None)
         return node
 
-    def lineage(self, node_id: str) -> List[Dict[str, Any]]:
-        out: List[Dict[str, Any]] = []
+    def lineage(self, node_id: str) -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = []
         cur = self._nodes.get(node_id)
         while cur is not None:
             out.append(cur.to_dict())
@@ -66,12 +66,12 @@ class ProvenanceGraph:
         lines = [f"{n['kind']} by {n['actor']} -> {n['outputs']}" for n in chain]
         return " <= ".join(lines)
 
-    def query(self, kind: str = "", actor: str = "", limit: int = 100) -> List[Dict[str, Any]]:
+    def query(self, kind: str = "", actor: str = "", limit: int = 100) -> list[dict[str, Any]]:
         out = [n.to_dict() for n in self._nodes.values()
                if (not kind or n.kind == kind) and (not actor or n.actor == actor)]
         return out[-limit:]
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "nodes": len(self._nodes)}

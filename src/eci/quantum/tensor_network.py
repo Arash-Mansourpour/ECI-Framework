@@ -12,7 +12,7 @@ Theory
 
 from __future__ import annotations
 
-from typing import Dict, List, Sequence, Tuple
+from collections.abc import Sequence
 
 import torch
 
@@ -48,7 +48,7 @@ def area_law_bound(chi: int, base: float = 2.0) -> float:
     return _m.log(chi) / _m.log(base)
 
 
-def mps_from_statevector(state: torch.Tensor, n_qubits: int, chi_max: int = 16) -> List[torch.Tensor]:
+def mps_from_statevector(state: torch.Tensor, n_qubits: int, chi_max: int = 16) -> list[torch.Tensor]:
     """Left-canonical MPS via successive SVDs: A_k[i_k]_{a_{k-1},a_k}.
 
     Returns list of tensors with shapes (χ_{k-1}, 2, χ_k), χ_0=χ_n=1.
@@ -57,7 +57,7 @@ def mps_from_statevector(state: torch.Tensor, n_qubits: int, chi_max: int = 16) 
     if state.dim() == 2:
         state = state[0]
     psi = state.reshape([2] * n_qubits)
-    mps: List[torch.Tensor] = []
+    mps: list[torch.Tensor] = []
     left_dim = 1
     rest = psi
     for k in range(n_qubits - 1):
@@ -108,7 +108,7 @@ def mps_entanglement_spectrum(mps: Sequence[torch.Tensor], cut: int) -> torch.Te
     return (s ** 2).cpu()
 
 
-def mps_truncate(mps: Sequence[torch.Tensor], chi: int) -> Tuple[List[torch.Tensor], float]:
+def mps_truncate(mps: Sequence[torch.Tensor], chi: int) -> tuple[list[torch.Tensor], float]:
     """Canonical truncation to bond χ via exact re-decomposition.
 
     Exact path (≤12q diagnostics): contract to dense, re-run
@@ -124,7 +124,7 @@ def mps_truncate(mps: Sequence[torch.Tensor], chi: int) -> Tuple[List[torch.Tens
     return trunc, float(max(0.0, 1.0 - fid))
 
 
-def mps_truncate_canonical(mps: Sequence[torch.Tensor], chi: int, cutoff: float = 1e-12) -> Tuple[List[torch.Tensor], float]:
+def mps_truncate_canonical(mps: Sequence[torch.Tensor], chi: int, cutoff: float = 1e-12) -> tuple[list[torch.Tensor], float]:
     """Alias with singular-value cutoff: keeps s_i > cutoff up to χ."""
     trunc, err = mps_truncate(mps, chi)
     # Cutoff reported via spectrum weight below threshold (diagnostic).
@@ -132,7 +132,7 @@ def mps_truncate_canonical(mps: Sequence[torch.Tensor], chi: int, cutoff: float 
     return trunc, err
 
 
-def tebd_step(mps: Sequence[torch.Tensor], gate: torch.Tensor, qubits: Tuple[int, int], chi_max: int = 16) -> Tuple[List[torch.Tensor], float]:
+def tebd_step(mps: Sequence[torch.Tensor], gate: torch.Tensor, qubits: tuple[int, int], chi_max: int = 16) -> tuple[list[torch.Tensor], float]:
     """Single TEBD two-qubit gate application + canonical truncate.
 
     Contracts the gate into the dense state (exact for ≤12q), then
@@ -153,7 +153,7 @@ def tebd_step(mps: Sequence[torch.Tensor], gate: torch.Tensor, qubits: Tuple[int
     return trunc, err
 
 
-def bond_benchmark(state: torch.Tensor, n_qubits: int, chis: Sequence[int] = (2, 4, 8, 16)) -> List[Dict[str, float]]:
+def bond_benchmark(state: torch.Tensor, n_qubits: int, chis: Sequence[int] = (2, 4, 8, 16)) -> list[dict[str, float]]:
     """Fidelity vs bond-dimension sweep: [{chi, fidelity, discarded}]."""
     if state.dim() == 2:
         state = state[0]
@@ -169,7 +169,7 @@ def bond_benchmark(state: torch.Tensor, n_qubits: int, chis: Sequence[int] = (2,
 
 
 def mpo_expectation_bruteforce(
-    state: torch.Tensor, pauli_ops: Dict[int, str], n_qubits: int
+    state: torch.Tensor, pauli_ops: dict[int, str], n_qubits: int
 ) -> float:
     """<ψ|P|ψ> via MPS contraction path (delegates to exact for ≤12 qubits)."""
     from eci.quantum.statevector import StatevectorSimulator as _S

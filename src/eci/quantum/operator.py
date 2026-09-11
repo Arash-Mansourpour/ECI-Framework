@@ -12,8 +12,6 @@ Formalism
 
 from __future__ import annotations
 
-from typing import Dict, List, Sequence, Tuple
-
 import torch
 
 from eci.constants import EPS
@@ -82,7 +80,7 @@ def is_positive(A: torch.Tensor, tol: float = 1e-6) -> bool:
     return bool((evals.real >= -tol).all().item())
 
 
-def spectral_decomposition(H: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+def spectral_decomposition(H: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     """Eigendecomposition of Hermitian H -> (eigenvalues asc, eigenvectors).
 
     H = V diag(λ) V†.
@@ -119,7 +117,7 @@ def heisenberg_evolution(H: torch.Tensor, A0: torch.Tensor, t: float) -> torch.T
 
 def uncertainty_bound(
     A: torch.Tensor, B: torch.Tensor, psi: torch.Tensor
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Robertson-Schrödinger bound: ΔA ΔB ≥ ½ |<[A,B]>|.
 
     Returns variances, commutator expectation and bound saturation.
@@ -155,7 +153,7 @@ def uncertainty_bound(
 
 def pauli_decomposition(
     A: torch.Tensor, n_qubits: int
-) -> Dict[Tuple[str, ...], complex]:
+) -> dict[tuple[str, ...], complex]:
     """Expand operator A in the n-qubit Pauli basis: A = Σ_P c_P P.
 
     c_P = Tr(P A)/d.
@@ -163,9 +161,9 @@ def pauli_decomposition(
     labels = ["I", "X", "Y", "Z"]
     single = {"I": qg.I, "X": qg.X, "Y": qg.Y, "Z": qg.Z}
     d = 2 ** n_qubits
-    out: Dict[Tuple[str, ...], complex] = {}
+    out: dict[tuple[str, ...], complex] = {}
     # Recursive enumeration (n ≤ 6 tractable; larger uses sampling path elsewhere)
-    def _rec(k: int, prefix: List[str], mat: torch.Tensor):
+    def _rec(k: int, prefix: list[str], mat: torch.Tensor):
         if k == n_qubits:
             c = torch.trace(mat.conj().transpose(-1, -2) @ A.to(mat.dtype)) / d
             if abs(c.item()) > 1e-9:
@@ -178,7 +176,7 @@ def pauli_decomposition(
 
 
 def pauli_reconstruction(
-    coeffs: Dict[Tuple[str, ...] | str, complex],
+    coeffs: dict[tuple[str, ...] | str, complex],
     n_qubits: int,
     dtype: torch.dtype = torch.complex64,
 ) -> torch.Tensor:

@@ -5,8 +5,9 @@ from __future__ import annotations
 import asyncio
 import random
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Tuple, Type
+from typing import Any
 
 __all__ = ["RetryPolicy"]
 
@@ -18,7 +19,7 @@ class RetryPolicy:
     max_delay_s: float = 2.0
     multiplier: float = 2.0
     jitter: float = 0.1
-    retry_on: Tuple[Type[BaseException], ...] = (Exception,)
+    retry_on: tuple[type[BaseException], ...] = (Exception,)
     deadline_s: float = 30.0
 
     def _delay(self, attempt: int) -> float:

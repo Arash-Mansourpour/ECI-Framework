@@ -9,7 +9,6 @@ Aggregation weight for consensus/DAO = normalized reputation x stake.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict
 
 __all__ = ["Reputation", "ReputationBoard"]
 
@@ -33,7 +32,7 @@ class Reputation:
 
 @dataclass
 class ReputationBoard:
-    members: Dict[str, Reputation] = field(default_factory=dict)
+    members: dict[str, Reputation] = field(default_factory=dict)
 
     def observe(self, agent_id: str, trust: float | None = None, obedience: float | None = None, active: bool = True) -> None:
         r = self.members.setdefault(agent_id, Reputation())
@@ -47,5 +46,5 @@ class ReputationBoard:
         for r in self.members.values():
             r.epochs_since_active += 1
 
-    def weights(self) -> Dict[str, float]:
+    def weights(self) -> dict[str, float]:
         return {nid: r.weight() for nid, r in self.members.items()}

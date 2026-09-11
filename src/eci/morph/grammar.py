@@ -11,9 +11,9 @@ from data, not from a hardcoded list.
 
 from __future__ import annotations
 
-import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 __all__ = ["Rule", "GraphGrammar"]
 
@@ -29,12 +29,12 @@ class Rule:
     need_lambda2: float = 0.0   # fire only if connectivity below this (repair bias)
     utility: float = 0.0
     fires: int = 0
-    param: Dict[str, Any] = field(default_factory=dict)
+    param: dict[str, Any] = field(default_factory=dict)
 
 
 class GraphGrammar:
     def __init__(self) -> None:
-        self.rules: List[Rule] = []
+        self.rules: list[Rule] = []
 
     def add(self, rule: Rule) -> None:
         self.rules.append(rule)
@@ -56,7 +56,7 @@ class GraphGrammar:
                       lambda s, d, e: e.age > 100 and e.causal_support < 0.1,
                       param={}))
 
-    def mine_rules(self, pairs: List[Tuple[str, str, float]], top_k: int = 3) -> List[Rule]:
+    def mine_rules(self, pairs: list[tuple[str, str, float]], top_k: int = 3) -> list[Rule]:
         """Propose sprout-rules for the most surprising co-active pairs."""
         out = []
         for s, d, surprise in sorted(pairs, key=lambda t: -t[2])[:top_k]:
@@ -70,10 +70,10 @@ class GraphGrammar:
         return out
 
     def fire(self, graph: Any, surprise: float = 0.0,
-             energy_budget: float = 10.0) -> Dict[str, Any]:
+             energy_budget: float = 10.0) -> dict[str, Any]:
         """One rewrite pass over matching edges; returns auditable receipt."""
         l2 = graph.algebraic_connectivity()
-        fired: List[str] = []
+        fired: list[str] = []
         spent = 0.0
         before = (len(graph.nodes), len(graph.edges), l2)
         for rule in sorted(self.rules, key=lambda r: -r.utility):

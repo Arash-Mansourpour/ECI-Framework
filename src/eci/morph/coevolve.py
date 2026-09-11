@@ -11,8 +11,9 @@ full parent tree — evolution with a fossil record.
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 from eci.morph.graph import MorphGraph
 from eci.morph.motifs import MotifGenome
@@ -35,9 +36,9 @@ class Coevolver:
         self.pop = pop
         self.novelty_w = novelty_w
         self.quorum = quorum
-        self.candidates: List[Candidate] = []
-        self.archive: List[Dict[str, int]] = []  # motif histograms
-        self.lineage: Dict[str, str] = {}
+        self.candidates: list[Candidate] = []
+        self.archive: list[dict[str, int]] = []  # motif histograms
+        self.lineage: dict[str, str] = {}
         self.generation = 0
 
     def seed(self, seed: int = 0) -> None:
@@ -48,7 +49,7 @@ class Coevolver:
             self.candidates.append(c)
             self.lineage[c.cid] = ""
 
-    def _novelty(self, hist: Dict[str, int]) -> float:
+    def _novelty(self, hist: dict[str, int]) -> float:
         if not self.archive:
             return 1.0
         keys = set(hist) | {k for h in self.archive for k in h}
@@ -58,7 +59,7 @@ class Coevolver:
         best = min(sum((a - b) ** 2 for a, b in zip(v, vec(h))) ** 0.5 for h in self.archive)
         return best
 
-    def evaluate(self, probes: List[Callable[[MorphGraph], float]]) -> None:
+    def evaluate(self, probes: list[Callable[[MorphGraph], float]]) -> None:
         for c in self.candidates:
             g = MorphGraph()
             c.genome.compile(g)
@@ -70,14 +71,14 @@ class Coevolver:
         self.archive = self.archive[-64:]
 
     def evolve(self, voter: Callable[[Candidate, Candidate], bool] | None = None,
-               seed: int = 0) -> Dict[str, Any]:
+               seed: int = 0) -> dict[str, Any]:
         """Tournament + crossover + mutation; champion needs quorum to enthrone."""
         rng = random.Random(seed)
         ranked = sorted(self.candidates, key=lambda c: -c.fitness)
         champ, chal = ranked[0], ranked[1] if len(ranked) > 1 else ranked[0]
         votes = sum(1 for _ in range(3) for v in [voter or (lambda a, b: True)] if v(champ, chal))
         enthroned = votes / 3 >= self.quorum
-        kids: List[Candidate] = []
+        kids: list[Candidate] = []
         for i in range(self.pop):
             a, b = rng.sample(ranked[:max(2, len(ranked) // 2)], 2)
             kid_genome = a.genome.crossover(b.genome, seed=seed + i).mutate(seed=seed + 100 + i)

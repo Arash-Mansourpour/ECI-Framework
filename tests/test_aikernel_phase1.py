@@ -4,7 +4,6 @@ Every test below checks an EXACT mathematical identity (closed forms,
 analytic gradients, round-trips), not mere plumbing. Tolerances are
 float32-appropriate; seeds fixed.
 """
-import math
 
 import torch
 
@@ -136,7 +135,7 @@ def test_split_fuse_roundtrip_and_composition():
 
 def test_cross_representation_roundtrip():
     """rho -> Q -> agents -> Q reproduces the Pauli-coordinate Gaussian."""
-    from eci.aikernel.functors import density_to_cov, fuse_beliefs, split_belief
+    from eci.aikernel.functors import fuse_beliefs, split_belief
     from eci.aikernel.generative_model import GenerativeState
     rho = _rand_rho(2, 3)
     st = GenerativeState.from_density(rho, 1, ["X", "Y", "Z"])
@@ -150,8 +149,9 @@ def test_contract_ledger_and_conformance():
     """KernelLedger sums shares; non-conformants and NaN shares rejected."""
     import pytest
     import torch
+
     from eci.aikernel.generative_model import GenerativeState
-    from eci.aikernel.state_contract import KernelLedger, StateContributor, conforms
+    from eci.aikernel.state_contract import KernelLedger, conforms
 
     class Good:
         def __init__(self, v):

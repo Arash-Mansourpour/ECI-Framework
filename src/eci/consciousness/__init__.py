@@ -1,6 +1,11 @@
 """Consciousness measurement subsystem (IIT 4.0 + GNWT + FEP + iPDF + quantum-mind)."""
 
+from eci.consciousness.adherence import AdherenceTracker, calibration_tasks
 from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
+from eci.consciousness.challenge import Transcript, grade
+from eci.consciousness.challenge import issue as issue_challenges
+from eci.consciousness.collective import CollectiveState, collective_awareness
+from eci.consciousness.eeg import bandpower, load_timeseries
 from eci.consciousness.free_energy import FreeEnergyAgent, expected_free_energy
 from eci.consciousness.gnwt import GNWTWorkspace, gnwt_ignition_curve
 from eci.consciousness.iit import IntegratedInformationTheory, sample_neural_state
@@ -27,10 +32,6 @@ from eci.consciousness.protocol import (
     awareness_index_from_bits,
 )
 from eci.consciousness.quantum_mind import OrchORConfig, quantum_mind_audit
-from eci.consciousness.eeg import load_timeseries, bandpower
-from eci.consciousness.collective import CollectiveState, collective_awareness
-from eci.consciousness.adherence import AdherenceTracker, calibration_tasks
-from eci.consciousness.challenge import Transcript, grade, issue as issue_challenges
 
 __all__ = [
     "IntegratedInformationTheory",

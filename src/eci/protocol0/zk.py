@@ -17,7 +17,6 @@ from __future__ import annotations
 import hashlib
 import secrets
 from dataclasses import dataclass, field
-from typing import Dict, Set
 
 __all__ = ["LEVELS", "Credential", "issue_credential", "prove", "verify_proof"]
 
@@ -33,14 +32,14 @@ def _tok(secret: str, metric: str, level: float) -> str:
 class Credential:
     agent_id: str
     epoch: str
-    published: Set[str] = field(default_factory=set)  # tokens of PASSED levels only
-    _index: Dict[str, tuple] = field(default_factory=dict)  # token -> (metric, level), holder-side
+    published: set[str] = field(default_factory=set)  # tokens of PASSED levels only
+    _index: dict[str, tuple] = field(default_factory=dict)  # token -> (metric, level), holder-side
 
     def disclosure_bits(self) -> int:
         return 0  # unopened credential leaks nothing
 
 
-def issue_credential(agent_id: str, values: Dict[str, float], epoch: str | None = None) -> Credential:
+def issue_credential(agent_id: str, values: dict[str, float], epoch: str | None = None) -> Credential:
     """Issuer binds tokens. Exact values exist ONLY inside this call."""
     secret = secrets.token_hex(16)
     c = Credential(agent_id, epoch or secrets.token_hex(4))
@@ -54,7 +53,7 @@ def issue_credential(agent_id: str, values: Dict[str, float], epoch: str | None 
     return c
 
 
-def prove(cred: Credential, metric: str, threshold: float) -> Dict:
+def prove(cred: Credential, metric: str, threshold: float) -> dict:
     """Point at the published token for the highest passed level <= threshold.
 
     Raises LookupError if the level was NOT passed (nothing to show —
@@ -68,7 +67,7 @@ def prove(cred: Credential, metric: str, threshold: float) -> Dict:
     raise LookupError(f"level {lv} not passed for {metric} (fail is proven by absence)")
 
 
-def verify_proof(published: Set[str], proof: Dict) -> Dict:
+def verify_proof(published: set[str], proof: dict) -> dict:
     """Membership check against the published set. Learns band, not value."""
     ok = proof["token"] in published
     band = {proof["metric"]: f">={proof['level']}"} if ok else {}

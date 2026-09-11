@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict
+from typing import Any
 
 __all__ = ["CircuitState", "CircuitBreaker", "CircuitOpenError"]
 
@@ -64,6 +64,6 @@ class CircuitBreaker:
                 self.failures = 0
             return out
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         return {"name": self.name, "state": self.state.value, "calls": self.calls,
                 "failures": self.failures, "rejected": self.rejected}

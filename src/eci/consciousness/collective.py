@@ -10,7 +10,6 @@ until coherence recovers (Protocol-0 collective gate).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List
 
 __all__ = ["CollectiveState", "collective_awareness"]
 
@@ -21,12 +20,12 @@ class CollectiveState:
     coherence: float
     divergence: float
     n: int
-    outliers: List[str]
+    outliers: list[str]
     gate: str  # "open" | "degraded" | "closed"
 
 
 def collective_awareness(
-    awareness: Dict[str, float],
+    awareness: dict[str, float],
     max_divergence: float = 0.4,
     min_coherence: float = 0.5,
 ) -> CollectiveState:

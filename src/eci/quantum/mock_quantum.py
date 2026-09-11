@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import List
 
 import torch
 
@@ -57,7 +56,7 @@ class MockOscillatorEnsemble:
         self.action_scale = 1.0  # characteristic classical action S_char
         self.hbar_mock = mock_planck_constant(self.action_scale, self.n_oscillators)
         self._g = g
-        self.energy_history: List[float] = []
+        self.energy_history: list[float] = []
 
     def step(self, drive: torch.Tensor | None = None, dt: float = 0.01) -> torch.Tensor:
         """Advance one semi-implicit Euler step; returns total energy."""

@@ -6,9 +6,9 @@ import csv
 import io
 import json
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional
 
 import numpy as np
 
@@ -25,9 +25,9 @@ class ResearchBenchmark:
             raise ValueError("experiment_name must be non-empty")
         self.experiment_name = experiment_name
         self.logger = get_logger("benchmark")
-        self.metrics: Dict[str, List[dict]] = {}
-        self.start_time: Optional[float] = None
-        self.end_time: Optional[float] = None
+        self.metrics: dict[str, list[dict]] = {}
+        self.start_time: float | None = None
+        self.end_time: float | None = None
 
     # ------------------------------------------------------------------
     def start_experiment(self) -> None:
@@ -55,12 +55,12 @@ class ResearchBenchmark:
             self.record_metric(metric_name, time.perf_counter() - t0)
 
     # ------------------------------------------------------------------
-    def record_metric(self, metric_name: str, value: float, step: Optional[int] = None) -> None:
+    def record_metric(self, metric_name: str, value: float, step: int | None = None) -> None:
         self.metrics.setdefault(metric_name, []).append(
             {"value": float(value), "step": step, "timestamp": time.time()}
         )
 
-    def get_statistics(self, metric_name: str) -> Dict[str, float]:
+    def get_statistics(self, metric_name: str) -> dict[str, float]:
         if metric_name not in self.metrics:
             return {}
         values = np.array([m["value"] for m in self.metrics[metric_name]], dtype=float)

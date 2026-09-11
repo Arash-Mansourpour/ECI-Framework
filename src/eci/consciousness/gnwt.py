@@ -16,7 +16,6 @@ Model
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 import torch
 
@@ -30,9 +29,9 @@ class GNWTWorkspace:
     theta: float = 0.6         # ignition threshold
     entropy_max: float = 0.85  # normalized entropy gate (fraction of log N)
     max_history: int = 1024
-    ignition_history: List[Dict] = field(default_factory=list)
+    ignition_history: list[dict] = field(default_factory=list)
 
-    def compete(self, salience: torch.Tensor) -> Dict[str, object]:
+    def compete(self, salience: torch.Tensor) -> dict[str, object]:
         """Run one workspace cycle; returns ignition diagnostics."""
         import math as _m
 

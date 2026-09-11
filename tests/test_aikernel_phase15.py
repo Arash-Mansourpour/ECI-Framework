@@ -13,6 +13,7 @@ def test_all_contributors_registered_in_default_mesh():
     fails here loudly instead of drifting invisible."""
     import inspect
     import pkgutil
+
     import eci
     from eci.aikernel.mcp_bridge import build_unification
     from eci.aikernel.state_contract import StateContributor

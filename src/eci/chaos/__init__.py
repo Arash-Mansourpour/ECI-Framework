@@ -11,8 +11,9 @@ from __future__ import annotations
 import asyncio
 import random
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Fault", "ChaosPlan", "ChaosReport", "run_plan"]
 
@@ -23,13 +24,13 @@ class Fault:
     target: str = "*"
     rate: float = 1.0
     duration_s: float = 1.0
-    args: Dict[str, Any] = field(default_factory=dict)
+    args: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ChaosPlan:
     name: str
-    faults: List[Fault]
+    faults: list[Fault]
     max_blast_radius: float = 0.4  # fraction of nodes allowed to touch
     abort_on_error_rate: float = 0.5
     seed: int = 0
@@ -43,9 +44,9 @@ class ChaosReport:
     error_rate: float
     aborted: bool
     duration_s: float
-    details: List[Dict[str, Any]]
+    details: list[dict[str, Any]]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"plan": self.plan, "injected": self.injected, "errors": self.errors,
                 "error_rate": self.error_rate, "aborted": self.aborted,
                 "duration_s": self.duration_s, "details": self.details}
@@ -56,7 +57,7 @@ async def run_plan(plan: ChaosPlan, probe: Callable[[Fault], Any]) -> ChaosRepor
     t0 = time.time()
     rng = random.Random(plan.seed)
     injected, errors = 0, 0
-    details: List[Dict[str, Any]] = []
+    details: list[dict[str, Any]] = []
     aborted = False
     for f in plan.faults:
         if rng.random() > f.rate:

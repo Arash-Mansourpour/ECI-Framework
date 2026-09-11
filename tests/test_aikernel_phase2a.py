@@ -28,7 +28,6 @@ def test_likelihood_identity_is_exact():
         for t, lab in zip(H.terms, labels))
     m = torch.stack([torch.trace(rho @ pauli_string_matrix(l, 2)).real for l in labels]).float()
     parts = quantum_free_energy(rho, labels, o, R)
-    c = torch.tensor([float(t.coeff) for t in H.terms])
     expect = 0.5 * (float(-3.0 - E) ** 2) / 2.0 + 0.5e-3 * float(((o - m) ** 2).sum().item())
     assert abs(float(parts["inaccuracy"].item()) - expect) < 1e-4, \
         (parts["inaccuracy"].item(), expect)
@@ -87,6 +86,7 @@ def test_posterior_update_contract():
 def test_native_vqe_api_unchanged():
     """Existing public API untouched: same signature, same return keys."""
     import inspect
+
     from eci.quantum.algorithms import vqe
     assert list(inspect.signature(vqe).parameters) == \
         ["hamiltonian", "n_qubits", "n_layers", "steps", "lr", "seed"]

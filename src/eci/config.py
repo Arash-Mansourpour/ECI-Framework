@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 
@@ -114,7 +114,7 @@ class ObservabilityConfig:
 
     service_name: str = "eci"
     trace_capacity: int = 2048
-    audit_path: Optional[str] = None  # JSONL file or None (memory)
+    audit_path: str | None = None  # JSONL file or None (memory)
     metrics_prefix: str = "eci_"
 
 
@@ -165,7 +165,7 @@ class ExperimentConfig:
     gradient_accumulation_steps: int = 1
     checkpoint_frequency: int = 10
     early_stopping_patience: int = 20
-    metrics: List[str] = field(default_factory=lambda: ["accuracy", "loss"])
+    metrics: list[str] = field(default_factory=lambda: ["accuracy", "loss"])
 
     def __post_init__(self) -> None:
         if not self.experiment_name:
@@ -188,7 +188,7 @@ class ECIConfig:
     persistence: PersistenceConfig = field(default_factory=PersistenceConfig)
     resilience: ResilienceConfig = field(default_factory=ResilienceConfig)
     api: ApiConfig = field(default_factory=ApiConfig)
-    feature_flags: Dict[str, bool] = field(default_factory=lambda: {
+    feature_flags: dict[str, bool] = field(default_factory=lambda: {
         "secure_channel": True, "provenance": True, "mlops": True,
         "chaos": True, "plugins": True, "streaming": True,
     })
@@ -196,10 +196,10 @@ class ECIConfig:
     # ------------------------------------------------------------------
     # (de)serialization
     # ------------------------------------------------------------------
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
-    def to_json(self, path: Optional[Path] = None) -> str:
+    def to_json(self, path: Path | None = None) -> str:
         text = json.dumps(self.to_dict(), indent=2, sort_keys=True)
         if path is not None:
             path = Path(path)
@@ -207,7 +207,7 @@ class ECIConfig:
         return text
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "ECIConfig":
+    def from_dict(cls, data: dict[str, Any]) -> ECIConfig:
         return cls(
             quantum=QuantumConfig(**data.get("quantum", {})),
             consciousness=ConsciousnessConfig(**data.get("consciousness", {})),
@@ -225,7 +225,7 @@ class ECIConfig:
         )
 
     @classmethod
-    def from_env(cls, prefix: str = "ECI_") -> "ECIConfig":
+    def from_env(cls, prefix: str = "ECI_") -> ECIConfig:
         """Overlay environment variables (e.g. ECI_QUANTUM_N_QUBITS=12).
 
         Keys are UPPER_SNAKE of ``<section>_<field>``; values are JSON-decoded
@@ -236,7 +236,7 @@ class ECIConfig:
         import os as _os
 
         cfg = cls()
-        sections: Dict[str, Any] = {
+        sections: dict[str, Any] = {
             "quantum": cfg.quantum, "consciousness": cfg.consciousness,
             "network": cfg.network, "learning": cfg.learning,
             "experiment": cfg.experiment, "kernel": cfg.kernel,
@@ -262,13 +262,13 @@ class ECIConfig:
         return cfg
 
     @classmethod
-    def from_yaml(cls, path: Path | str) -> "ECIConfig":
+    def from_yaml(cls, path: Path | str) -> ECIConfig:
         path = Path(path)
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         return cls.from_dict(data)
 
     @classmethod
-    def from_json(cls, path: Path | str) -> "ECIConfig":
+    def from_json(cls, path: Path | str) -> ECIConfig:
         path = Path(path)
         data = json.loads(path.read_text(encoding="utf-8"))
         return cls.from_dict(data)

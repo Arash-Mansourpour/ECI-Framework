@@ -8,16 +8,15 @@ simulated circuit (no parameter-shift sampling needed in simulation).
 from __future__ import annotations
 
 import math
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from collections.abc import Callable, Sequence
 
 import torch
 
-from eci.constants import EPS
 from eci.quantum import gates as qg
-from eci.quantum.hamiltonian import PauliSum, PauliTerm
+from eci.quantum.hamiltonian import PauliSum
 from eci.quantum.statevector import GateOp, StatevectorSimulator
 
-__all__ = ["qft", "inverse_qft", "grover_search", "quantum_phase_estimation", "vqe", "qaoa_maxcut"]
+__all__ = ["qft", "grover_search", "quantum_phase_estimation", "vqe", "qaoa_maxcut"]
 
 
 def _cphase(theta: float) -> torch.Tensor:
@@ -31,7 +30,7 @@ def qft(
     state: torch.Tensor,
     sim: StatevectorSimulator,
     inverse: bool = False,
-    qubits: Optional[Sequence[int]] = None,
+    qubits: Sequence[int] | None = None,
 ) -> torch.Tensor:
     """Quantum Fourier transform (big-endian, q0 most significant).
 
@@ -69,9 +68,9 @@ def qft(
     return state
 
 
-def _diffuser_ops(n: int) -> Tuple[List[GateOp], torch.Tensor]:
+def _diffuser_ops(n: int) -> tuple[list[GateOp], torch.Tensor]:
     """Grover diffuser D = 2|s><s| - I implemented as H^n diag H^n."""
-    pre: List[GateOp] = [("1q", qg.H, q) for q in range(n)]
+    pre: list[GateOp] = [("1q", qg.H, q) for q in range(n)]
     diag = torch.full((2 ** n,), -1.0, dtype=torch.complex64)
     diag[0] = 1.0  # 2|0><0| - I = diag(1, -1, ..., -1)
     return pre, diag
@@ -80,8 +79,8 @@ def _diffuser_ops(n: int) -> Tuple[List[GateOp], torch.Tensor]:
 def grover_search(
     sim: StatevectorSimulator,
     marked: Sequence[int],
-    iterations: Optional[int] = None,
-) -> Dict[str, object]:
+    iterations: int | None = None,
+) -> dict[str, object]:
     """Grover search with phase oracle; returns the final state and stats."""
     n = sim.n_qubits
     dim = sim.dim
@@ -120,7 +119,7 @@ def quantum_phase_estimation(
     gate_fn: Callable[[int], torch.Tensor],
     n_counting: int,
     eigenstate_index: int = 1,
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """Canonical QPE.
 
     Args:
@@ -197,7 +196,7 @@ def vqe(
     steps: int = 200,
     lr: float = 0.05,
     seed: int = 42,
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """Variational eigensolver for a Pauli-sum Hamiltonian (ground state)."""
     if n_qubits < 1 or hamiltonian.max_qubit() >= n_qubits:
         raise ValueError("hamiltonian acts on qubits outside the register")
@@ -207,7 +206,7 @@ def vqe(
         0.1 * torch.randn(2, n_layers, n_qubits, generator=g)
     )
     optimizer = torch.optim.Adam([params], lr=lr)
-    history: List[float] = []
+    history: list[float] = []
     for _ in range(steps):
         optimizer.zero_grad()
         state = _hardware_efficient_ansatz(sim, params, n_layers)
@@ -228,13 +227,13 @@ def vqe(
 
 
 def qaoa_maxcut(
-    edges: Sequence[Tuple[int, int]],
+    edges: Sequence[tuple[int, int]],
     n_qubits: int,
     depth: int = 2,
     steps: int = 150,
     lr: float = 0.1,
     seed: int = 42,
-) -> Dict[str, object]:
+) -> dict[str, object]:
     """QAOA for MaxCut; minimizes the expected cut cost (i.e. maximizes cut)."""
     if not edges:
         raise ValueError("edges must be non-empty")
@@ -257,7 +256,7 @@ def qaoa_maxcut(
                 state = sim.apply_1q(state, qg.RX(2.0 * betas[layer]), q)
         return state
 
-    history: List[float] = []
+    history: list[float] = []
     for _ in range(steps):
         optimizer.zero_grad()
         state = build_state()
@@ -289,7 +288,7 @@ def qaoa_maxcut(
     }
 
 
-def _best_cut_value(edges: Sequence[Tuple[int, int]], n_qubits: int, probs: torch.Tensor) -> float:
+def _best_cut_value(edges: Sequence[tuple[int, int]], n_qubits: int, probs: torch.Tensor) -> float:
     """Highest-probability bitstring evaluated as a cut."""
     best_idx = int(torch.argmax(probs).item())
     bits = [(best_idx >> (n_qubits - 1 - q)) & 1 for q in range(n_qubits)]

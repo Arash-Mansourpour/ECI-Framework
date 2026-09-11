@@ -11,8 +11,9 @@ uncertainty budget for the executive + provenance.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional
+from typing import Any
 
 import torch
 
@@ -34,15 +35,15 @@ class PlannerConfig:
 
 class CEMPlanner:
     def __init__(self, world: Any, cfg: PlannerConfig | None = None,
-                 risk_fn: Optional[Callable[[torch.Tensor, torch.Tensor], float]] = None) -> None:
+                 risk_fn: Callable[[torch.Tensor, torch.Tensor], float] | None = None) -> None:
         self.world = world
         self.cfg = cfg or PlannerConfig()
         self.risk_fn = risk_fn  # optional precog hook (h, z) -> scalar
-        self.last_trace: Dict[str, Any] = {}
+        self.last_trace: dict[str, Any] = {}
 
     @torch.no_grad()
     def plan(self, h: torch.Tensor, z: torch.Tensor,
-             seed: int = 0) -> Dict[str, Any]:
+             seed: int = 0) -> dict[str, Any]:
         c, B = self.cfg, h.size(0)
         A, H = self.world.cfg.act_dim, c.horizon
         g = torch.Generator().manual_seed(seed)

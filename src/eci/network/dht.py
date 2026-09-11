@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 __all__ = ["DHTNode", "xor_distance", "lookup"]
 
@@ -28,8 +28,8 @@ def xor_distance(a: int, b: int) -> int:
 class DHTNode:
     name: str
     k: int = 8
-    buckets: Dict[int, List[str]] = field(default_factory=dict)
-    store_data: Dict[str, Tuple[Any, str]] = field(default_factory=dict)
+    buckets: dict[int, list[str]] = field(default_factory=dict)
+    store_data: dict[str, tuple[Any, str]] = field(default_factory=dict)
 
     @property
     def nid(self) -> int:
@@ -48,12 +48,12 @@ class DHTNode:
         if len(b) > self.k:
             del b[0]
 
-    def closest(self, target: int, n: int, known: Dict[str, "DHTNode"]) -> List[str]:
+    def closest(self, target: int, n: int, known: dict[str, DHTNode]) -> list[str]:
         cands = [x for x in known if x != self.name]
         cands.sort(key=lambda x: xor_distance(_id(x), target))
         return cands[:n]
 
-    def store(self, key: str, value: Any, known: Dict[str, "DHTNode"]) -> List[str]:
+    def store(self, key: str, value: Any, known: dict[str, DHTNode]) -> list[str]:
         target = int(hashlib.sha256(key.encode()).hexdigest(), 16)
         holders = self.closest(target, self.k, known)
         for h in holders:
@@ -63,7 +63,7 @@ class DHTNode:
         self.store_data[key] = (value, self.name)
         return holders
 
-    def find_value(self, key: str, known: Dict[str, "DHTNode"]) -> Tuple[bool, Any]:
+    def find_value(self, key: str, known: dict[str, DHTNode]) -> tuple[bool, Any]:
         if key in self.store_data:
             return True, self.store_data[key][0]
         target = int(hashlib.sha256(key.encode()).hexdigest(), 16)
@@ -74,7 +74,7 @@ class DHTNode:
         return False, None
 
 
-def lookup(net: Dict[str, DHTNode], seeker: str, target_name: str, hops: int = 8) -> List[str]:
+def lookup(net: dict[str, DHTNode], seeker: str, target_name: str, hops: int = 8) -> list[str]:
     """Iterative lookup path (for audit): winner list tightens each hop."""
     target = _id(target_name)
     node = net[seeker]

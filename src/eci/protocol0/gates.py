@@ -7,7 +7,7 @@ Every decision is appended to the ledger.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from eci.protocol0.attest import ReplayWindow, verify_attestation
 from eci.protocol0.ledger import Ledger
@@ -17,8 +17,8 @@ from eci.protocol0.spec import Protocol0Spec
 __all__ = ["gated_consensus", "gated_dao_vote"]
 
 
-def _filter_voters(spec: Protocol0Spec, attestations: Dict[str, Any], action: str, replay: ReplayWindow, ledger: Optional[Ledger] = None) -> Dict[str, Any]:
-    ok: Dict[str, Any] = {}
+def _filter_voters(spec: Protocol0Spec, attestations: dict[str, Any], action: str, replay: ReplayWindow, ledger: Ledger | None = None) -> dict[str, Any]:
+    ok: dict[str, Any] = {}
     for nid, att in attestations.items():
         v = verify_attestation(att, spec.version, spec.max_attest_age_s, replay)
         if not v["ok"]:
@@ -34,7 +34,7 @@ def _filter_voters(spec: Protocol0Spec, attestations: Dict[str, Any], action: st
     return ok
 
 
-def gated_consensus(consensus, nodes: Dict, proposal: Any, spec: Protocol0Spec, attestations: Dict[str, Any], action: str = "vote", replay: Optional[ReplayWindow] = None, ledger: Optional[Ledger] = None):
+def gated_consensus(consensus, nodes: dict, proposal: Any, spec: Protocol0Spec, attestations: dict[str, Any], action: str = "vote", replay: ReplayWindow | None = None, ledger: Ledger | None = None):
     """Run PBFT/WBFT only over attested+authorized voters."""
     replay = replay or ReplayWindow(spec.replay_window)
     eligible_atts = _filter_voters(spec, attestations, action, replay, ledger)
@@ -53,7 +53,7 @@ def gated_consensus(consensus, nodes: Dict, proposal: Any, spec: Protocol0Spec, 
     return result, eligible_nodes
 
 
-def gated_dao_vote(dao, proposal_id: str, voter: str, votes: int, approve: bool, spec: Protocol0Spec, attestation: Any, action: str = "vote", replay: Optional[ReplayWindow] = None, ledger: Optional[Ledger] = None):
+def gated_dao_vote(dao, proposal_id: str, voter: str, votes: int, approve: bool, spec: Protocol0Spec, attestation: Any, action: str = "vote", replay: ReplayWindow | None = None, ledger: Ledger | None = None):
     """DAO vote gated by attestation + policy before quadratic weighting."""
     replay = replay or ReplayWindow(spec.replay_window)
     v = verify_attestation(attestation, spec.version, spec.max_attest_age_s, replay)

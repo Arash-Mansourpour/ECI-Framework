@@ -11,7 +11,6 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 __all__ = ["configure_logging", "get_logger", "set_level"]
 
@@ -21,8 +20,8 @@ _configured = False
 
 def configure_logging(
     level: str | int = "INFO",
-    log_file: Optional[Path | str] = None,
-    log_dir: Optional[Path | str] = None,
+    log_file: Path | str | None = None,
+    log_dir: Path | str | None = None,
     quiet_third_party: bool = True,
 ) -> None:
     """Configure the root ``eci`` logging namespace exactly once per process."""

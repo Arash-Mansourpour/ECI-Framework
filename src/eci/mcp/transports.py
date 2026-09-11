@@ -11,9 +11,9 @@ from __future__ import annotations
 import asyncio
 import json
 import queue
-import threading
+from collections.abc import Callable
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Callable, Dict, Optional
+from typing import Any
 
 __all__ = ["InProcessTransport", "StdioTransport", "HttpTransport"]
 
@@ -21,10 +21,10 @@ __all__ = ["InProcessTransport", "StdioTransport", "HttpTransport"]
 class InProcessTransport:
     """Direct handle() calls — fastest path for tests/agents."""
 
-    def __init__(self, handler: Callable[[Dict[str, Any]], Any]) -> None:
+    def __init__(self, handler: Callable[[dict[str, Any]], Any]) -> None:
         self._h = handler
 
-    def request(self, method: str, params: Dict[str, Any] | None = None, _id: Any = 1) -> Dict[str, Any]:
+    def request(self, method: str, params: dict[str, Any] | None = None, _id: Any = 1) -> dict[str, Any]:
         res = self._h({"id": _id, "method": method, "params": params or {}})
         if asyncio.iscoroutine(res):
             res = asyncio.run(res)
@@ -32,7 +32,7 @@ class InProcessTransport:
 
 
 class StdioTransport:
-    def __init__(self, handler: Callable[[Dict[str, Any]], Any]) -> None:
+    def __init__(self, handler: Callable[[dict[str, Any]], Any]) -> None:
         self._h = handler
 
     def serve_forever(self) -> None:
@@ -58,14 +58,14 @@ class StdioTransport:
 class HttpTransport:
     """POST /mcp (JSON-RPC), GET /mcp/tools, GET /mcp/events (SSE)."""
 
-    def __init__(self, handler: Callable[[Dict[str, Any]], Any], host: str = "127.0.0.1", port: int = 8899) -> None:
+    def __init__(self, handler: Callable[[dict[str, Any]], Any], host: str = "127.0.0.1", port: int = 8899) -> None:
         self.handler = handler
         self.host = host
         self.port = port
-        self._subs: "queue.Queue[str]" = queue.Queue()
-        self._httpd: Optional[HTTPServer] = None
+        self._subs: queue.Queue[str] = queue.Queue()
+        self._httpd: HTTPServer | None = None
 
-    def notify(self, event: Dict[str, Any]) -> None:
+    def notify(self, event: dict[str, Any]) -> None:
         try:
             self._subs.put_nowait(json.dumps(event, default=str))
         except queue.Full:

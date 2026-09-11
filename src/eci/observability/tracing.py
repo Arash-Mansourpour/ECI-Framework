@@ -9,9 +9,10 @@ from __future__ import annotations
 import time
 import uuid
 from collections import deque
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import Any, Deque, Dict, Iterator, List, Optional
+from typing import Any
 
 __all__ = ["Span", "Tracer"]
 
@@ -24,18 +25,18 @@ class Span:
     parent_id: str = ""
     start: float = field(default_factory=time.time)
     end: float = 0.0
-    attrs: Dict[str, Any] = field(default_factory=dict)
-    events: List[Dict[str, Any]] = field(default_factory=list)
+    attrs: dict[str, Any] = field(default_factory=dict)
+    events: list[dict[str, Any]] = field(default_factory=list)
     status: str = "ok"
 
     @property
     def duration_s(self) -> float:
         return (self.end or time.time()) - self.start
 
-    def event(self, name: str, attrs: Dict[str, Any] | None = None) -> None:
+    def event(self, name: str, attrs: dict[str, Any] | None = None) -> None:
         self.events.append({"name": name, "ts": time.time(), "attrs": attrs or {}})
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"trace_id": self.trace_id, "span_id": self.span_id, "parent_id": self.parent_id,
                 "name": self.name, "start": self.start, "end": self.end,
                 "duration_s": self.duration_s, "attrs": self.attrs,
@@ -45,11 +46,11 @@ class Span:
 class Tracer:
     def __init__(self, service: str = "eci", capacity: int = 2048) -> None:
         self.service = service
-        self._spans: Deque[Span] = deque(maxlen=capacity)
-        self._active: List[Span] = []
+        self._spans: deque[Span] = deque(maxlen=capacity)
+        self._active: list[Span] = []
 
     @contextmanager
-    def span(self, name: str, attrs: Dict[str, Any] | None = None,
+    def span(self, name: str, attrs: dict[str, Any] | None = None,
              parent: Span | None = None) -> Iterator[Span]:
         parent = parent or (self._active[-1] if self._active else None)
         sp = Span(trace_id=parent.trace_id if parent else uuid.uuid4().hex[:16],
@@ -67,14 +68,14 @@ class Tracer:
             self._active.pop()
             self._spans.append(sp)
 
-    def spans(self, name: str = "", limit: int = 200) -> List[Span]:
+    def spans(self, name: str = "", limit: int = 200) -> list[Span]:
         out = [s for s in self._spans if not name or s.name == name]
         return out[-limit:]
 
-    def trace(self, trace_id: str) -> List[Dict[str, Any]]:
+    def trace(self, trace_id: str) -> list[dict[str, Any]]:
         return [s.to_dict() for s in self._spans if s.trace_id == trace_id]
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         durs = [s.duration_s for s in self._spans]
         return {"service": self.service, "spans": len(self._spans),
                 "active": len(self._active),

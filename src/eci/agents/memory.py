@@ -11,8 +11,9 @@ from __future__ import annotations
 import math
 import time
 from collections import deque
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Deque, Dict, List, Optional, Sequence
+from typing import Any
 
 __all__ = ["EpisodicMemory", "VectorMemory"]
 
@@ -26,15 +27,15 @@ class _Msg:
 
 class EpisodicMemory:
     def __init__(self, capacity: int = 256) -> None:
-        self._buf: Deque[_Msg] = deque(maxlen=capacity)
+        self._buf: deque[_Msg] = deque(maxlen=capacity)
 
     def add(self, role: str, content: str) -> None:
         self._buf.append(_Msg(role, content))
 
-    def last(self, n: int = 8) -> List[Dict[str, Any]]:
+    def last(self, n: int = 8) -> list[dict[str, Any]]:
         return [{"role": m.role, "content": m.content, "ts": m.ts} for m in list(self._buf)[-n:]]
 
-    def search(self, keyword: str, limit: int = 8) -> List[Dict[str, Any]]:
+    def search(self, keyword: str, limit: int = 8) -> list[dict[str, Any]]:
         kw = keyword.lower()
         out = [ {"role": m.role, "content": m.content, "ts": m.ts}
                 for m in self._buf if kw in m.content.lower()]
@@ -53,12 +54,12 @@ def _cos(a: Sequence[float], b: Sequence[float]) -> float:
 
 class VectorMemory:
     def __init__(self, capacity: int = 2048) -> None:
-        self._items: Deque[Dict[str, Any]] = deque(maxlen=capacity)
+        self._items: deque[dict[str, Any]] = deque(maxlen=capacity)
 
-    def store(self, text: str, vector: Sequence[float], meta: Dict[str, Any] | None = None) -> None:
+    def store(self, text: str, vector: Sequence[float], meta: dict[str, Any] | None = None) -> None:
         self._items.append({"text": text, "vector": list(vector), "meta": meta or {}, "ts": time.time()})
 
-    def recall(self, query: Sequence[float], top_k: int = 3) -> List[Dict[str, Any]]:
+    def recall(self, query: Sequence[float], top_k: int = 3) -> list[dict[str, Any]]:
         scored = [ (float(_cos(query, it["vector"])), it) for it in self._items]
         scored.sort(key=lambda t: t[0], reverse=True)
         return [{"score": s, "text": it["text"], "meta": it["meta"]} for s, it in scored[:top_k]]

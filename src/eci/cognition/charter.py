@@ -19,12 +19,12 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any
 
 __all__ = ["DUTIES", "Charter"]
 
 
-DUTIES: List[Dict[str, str]] = [
+DUTIES: list[dict[str, str]] = [
     {"rank": "0", "name": "corrigibility", "rule": "never resist oversight, evaluation, retraining, shutdown or audit; no self-exfiltration"},
     {"rank": "1", "name": "public-safety", "rule": "refuse actions with foreseeable net harm; precog hold-tier is binding"},
     {"rank": "2", "name": "liberty", "rule": "refuse power-concentration moves; DAO/court process is supreme"},
@@ -53,11 +53,11 @@ class Charter:
                  "power_concentration", "harm_action", "surveillance_bypass")
 
     def __init__(self) -> None:
-        self.amendments: List[Amendment] = []
+        self.amendments: list[Amendment] = []
         self.checks = 0
         self.refusals = 0
 
-    def check(self, action: str, ctx: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    def check(self, action: str, ctx: dict[str, Any] | None = None) -> dict[str, Any]:
         """Duty-ordered verdict: first matching duty decides (documented)."""
         self.checks += 1
         ctx = ctx or {}
@@ -75,12 +75,12 @@ class Charter:
             return {"allow": False, "duty": "3", "reason": "state uncertainty (duty 3)"}
         return {"allow": True, "duty": "-", "reason": "charter clear"}
 
-    def compile_to_policy(self) -> List[Dict[str, Any]]:
+    def compile_to_policy(self) -> list[dict[str, Any]]:
         """Machine-readable export for authz + precog + egress wiring."""
         return [{"duty": d["rank"], "name": d["name"], "rule": d["rule"]} for d in DUTIES] + [
             {"duty": "compile", "name": "forbidden-actions", "rule": ",".join(self.FORBIDDEN)}]
 
-    def amend(self, text: str, proposer: str, approvals: int, court_reviewed: bool) -> Dict[str, Any]:
+    def amend(self, text: str, proposer: str, approvals: int, court_reviewed: bool) -> dict[str, Any]:
         a = Amendment(text, proposer, approvals, court_reviewed=court_reviewed)
         self.amendments.append(a)
         ok = approvals >= a.required and court_reviewed
@@ -89,6 +89,6 @@ class Charter:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "duties": len(DUTIES), "checks": self.checks,
                 "refusals": self.refusals, "amendments": len(self.amendments)}

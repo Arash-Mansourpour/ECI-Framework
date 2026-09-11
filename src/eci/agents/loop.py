@@ -11,10 +11,10 @@ returning {"thought": str, "tool": str|None, "args": dict, "done": bool,
 
 from __future__ import annotations
 
-import asyncio
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 __all__ = ["AgentState", "AgentLoop", "demo_brain"]
 
@@ -22,13 +22,13 @@ __all__ = ["AgentState", "AgentLoop", "demo_brain"]
 @dataclass
 class AgentState:
     goal: str
-    steps: List[Dict[str, Any]] = field(default_factory=list)
+    steps: list[dict[str, Any]] = field(default_factory=list)
     budget: float = 100.0
     done: bool = False
     answer: str = ""
 
 
-def demo_brain(state: AgentState, tools: List[str]) -> Dict[str, Any]:
+def demo_brain(state: AgentState, tools: list[str]) -> dict[str, Any]:
     """Two-step demo: echo goal via `echo` tool then finish."""
     if not state.steps:
         return {"thought": f"plan for: {state.goal}", "tool": "echo" if "echo" in tools else None,
@@ -53,8 +53,8 @@ class AgentLoop:
 
     async def run(self, goal: str, agent_id: str = "agent-0", namespace: str = "default",
                   budget: float = 100.0, max_steps: int = 6,
-                  policy_fn: Callable[..., Dict[str, Any]] | None = None,
-                  attestation: Dict[str, float] | None = None) -> Dict[str, Any]:
+                  policy_fn: Callable[..., dict[str, Any]] | None = None,
+                  attestation: dict[str, float] | None = None) -> dict[str, Any]:
         from eci.kernel.bus import Event
         policy_fn = policy_fn or demo_brain
         state = AgentState(goal=goal, budget=budget)
@@ -62,7 +62,7 @@ class AgentLoop:
         t0 = time.time()
         for i in range(max_steps):
             decision = policy_fn(state, tool_names)
-            step: Dict[str, Any] = {"i": i, "thought": decision.get("thought", ""),
+            step: dict[str, Any] = {"i": i, "thought": decision.get("thought", ""),
                                     "tool": decision.get("tool"), "args": decision.get("args", {})}
             # guardrail 1: tenancy quota
             if self.tenancy is not None:
@@ -145,5 +145,5 @@ class AgentLoop:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True}

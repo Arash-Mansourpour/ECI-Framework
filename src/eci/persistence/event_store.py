@@ -13,7 +13,7 @@ import time
 import uuid
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["StoredEvent", "MemoryBackend", "SqliteBackend", "EventStore"]
 
@@ -23,22 +23,22 @@ class StoredEvent:
     seq: int
     stream: str
     type: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
     ts: float = field(default_factory=time.time)
     event_id: str = field(default_factory=lambda: uuid.uuid4().hex[:16])
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
 class MemoryBackend:
     def __init__(self) -> None:
-        self._events: List[StoredEvent] = []
+        self._events: list[StoredEvent] = []
 
     def append(self, ev: StoredEvent) -> None:
         self._events.append(ev)
 
-    def read(self, stream: str = "", after: int = -1, limit: int = 1000) -> List[StoredEvent]:
+    def read(self, stream: str = "", after: int = -1, limit: int = 1000) -> list[StoredEvent]:
         out = [e for e in self._events if (not stream or e.stream == stream) and e.seq > after]
         return out[:limit]
 
@@ -58,9 +58,9 @@ class SqliteBackend:
                          (ev.stream, ev.type, json.dumps(ev.data, default=str), ev.ts, ev.event_id))
         self._db.commit()
 
-    def read(self, stream: str = "", after: int = -1, limit: int = 1000) -> List[StoredEvent]:
+    def read(self, stream: str = "", after: int = -1, limit: int = 1000) -> list[StoredEvent]:
         q = "SELECT seq,stream,type,data,ts,event_id FROM events WHERE seq>? "
-        args: List[Any] = [after]
+        args: list[Any] = [after]
         if stream:
             q += "AND stream=? "
             args.append(stream)
@@ -82,14 +82,14 @@ class EventStore:
         self.backend = backend or MemoryBackend()
         self._seq = len(self.backend)  # type: ignore[arg-type]
 
-    def append(self, stream: str, type: str, data: Dict[str, Any] | None = None) -> StoredEvent:
+    def append(self, stream: str, type: str, data: dict[str, Any] | None = None) -> StoredEvent:
         # sqlite backend assigns seq itself; keep local counter for memory parity
         existing = len(self.backend)
         ev = StoredEvent(seq=existing, stream=stream, type=type, data=data or {})
         self.backend.append(ev)
         return ev
 
-    def read(self, stream: str = "", after: int = -1, limit: int = 1000) -> List[StoredEvent]:
+    def read(self, stream: str = "", after: int = -1, limit: int = 1000) -> list[StoredEvent]:
         return self.backend.read(stream, after, limit)
 
     def fold(self, stream: str, reducer, initial: Any) -> Any:
@@ -100,5 +100,5 @@ class EventStore:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "events": len(self.backend)}

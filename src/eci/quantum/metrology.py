@@ -14,13 +14,11 @@ Theory
 from __future__ import annotations
 
 import math
-from typing import Callable, Dict, Tuple
+from collections.abc import Callable
 
 import torch
 
 from eci.constants import EPS
-from eci.quantum import gates as qg
-from eci.quantum.statevector import StatevectorSimulator
 
 __all__ = [
     "classical_fisher_information",
@@ -79,7 +77,7 @@ def heisenberg_limit(n_particles: int, n_shots: int = 1) -> float:
     return 1.0 / (math.sqrt(max(1, n_shots)) * max(1, n_particles))
 
 
-def ghz_phase_qfi(n_qubits: int) -> Dict[str, float]:
+def ghz_phase_qfi(n_qubits: int) -> dict[str, float]:
     """GHZ Ramsey sensing: F_Q = N² (Heisenberg scaling)."""
     return {
         "qfi": float(n_qubits ** 2),
@@ -88,7 +86,7 @@ def ghz_phase_qfi(n_qubits: int) -> Dict[str, float]:
     }
 
 
-def noon_state_qfi(n_photons: int) -> Dict[str, float]:
+def noon_state_qfi(n_photons: int) -> dict[str, float]:
     """NOON-state interferometry: F_Q = N²."""
     return {
         "qfi": float(n_photons ** 2),
@@ -97,7 +95,7 @@ def noon_state_qfi(n_photons: int) -> Dict[str, float]:
     }
 
 
-def ramsey_sensitivity(n_qubits: int, entangled: bool = True, shots: int = 1024) -> Dict[str, float]:
+def ramsey_sensitivity(n_qubits: int, entangled: bool = True, shots: int = 1024) -> dict[str, float]:
     """Compare separable vs GHZ Ramsey sensitivity for N qubits."""
     if entangled:
         per_shot = 1.0 / n_qubits

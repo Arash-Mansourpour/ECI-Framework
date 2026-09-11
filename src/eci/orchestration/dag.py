@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 __all__ = ["TaskNode", "DAG", "WorkflowRun"]
 
@@ -19,7 +20,7 @@ __all__ = ["TaskNode", "DAG", "WorkflowRun"]
 class TaskNode:
     name: str
     fn: Callable[..., Any]
-    depends_on: List[str] = field(default_factory=list)
+    depends_on: list[str] = field(default_factory=list)
     timeout_s: float = 30.0
     retries: int = 0
 
@@ -27,34 +28,34 @@ class TaskNode:
 @dataclass
 class WorkflowRun:
     ok: bool
-    outputs: Dict[str, Any]
-    errors: Dict[str, str]
+    outputs: dict[str, Any]
+    errors: dict[str, str]
     duration_s: float
 
 
 class DAG:
     def __init__(self, name: str = "dag") -> None:
         self.name = name
-        self.nodes: Dict[str, TaskNode] = {}
+        self.nodes: dict[str, TaskNode] = {}
 
-    def task(self, name: str, depends_on: List[str] | None = None,
+    def task(self, name: str, depends_on: list[str] | None = None,
              timeout_s: float = 30.0, retries: int = 0):
         def deco(fn: Callable[..., Any]) -> Callable[..., Any]:
             self.nodes[name] = TaskNode(name, fn, list(depends_on or []), timeout_s, retries)
             return fn
         return deco
 
-    def add(self, name: str, fn: Callable[..., Any], depends_on: List[str] | None = None,
+    def add(self, name: str, fn: Callable[..., Any], depends_on: list[str] | None = None,
             timeout_s: float = 30.0, retries: int = 0) -> None:
         self.nodes[name] = TaskNode(name, fn, list(depends_on or []), timeout_s, retries)
 
-    def levels(self) -> List[List[str]]:
+    def levels(self) -> list[list[str]]:
         indeg = {n: len(nd.depends_on) for n, nd in self.nodes.items()}
         for n, nd in self.nodes.items():
             for d in nd.depends_on:
                 if d not in self.nodes:
                     raise KeyError(f"task {n} depends on unknown {d}")
-        levels: List[List[str]] = []
+        levels: list[list[str]] = []
         remaining = dict(indeg)
         while remaining:
             ready = sorted([n for n, d in remaining.items() if d == 0])
@@ -67,7 +68,7 @@ class DAG:
                 remaining[n] -= sum(1 for d in self.nodes[n].depends_on if d in ready)
         return levels
 
-    async def _run_one(self, node: TaskNode, ctx: Dict[str, Any]) -> Any:
+    async def _run_one(self, node: TaskNode, ctx: dict[str, Any]) -> Any:
         last: BaseException | None = None
         for attempt in range(node.retries + 1):
             try:
@@ -80,11 +81,11 @@ class DAG:
         assert last is not None
         raise last
 
-    async def run(self, ctx: Dict[str, Any] | None = None) -> WorkflowRun:
+    async def run(self, ctx: dict[str, Any] | None = None) -> WorkflowRun:
         t0 = time.time()
         ctx = dict(ctx or {})
-        outputs: Dict[str, Any] = {}
-        errors: Dict[str, str] = {}
+        outputs: dict[str, Any] = {}
+        errors: dict[str, str] = {}
         for level in self.levels():
             # skip tasks whose deps failed
             runnable = [n for n in level if all(d not in errors for d in self.nodes[n].depends_on)]

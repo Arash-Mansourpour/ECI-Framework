@@ -29,6 +29,7 @@ def _call(mcp, sid, name, args):
 def test_wire_roundtrip_preserves_rho():
     """to_dict -> JSON -> from_dict: mu/cov/rho/paulis/meta all survive."""
     import json
+
     from eci.aikernel.generative_model import GenerativeState
     torch.manual_seed(0)
     rho = torch.randn(4, 4, dtype=torch.complex64)
@@ -70,7 +71,7 @@ def test_one_schema_across_namespaces(live):
 def test_end_to_end_mcp_matches_direct(live):
     """Same instances, same math: MCP total == direct total after MCP-driven updates."""
     import random
-    fw, mcp, sid, aik = live["fw"], live["mcp"], live["sid"], live["aik"]
+    mcp, sid, aik = live["mcp"], live["sid"], live["aik"]
     ledger = aik["ledger"]
     assert set(ledger.members()) >= {"quantum", "phi", "agent"}
     rng = random.Random(7)
@@ -94,6 +95,7 @@ def test_end_to_end_mcp_matches_direct(live):
 def test_posterior_over_wire_matches_direct(live):
     """Quantum-backed posterior through MCP carries rho and matches direct."""
     import json
+
     from eci.aikernel.generative_model import GenerativeState
     mcp, sid, aik = live["mcp"], live["sid"], live["aik"]
     wire = _call(mcp, sid, "aik.quantum.posterior", {})

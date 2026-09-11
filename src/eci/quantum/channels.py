@@ -8,7 +8,7 @@ completeness relation sum_i K_i^dagger K_i = I (verified by
 from __future__ import annotations
 
 import math
-from typing import Callable, Dict, List, Sequence
+from collections.abc import Callable, Sequence
 
 import torch
 
@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 
-def depolarizing(p: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tensor]:
+def depolarizing(p: float, dtype: torch.dtype = torch.complex64) -> list[torch.Tensor]:
     """Single-qubit depolarizing channel.
 
     Kraus form ``{sqrt(1-p) I, sqrt(p/3) X, sqrt(p/3) Y, sqrt(p/3) Z}``
@@ -47,7 +47,7 @@ def depolarizing(p: float, dtype: torch.dtype = torch.complex64) -> List[torch.T
     ]
 
 
-def bit_flip(p: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tensor]:
+def bit_flip(p: float, dtype: torch.dtype = torch.complex64) -> list[torch.Tensor]:
     """Bit-flip channel with Kraus operators sqrt(1-p) I, sqrt(p) X."""
     return [
         math.sqrt(1 - p) * qg.I.to(dtype),
@@ -55,7 +55,7 @@ def bit_flip(p: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tenso
     ]
 
 
-def phase_flip(p: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tensor]:
+def phase_flip(p: float, dtype: torch.dtype = torch.complex64) -> list[torch.Tensor]:
     """Phase-flip (dephasing) channel with sqrt(1-p) I, sqrt(p) Z."""
     return [
         math.sqrt(1 - p) * qg.I.to(dtype),
@@ -63,7 +63,7 @@ def phase_flip(p: float, dtype: torch.dtype = torch.complex64) -> List[torch.Ten
     ]
 
 
-def bit_phase_flip(p: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tensor]:
+def bit_phase_flip(p: float, dtype: torch.dtype = torch.complex64) -> list[torch.Tensor]:
     """Bit-phase-flip channel with sqrt(1-p) I, sqrt(p) Y."""
     return [
         math.sqrt(1 - p) * qg.I.to(dtype),
@@ -71,14 +71,14 @@ def bit_phase_flip(p: float, dtype: torch.dtype = torch.complex64) -> List[torch
     ]
 
 
-def amplitude_damping(gamma: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tensor]:
+def amplitude_damping(gamma: float, dtype: torch.dtype = torch.complex64) -> list[torch.Tensor]:
     """Amplitude damping (T1 decay) with relaxation probability gamma."""
     k0 = torch.tensor([[1.0, 0.0], [0.0, math.sqrt(1 - gamma)]], dtype=dtype)
     k1 = torch.tensor([[0.0, math.sqrt(gamma)], [0.0, 0.0]], dtype=dtype)
     return [k0, k1]
 
 
-def phase_damping(gamma: float, dtype: torch.dtype = torch.complex64) -> List[torch.Tensor]:
+def phase_damping(gamma: float, dtype: torch.dtype = torch.complex64) -> list[torch.Tensor]:
     """Phase damping (T2 decay without energy loss).
 
     Standard 2-Kraus form satisfying sum K†K = I:
@@ -92,7 +92,7 @@ def phase_damping(gamma: float, dtype: torch.dtype = torch.complex64) -> List[to
     return [k0, k1]
 
 
-CHANNEL_FACTORIES: Dict[str, Callable[..., List[torch.Tensor]]] = {
+CHANNEL_FACTORIES: dict[str, Callable[..., list[torch.Tensor]]] = {
     "depolarizing": depolarizing,
     "bit_flip": bit_flip,
     "phase_flip": phase_flip,
@@ -107,10 +107,10 @@ def _embed_single_qubit(
     n_qubits: int,
     qubit: int,
     dtype: torch.dtype,
-) -> List[torch.Tensor]:
+) -> list[torch.Tensor]:
     """Embed 1-qubit Kraus operators into the full n-qubit Hilbert space."""
     eye = qg.I.to(dtype)
-    embedded: List[torch.Tensor] = []
+    embedded: list[torch.Tensor] = []
     for k in kraus_ops:
         k = k.to(dtype)
         factors = [k if q == qubit else eye for q in range(n_qubits)]
@@ -157,7 +157,7 @@ class NoiseModel:
             raise ValueError(f"unknown channel '{default_channel}'")
         self.default_channel = default_channel
         self.default_param = default_param
-        self._per_qubit: Dict[int, List[str]] = {}
+        self._per_qubit: dict[int, list[str]] = {}
 
     def set_qubit_noise(self, qubit: int, channel: str, param: float) -> None:
         if channel not in CHANNEL_FACTORIES:

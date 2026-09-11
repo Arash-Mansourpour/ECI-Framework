@@ -14,7 +14,7 @@ every mutating tool supports dry_run twin simulation + idempotency keys.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from eci.mcp.fabric import build_default_registry
 from eci.mcp.federation import FederatedUpstream, Federation
@@ -28,9 +28,9 @@ from eci.mcp.sessions import Session, SessionManager
 from eci.mcp.transports import HttpTransport, InProcessTransport, StdioTransport
 
 __all__ = ["McpFabric", "McpRegistry", "McpTool", "McpServer", "McpPipeline",
-           "Session", "SessionManager", "Federation", "FederatedUpstream",
+           "CallCtx", "Session", "SessionManager", "Federation", "FederatedUpstream",
            "InProcessTransport", "StdioTransport", "HttpTransport",
-           "PROMPTS", "RESOURCES", "build_input_schema"]
+           "PROMPTS", "get_prompt", "RESOURCES", "read_resource", "build_input_schema"]
 
 
 class McpFabric:
@@ -70,7 +70,7 @@ class McpFabric:
                                 federation=self.federation)
         self.transport = InProcessTransport(self.server.handle)
 
-    def request(self, method: str, params: Dict[str, Any] | None = None, _id: Any = 1) -> Dict[str, Any]:
+    def request(self, method: str, params: dict[str, Any] | None = None, _id: Any = 1) -> dict[str, Any]:
         return self.transport.request(method, params, _id)
 
     def serve_stdio(self) -> None:
@@ -81,6 +81,6 @@ class McpFabric:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "fabric": self.server.health(),
                 "federated": self.federation.federated_names()}

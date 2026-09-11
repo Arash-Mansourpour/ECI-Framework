@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Protocol
+from typing import Any, Protocol
 
 __all__ = ["Service", "ServiceState", "LifecycleManager"]
 
@@ -23,14 +23,14 @@ class Service(Protocol):
     name: str
     def start(self) -> Any: ...
     def stop(self) -> Any: ...
-    def health(self) -> Dict[str, Any]: ...
+    def health(self) -> dict[str, Any]: ...
 
 
 @dataclass
 class _Entry:
     name: str
     svc: Any
-    depends_on: List[str] = field(default_factory=list)
+    depends_on: list[str] = field(default_factory=list)
     state: str = ServiceState.CREATED
     started_at: float = 0.0
     error: str = ""
@@ -40,17 +40,17 @@ class LifecycleManager:
     """Topological start (deps first), reverse stop, aggregated health."""
 
     def __init__(self) -> None:
-        self._services: Dict[str, _Entry] = {}
+        self._services: dict[str, _Entry] = {}
 
-    def register(self, svc: Any, depends_on: List[str] | None = None) -> None:
+    def register(self, svc: Any, depends_on: list[str] | None = None) -> None:
         name = getattr(svc, "name", svc.__class__.__name__)
         self._services[name] = _Entry(name=name, svc=svc, depends_on=list(depends_on or []))
 
-    def order(self) -> List[str]:
-        visited: Dict[str, str] = {}
-        out: List[str] = []
+    def order(self) -> list[str]:
+        visited: dict[str, str] = {}
+        out: list[str] = []
 
-        def visit(n: str, stack: List[str]) -> None:
+        def visit(n: str, stack: list[str]) -> None:
             if n not in self._services:
                 raise KeyError(f"unknown service dependency {n!r}")
             mark = visited.get(n)
@@ -68,8 +68,8 @@ class LifecycleManager:
             visit(name, [])
         return out
 
-    async def start_all(self) -> Dict[str, str]:
-        results: Dict[str, str] = {}
+    async def start_all(self) -> dict[str, str]:
+        results: dict[str, str] = {}
         for name in self.order():
             e = self._services[name]
             e.state = ServiceState.STARTING
@@ -87,8 +87,8 @@ class LifecycleManager:
                 results[name] = f"failed: {exc}"
         return results
 
-    async def stop_all(self) -> Dict[str, str]:
-        results: Dict[str, str] = {}
+    async def stop_all(self) -> dict[str, str]:
+        results: dict[str, str] = {}
         for name in reversed(self.order()):
             e = self._services[name]
             e.state = ServiceState.STOPPING
@@ -105,8 +105,8 @@ class LifecycleManager:
                 results[name] = f"failed: {exc}"
         return results
 
-    def health(self) -> Dict[str, Any]:
-        per: Dict[str, Any] = {}
+    def health(self) -> dict[str, Any]:
+        per: dict[str, Any] = {}
         ok = True
         for name, e in self._services.items():
             try:

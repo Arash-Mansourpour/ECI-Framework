@@ -10,7 +10,7 @@ returns a heal fraction = λ2_after/λ2_baseline — repair you can measure.
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List
+from typing import Any
 
 __all__ = ["SelfRepair"]
 
@@ -24,7 +24,7 @@ class SelfRepair:
         self.baseline_l2 = graph.algebraic_connectivity()
         return self.baseline_l2
 
-    def diagnose(self, graph: Any) -> Dict[str, Any]:
+    def diagnose(self, graph: Any) -> dict[str, Any]:
         adj = {n: set() for n in graph.nodes}
         for (s, d) in graph.edges:
             adj[s].add(d)
@@ -38,7 +38,7 @@ class SelfRepair:
                 "orphans": orphans, "rotted": [list(k) for k in rotted],
                 "damaged": len(graph.components()) > 1 or bool(orphans) or bool(rotted)}
 
-    def heal(self, graph: Any) -> Dict[str, Any]:
+    def heal(self, graph: Any) -> dict[str, Any]:
         diag = self.diagnose(graph)
         if not diag["damaged"] and not diag["collapse"]:
             return {"healed": False, "reason": "healthy", "heal_fraction": 1.0}

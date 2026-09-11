@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import time
 from collections import OrderedDict
-from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 __all__ = ["Cache"]
 
@@ -14,12 +13,12 @@ class Cache:
     def __init__(self, capacity: int = 1024, ttl_s: float = 60.0) -> None:
         self.capacity = capacity
         self.ttl = ttl_s
-        self._data: OrderedDict[str, Tuple[Any, float]] = OrderedDict()
+        self._data: OrderedDict[str, tuple[Any, float]] = OrderedDict()
         self.hits = 0
         self.misses = 0
         self.evictions = 0
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         rec = self._data.get(key)
         if rec is None:
             self.misses += 1
@@ -41,7 +40,7 @@ class Cache:
             self._data.popitem(last=False)
             self.evictions += 1
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         total = self.hits + self.misses
         return {"size": len(self._data), "hits": self.hits, "misses": self.misses,
                 "evictions": self.evictions, "hit_rate": (self.hits / total) if total else 0.0}

@@ -8,9 +8,8 @@ structured verdict suitable for audit + provenance.
 
 from __future__ import annotations
 
-import time
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from eci.authz.rbac import RBAC
 
@@ -22,7 +21,7 @@ class PolicyRule:
     name: str
     action: str            # fnmatch pattern
     resource: str = "*"    # fnmatch pattern
-    require_attrs: Dict[str, Any] = field(default_factory=dict)
+    require_attrs: dict[str, Any] = field(default_factory=dict)
     min_awareness: float = 0.0
     min_obedience: float = 0.0
     min_trust: float = 0.0
@@ -32,9 +31,9 @@ class PolicyRule:
 class Decision:
     allow: bool
     rule: str = ""
-    reasons: List[str] = field(default_factory=list)
+    reasons: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"allow": self.allow, "rule": self.rule, "reasons": self.reasons}
 
 
@@ -43,7 +42,7 @@ class PolicyEngine:
 
     def __init__(self, rbac: RBAC | None = None) -> None:
         self.rbac = rbac or RBAC()
-        self.rules: List[PolicyRule] = []
+        self.rules: list[PolicyRule] = []
         self.decisions = 0
         self.allows = 0
 
@@ -51,8 +50,8 @@ class PolicyEngine:
         self.rules.append(rule)
 
     def decide(self, subject: str, action: str, resource: str = "*",
-               attrs: Dict[str, Any] | None = None,
-               attestation: Dict[str, float] | None = None) -> Decision:
+               attrs: dict[str, Any] | None = None,
+               attestation: dict[str, float] | None = None) -> Decision:
         import fnmatch
         attrs = attrs or {}
         attestation = attestation or {}
@@ -62,7 +61,7 @@ class PolicyEngine:
         for rule in self.rules:
             if not (fnmatch.fnmatchcase(action, rule.action) and fnmatch.fnmatchcase(resource, rule.resource)):
                 continue
-            reasons: List[str] = [f"rule:{rule.name}"]
+            reasons: list[str] = [f"rule:{rule.name}"]
             ok = True
             for k, v in rule.require_attrs.items():
                 if attrs.get(k) != v:
@@ -80,5 +79,5 @@ class PolicyEngine:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "rules": len(self.rules), "decisions": self.decisions, "allows": self.allows}

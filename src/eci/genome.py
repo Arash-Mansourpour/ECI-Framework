@@ -1,4 +1,6 @@
 """Protocol genome: the constitution becomes an evolving species.
+Validation note: fitness is fit-to-the-task-suite, not objective quality
+(see docs/VALIDATION_STATUS.md) — change the tasks, change the winner.
 
 Policy parameters are GENES. Mutations are proposed, simulated in the
 digital twin, trialed on a canary cohort, voted by the DAO, and — only
@@ -11,8 +13,9 @@ starts being an organism.
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 __all__ = ["Gene", "Genome", "mutate", "life_cycle"]
 
@@ -20,22 +23,22 @@ __all__ = ["Gene", "Genome", "mutate", "life_cycle"]
 @dataclass
 class Gene:
     name: str
-    params: Dict[str, float]
+    params: dict[str, float]
     fitness: float = 0.0
     generation: int = 0
-    lineage: List[str] = field(default_factory=list)
+    lineage: list[str] = field(default_factory=list)
 
 
 @dataclass
 class Genome:
-    genes: Dict[str, Gene] = field(default_factory=dict)  # name -> champion
+    genes: dict[str, Gene] = field(default_factory=dict)  # name -> champion
 
     def register(self, gene: Gene) -> None:
         cur = self.genes.get(gene.name)
         if cur is None or gene.fitness > cur.fitness:
             self.genes[gene.name] = gene
 
-    def export(self) -> Dict[str, Any]:
+    def export(self) -> dict[str, Any]:
         return {n: {"params": g.params, "fitness": round(g.fitness, 4), "gen": g.generation} for n, g in self.genes.items()}
 
 
@@ -48,13 +51,13 @@ def mutate(gene: Gene, seed: int = 0, scale: float = 0.1) -> Gene:
 
 def life_cycle(
     gene: Gene,
-    simulate: Callable[[Dict[str, float]], Dict[str, float]],
-    canary: Callable[[Dict[str, float]], Dict[str, float]],
-    vote: Callable[[Dict[str, float]], bool],
+    simulate: Callable[[dict[str, float]], dict[str, float]],
+    canary: Callable[[dict[str, float]], dict[str, float]],
+    vote: Callable[[dict[str, float]], bool],
     genome: Genome,
     seed: int = 0,
     ledger=None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """mutate -> twin verdict -> canary trial -> DAO vote -> register/publish."""
     child = mutate(gene, seed)
     from eci.twin import what_if

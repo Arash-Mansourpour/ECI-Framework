@@ -99,6 +99,7 @@ def test_world_cold_start_share_is_deterministic():
     """Regression (Phase 7 calibration): pre-update share read twice must
     agree exactly — an unseeded forward sample drifted 0.24 -> 0.94."""
     import torch
+
     from eci.cognition.aikernel_adapter import WorldModelContributor
     from eci.cognition.world_model import WorldModelConfig
     torch.manual_seed(0)

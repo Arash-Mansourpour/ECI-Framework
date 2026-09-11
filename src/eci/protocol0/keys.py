@@ -13,12 +13,10 @@ import hashlib
 import hmac
 import secrets
 from dataclasses import dataclass
-from typing import Dict, Tuple
 
 __all__ = ["KeyPair", "generate", "sign", "verify", "mechanism"]
 
 try:  # real signatures
-    from cryptography.exceptions import InvalidSignature as _InvalidSig
     from cryptography.hazmat.primitives.asymmetric.ed25519 import (
         Ed25519PrivateKey as _Priv,
     )
@@ -57,14 +55,13 @@ def generate() -> KeyPair:
 
 def sign(kp: KeyPair, message: bytes) -> bytes:
     if _ED:
-        from cryptography.hazmat.primitives import serialization as _ser
 
         priv = _Priv.from_private_bytes(kp.private_bytes)
         return priv.sign(message)
     return hmac.new(kp.private_bytes, message, hashlib.sha256).digest()
 
 
-def verify(public_bytes: bytes, message: bytes, signature: bytes, private_hint: bytes | None = None) -> Dict:
+def verify(public_bytes: bytes, message: bytes, signature: bytes, private_hint: bytes | None = None) -> dict:
     """Verify. HMAC fallback needs the private seed as hint (documented)."""
     if _ED:
         from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey as _Pub

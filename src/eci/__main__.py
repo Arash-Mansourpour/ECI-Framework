@@ -28,7 +28,7 @@ import argparse
 import asyncio
 import json
 import sys
-from typing import Any, List
+from typing import Any
 
 from eci import __version__
 from eci.consciousness.quantum_mind import quantum_mind_audit
@@ -209,7 +209,7 @@ def cmd_ever(args: argparse.Namespace) -> int:
     import asyncio as _aio
     fw = ECIFramework()
     tok, ser = fw.caps.mint("eci", "ns:default", "act:system.*")
-    snap = fw.continuum.snapshot({"health": fw.system_status()}, note="ever-report")
+    _snap = fw.continuum.snapshot({"health": fw.system_status()}, note="ever-report")
     cycle = _aio.run(fw.mapek.cycle({"errors": 0.0, "dlq": 0.0}))
     _print_json({
         "caps": fw.caps.verify(ser, action="system.status", namespace="default"),
@@ -320,7 +320,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: List[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     configure_logging(level="WARNING")
     parser = build_parser()
     args = parser.parse_args(argv)

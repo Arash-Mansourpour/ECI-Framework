@@ -10,10 +10,9 @@ Layers
 from __future__ import annotations
 
 import hashlib
-import json
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any
 
 from eci.core.identity import ARCHITECT
 
@@ -35,8 +34,8 @@ def consciousness_weight(phi: float) -> float:
 @dataclass
 class ECIDataDAO:
     dao_id: str
-    members: Dict[str, Dict[str, float]] = field(default_factory=dict)
-    proposals: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    members: dict[str, dict[str, float]] = field(default_factory=dict)
+    proposals: dict[str, dict[str, Any]] = field(default_factory=dict)
     treasury: float = 0.0
 
     def register(self, agent_id: str, data_contrib: float, phi: float, stake: float = 1.0) -> None:
@@ -72,7 +71,7 @@ class ECIDataDAO:
         self.proposals[proposal_id][key] += w
         return w
 
-    def tally(self, proposal_id: str) -> Dict[str, Any]:
+    def tally(self, proposal_id: str) -> dict[str, Any]:
         p = self.proposals[proposal_id]
         p["open"] = False
         passed = p["votes_for"] > p["votes_against"]

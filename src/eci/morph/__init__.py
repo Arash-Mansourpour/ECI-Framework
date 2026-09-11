@@ -1,4 +1,5 @@
 """Morphogenesis facade: the living-network organ of ECI.
+Validation note: fitness is task-defined (see docs/VALIDATION_STATUS.md).
 
 Owns one living MorphGraph + grammar + Darwin selector + motif genome +
 self-repair + coevolver. ``evolve_step()`` is the heartbeat:
@@ -14,7 +15,8 @@ from __future__ import annotations
 
 import random
 import time
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 from eci.morph.coevolve import Coevolver
 from eci.morph.grammar import GraphGrammar
@@ -23,7 +25,7 @@ from eci.morph.motifs import MotifGenome
 from eci.morph.repair import SelfRepair
 from eci.morph.selection import DarwinSelector, SelectionConfig
 
-__all__ = ["Morphogenesis"]
+__all__ = ["Morphogenesis", "SelectionConfig"]
 
 
 class Morphogenesis:
@@ -45,9 +47,9 @@ class Morphogenesis:
         self.audit = audit
         self.steps = 0
 
-    def evolve_step(self, probes: List[Callable[[MorphGraph], float]] | None = None,
-                    reward: float = 0.0, active: List[str] | None = None,
-                    surprise: float = 0.0, seed: int = 0) -> Dict[str, Any]:
+    def evolve_step(self, probes: list[Callable[[MorphGraph], float]] | None = None,
+                    reward: float = 0.0, active: list[str] | None = None,
+                    surprise: float = 0.0, seed: int = 0) -> dict[str, Any]:
         t0 = time.time()
         g = self.graph
         # 1. evaluate living graph on task probes
@@ -102,7 +104,7 @@ class Morphogenesis:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "steps": self.steps, **self.graph.health(),
                 "rules": len(self.grammar.rules), "pool": self.selector.energy_pool,
                 "repairs": self.repair.repairs}

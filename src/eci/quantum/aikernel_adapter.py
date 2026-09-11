@@ -24,7 +24,7 @@ and ``VQEContributor`` is the StateContributor adapter.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Sequence
+from typing import Any
 
 import torch
 
@@ -68,8 +68,8 @@ class VQEContributor:
         self.e_target = e_target
         self._state: torch.Tensor | None = None
         self._rho: torch.Tensor | None = None
-        self.f_history: List[float] = []
-        self.e_history: List[float] = []
+        self.f_history: list[float] = []
+        self.e_history: list[float] = []
 
     # -- loop -----------------------------------------------------------
     def _forward(self) -> torch.Tensor:
@@ -78,12 +78,12 @@ class VQEContributor:
         self._state, self._rho = state, rho
         return rho
 
-    def loss_parts(self) -> Dict[str, torch.Tensor]:
+    def loss_parts(self) -> dict[str, torch.Tensor]:
         from eci.aikernel.free_energy import quantum_free_energy
         rho = self._rho if self._rho is not None else self._forward()
         return quantum_free_energy(rho, self.obs_labels, self.obs_target, self.R)
 
-    def step(self) -> Dict[str, float]:
+    def step(self) -> dict[str, float]:
         # NOTE: cached _rho from the no_grad tracking pass carries no graph,
         # so every step starts from a fresh attached forward (one extra
         # forward per step; documented cost of keeping loss_parts pure).
@@ -93,7 +93,7 @@ class VQEContributor:
         parts["total"].backward()
         self.opt.step()
         with torch.no_grad():
-            rho = self._forward()
+            self._forward()
             e = float(self.hamiltonian.expectation(self._state, self.sim)[0].real.item())
         self._rho, self._state = None, None  # invalidate no-grad tensors
         f = float(parts["total"].detach().item())
@@ -101,7 +101,7 @@ class VQEContributor:
         self.e_history.append(e)
         return {"F": f, "energy": e}
 
-    def run(self, steps: int) -> Dict[str, Any]:
+    def run(self, steps: int) -> dict[str, Any]:
         for _ in range(steps):
             self.step()
         return {"F_history": list(self.f_history), "e_history": list(self.e_history),
@@ -115,6 +115,8 @@ class VQEContributor:
 
     def update(self, observation: torch.Tensor) -> GenerativeState:
         """Assimilate: observation[0] becomes the new aspiration energy, one step."""
+        from eci.aikernel.state_contract import require_finite
+        observation = require_finite(observation, "vqe")
         self.e_target = float(observation.reshape(-1)[0].item())
         self.obs_labels, self.obs_target, self.R = energy_likelihood(
             self.hamiltonian, self.n_qubits, self.e_target, 1.0, 1e-3)
@@ -128,7 +130,7 @@ class VQEContributor:
 def vqe_aikernel(hamiltonian: PauliSum, n_qubits: int, n_layers: int = 2,
                  steps: int = 200, lr: float = 0.05, seed: int = 42,
                  e_target: float = -4.0, R_e: float = 1.0,
-                 eps: float = 1e-3) -> Dict[str, object]:
+                 eps: float = 1e-3) -> dict[str, object]:
     """Opt-in VQE loop whose loss is literally kernel F (mirrors vqe())."""
     opt = VQEContributor(hamiltonian, n_qubits, n_layers, e_target, R_e, eps, lr, seed)
     out = opt.run(steps)

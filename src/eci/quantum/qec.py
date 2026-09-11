@@ -12,13 +12,11 @@ Implementation notes
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 import torch
 
 from eci.quantum import gates as qg
-from eci.quantum.density import from_statevector, fidelity as rho_fidelity
-from eci.quantum.gates import pauli_string_matrix
 from eci.quantum.statevector import StatevectorSimulator
 
 __all__ = ["BitFlipCode", "ShorCode"]
@@ -30,7 +28,7 @@ class BitFlipCode:
     n_qubits = 3
     name = "[[3,1,3]] bit-flip"
 
-    def __init__(self, sim: Optional[StatevectorSimulator] = None) -> None:
+    def __init__(self, sim: StatevectorSimulator | None = None) -> None:
         self.sim = sim or StatevectorSimulator(self.n_qubits)
 
     def _embed_logical(self, logical: torch.Tensor) -> torch.Tensor:
@@ -62,7 +60,7 @@ class BitFlipCode:
         return torch.stack([s0, s1], dim=1)
 
     @staticmethod
-    def correction_qubit(syndrome: Sequence[float]) -> Optional[int]:
+    def correction_qubit(syndrome: Sequence[float]) -> int | None:
         """Map (Z0Z1, Z1Z2) eigenvalues to the erroneous qubit (None = clean)."""
         s0 = 1 if syndrome[0] > 0 else -1
         s1 = 1 if syndrome[1] > 0 else -1
@@ -74,7 +72,7 @@ class BitFlipCode:
             return 2
         return None
 
-    def correct(self, state: torch.Tensor) -> Tuple[torch.Tensor, Optional[int]]:
+    def correct(self, state: torch.Tensor) -> tuple[torch.Tensor, int | None]:
         syn = self.syndrome(state)[0].tolist()
         qubit = self.correction_qubit(syn)
         if qubit is not None:
@@ -88,7 +86,7 @@ class BitFlipCode:
         error_gate: torch.Tensor = qg.X,
         alpha: float = math.cos(0.3),
         beta: float = math.sin(0.3),
-    ) -> Dict[str, object]:
+    ) -> dict[str, object]:
         """Encode a known state, corrupt one qubit, correct, verify."""
         prep = StatevectorSimulator(1)
         logical = alpha * prep.basis_state(0)[0] + beta * prep.basis_state(1)[0]
@@ -118,7 +116,7 @@ class ShorCode(BitFlipCode):
     n_qubits = 9
     name = "[[9,1,3]] Shor"
 
-    def __init__(self, sim: Optional[StatevectorSimulator] = None) -> None:
+    def __init__(self, sim: StatevectorSimulator | None = None) -> None:
         self.sim = sim or StatevectorSimulator(self.n_qubits)
 
     # ------------------------------------------------------------------
@@ -160,7 +158,7 @@ class ShorCode(BitFlipCode):
     # Stabilizers (as Pauli-string dicts) - eigenvalues are exact +-1 for
     # Pauli errors on the encoded state.
     # ------------------------------------------------------------------
-    def z_stabilizers(self) -> List[Dict[int, str]]:
+    def z_stabilizers(self) -> list[dict[int, str]]:
         """Bit-flip syndromes: Z_i Z_j within each block."""
         stabs = []
         for block in range(3):
@@ -169,24 +167,24 @@ class ShorCode(BitFlipCode):
             stabs.append({base + 1: "Z", base + 2: "Z"})
         return stabs
 
-    def x_stabilizers(self) -> List[Dict[int, str]]:
+    def x_stabilizers(self) -> list[dict[int, str]]:
         """Phase-flip syndromes: XXXXXX comparisons across blocks."""
         b0, b1, b2 = (list(range(3 * k, 3 * k + 3)) for k in range(3))
-        s01: Dict[int, str] = {}
+        s01: dict[int, str] = {}
         for q in b0 + b1:
             s01[q] = "X"
-        s12: Dict[int, str] = {}
+        s12: dict[int, str] = {}
         for q in b1 + b2:
             s12[q] = "X"
         return [s01, s12]
 
-    def syndrome(self, state: torch.Tensor) -> Tuple[List[float], List[float]]:
+    def syndrome(self, state: torch.Tensor) -> tuple[list[float], list[float]]:
         z_syn = [float(self.sim.expectation_pauli(state, s)[0].item()) for s in self.z_stabilizers()]
         x_syn = [float(self.sim.expectation_pauli(state, s)[0].item()) for s in self.x_stabilizers()]
         return z_syn, x_syn
 
     @staticmethod
-    def _bit_flip_qubit(z_syn: Sequence[float]) -> Optional[int]:
+    def _bit_flip_qubit(z_syn: Sequence[float]) -> int | None:
         """Locate the X error from the six Z-type eigenvalues."""
         signs = [1 if s > 0 else -1 for s in z_syn]
         for block in range(3):
@@ -200,7 +198,7 @@ class ShorCode(BitFlipCode):
         return None
 
     @staticmethod
-    def _phase_block(x_syn: Sequence[float]) -> Optional[int]:
+    def _phase_block(x_syn: Sequence[float]) -> int | None:
         """Locate the Z (phase) error block from X-type eigenvalues."""
         signs = [1 if s > 0 else -1 for s in x_syn]
         if signs[0] < 0 and signs[1] > 0:
@@ -211,7 +209,7 @@ class ShorCode(BitFlipCode):
             return 2
         return None
 
-    def correct(self, state: torch.Tensor) -> Tuple[torch.Tensor, Dict[str, object]]:
+    def correct(self, state: torch.Tensor) -> tuple[torch.Tensor, dict[str, object]]:
         z_syn, x_syn = self.syndrome(state)
         flip_qubit = self._bit_flip_qubit(z_syn)
         phase_block = self._phase_block(x_syn)
@@ -233,7 +231,7 @@ class ShorCode(BitFlipCode):
         error_qubit: int = 4,
         error_gate: str = "X",
         theta: float = 0.3,
-    ) -> Dict[str, object]:
+    ) -> dict[str, object]:
         """Full encode -> error -> correct -> decode -> fidelity cycle."""
         if error_gate not in ("X", "Y", "Z", "I"):
             raise ValueError("error_gate must be one of X, Y, Z, I")

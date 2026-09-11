@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
 
 __all__ = ["TransparencyLog", "inclusion_proof", "verify_inclusion"]
 
@@ -28,7 +27,7 @@ def _node_hash(left: bytes, right: bytes) -> bytes:
 
 @dataclass
 class TransparencyLog:
-    leaves: List[bytes] = field(default_factory=list)
+    leaves: list[bytes] = field(default_factory=list)
 
     def append(self, payload: bytes) -> int:
         self.leaves.append(_leaf_hash(payload))
@@ -46,11 +45,11 @@ class TransparencyLog:
             level = nxt
         return level[0]
 
-    def head(self) -> Dict:
+    def head(self) -> dict:
         return {"n": len(self.leaves), "root": self.root().hex()}
 
 
-def inclusion_proof(log: TransparencyLog, index: int) -> List[Tuple[str, str]]:
+def inclusion_proof(log: TransparencyLog, index: int) -> list[tuple[str, str]]:
     """Sibling hashes bottom-up: [(side, hex)] where side is L/R of sibling."""
     if not 0 <= index < len(log.leaves):
         raise ValueError("leaf index out of range")
@@ -67,7 +66,7 @@ def inclusion_proof(log: TransparencyLog, index: int) -> List[Tuple[str, str]]:
     return proof
 
 
-def verify_inclusion(root_hex: str, leaf_payload: bytes, index: int, proof: List[Tuple[str, str]], total: int) -> bool:
+def verify_inclusion(root_hex: str, leaf_payload: bytes, index: int, proof: list[tuple[str, str]], total: int) -> bool:
     cur = _leaf_hash(leaf_payload)
     idx = index
     for side, sib_hex in proof:

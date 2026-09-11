@@ -10,7 +10,6 @@ from eci.network.transport import AsyncMemoryChannel
 
 
 def _updates():
-    base = {"w": torch.zeros(4)}
     ups = [{**{"w": torch.zeros(4)}} for _ in range(6)]
     ups.append({"w": torch.full((4,), 100.0)})
     return ups

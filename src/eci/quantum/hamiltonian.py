@@ -12,9 +12,8 @@ CNOT ladder + a parameterized RZ, which keeps everything differentiable.
 
 from __future__ import annotations
 
-import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Dict, List, Sequence, Tuple
 
 import torch
 
@@ -32,9 +31,9 @@ class PauliTerm:
     """Single Pauli term: coeff * prod_q P_q."""
 
     coeff: float
-    paulis: Dict[int, _PauliLabel] = field(default_factory=dict)
+    paulis: dict[int, _PauliLabel] = field(default_factory=dict)
 
-    def normalized(self) -> "PauliTerm":
+    def normalized(self) -> PauliTerm:
         return PauliTerm(float(self.coeff), {int(q): p.upper() for q, p in self.paulis.items()})
 
 
@@ -42,13 +41,13 @@ class PauliSum:
     """Sum of Pauli terms representing an Hermitian operator."""
 
     def __init__(self, terms: Sequence[PauliTerm] | None = None) -> None:
-        self.terms: List[PauliTerm] = [t.normalized() for t in (terms or [])]
+        self.terms: list[PauliTerm] = [t.normalized() for t in (terms or [])]
 
     # ------------------------------------------------------------------
     # Constructors
     # ------------------------------------------------------------------
     @classmethod
-    def from_maxcut_edges(cls, edges: Sequence[Tuple[int, int]], n_qubits: int) -> "PauliSum":
+    def from_maxcut_edges(cls, edges: Sequence[tuple[int, int]], n_qubits: int) -> PauliSum:
         """MaxCut cost Hamiltonian C = sum_{(i,j)} (I - Z_i Z_j)/2."""
         terms = []
         for (i, j) in edges:
@@ -60,7 +59,7 @@ class PauliSum:
         return cls(terms)
 
     @classmethod
-    def from_dict(cls, spec: Sequence[Tuple[float, Dict[int, str]]]) -> "PauliSum":
+    def from_dict(cls, spec: Sequence[tuple[float, dict[int, str]]]) -> PauliSum:
         return cls([PauliTerm(c, p) for c, p in spec])
 
     # ------------------------------------------------------------------
@@ -106,10 +105,10 @@ class PauliSum:
     # ------------------------------------------------------------------
     # Evolution
     # ------------------------------------------------------------------
-    def _basis_change_ops(self, term: PauliTerm) -> Tuple[List[GateOp], List[GateOp]]:
+    def _basis_change_ops(self, term: PauliTerm) -> tuple[list[GateOp], list[GateOp]]:
         """Pre/post ops rotating X/Y onto the Z axis (verified identities)."""
-        pre: List[GateOp] = []
-        post: List[GateOp] = []
+        pre: list[GateOp] = []
+        post: list[GateOp] = []
         for q, p in sorted(term.paulis.items()):
             if p == "X":
                 pre.append(("1q", qg.H, q))
@@ -122,7 +121,7 @@ class PauliSum:
                 post.append(("1q", qg.S, q))
         return pre, post
 
-    def _pauli_evolution_ops(self, term: PauliTerm, t: float | torch.Tensor) -> List[GateOp]:
+    def _pauli_evolution_ops(self, term: PauliTerm, t: float | torch.Tensor) -> list[GateOp]:
         """Ops implementing e^{-i * coeff * P * t} exactly (circuit level)."""
         term = term.normalized()
         qubits = sorted(term.paulis)
@@ -134,7 +133,7 @@ class PauliSum:
             return pre + [("1q", qg.RZ(angle), qubits[0])] + post
 
         pre, post = self._basis_change_ops(term)
-        ops: List[GateOp] = list(pre)
+        ops: list[GateOp] = list(pre)
         # CNOT ladder: q0 -> q1 -> ... -> qm
         for a, b in zip(qubits[:-1], qubits[1:]):
             ops.append(("2q", qg.CNOT, a, b))

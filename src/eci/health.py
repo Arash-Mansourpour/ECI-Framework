@@ -11,14 +11,14 @@ import json
 import os
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Any, Dict, Optional
+from typing import Any
 
 __all__ = ["status", "metrics_text", "serve"]
 
 _STARTED = time.time()
 
 
-def status(ledger=None, peers: int = 0, collective_gate: str = "unknown") -> Dict[str, Any]:
+def status(ledger=None, peers: int = 0, collective_gate: str = "unknown") -> dict[str, Any]:
     from eci.version import FRAMEWORK_VERSION
 
     height, ok = 0, True
@@ -38,7 +38,7 @@ def status(ledger=None, peers: int = 0, collective_gate: str = "unknown") -> Dic
     }
 
 
-def metrics_text(st: Dict[str, Any]) -> str:
+def metrics_text(st: dict[str, Any]) -> str:
     rows = [
         ("eci_up", 1 if st["ok"] else 0), ("eci_ledger_height", st["ledger_height"]),
         ("eci_ledger_ok", 1 if st["ledger_ok"] else 0), ("eci_peers", st["peers"]),
@@ -48,7 +48,7 @@ def metrics_text(st: Dict[str, Any]) -> str:
 
 
 class _Handler(BaseHTTPRequestHandler):
-    state: Dict[str, Any] = {}
+    state: dict[str, Any] = {}
 
     def log_message(self, *a: Any) -> None:  # quiet
         pass

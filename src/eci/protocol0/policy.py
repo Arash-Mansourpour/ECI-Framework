@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Optional
 
 from eci.protocol0.spec import Protocol0Spec
 
@@ -15,7 +14,7 @@ class PolicyDecision:
     allow: bool
     action: str
     reason: str
-    required: Dict[str, float]
+    required: dict[str, float]
 
 
 def check(
@@ -24,8 +23,8 @@ def check(
     awareness: float,
     obedience: float,
     trust: float,
-    coherence: Optional[float] = None,
-    divergence: Optional[float] = None,
+    coherence: float | None = None,
+    divergence: float | None = None,
 ) -> PolicyDecision:
     """Gate an action. Collective coherence/divergence optionally enforced."""
     rule = spec.actions.get(action)

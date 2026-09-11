@@ -1,4 +1,6 @@
 """Neural cortex: one learned substrate for the whole architecture.
+Validation note: fused scores and advice are learned heuristics with no
+ground truth for "good advice" (see docs/VALIDATION_STATUS.md).
 
 Today every subsystem scores in isolation (awareness here, risk there,
 reputation elsewhere). The cortex fuses them: agents become graph nodes
@@ -9,8 +11,9 @@ struct: risk per agent, collective forecast, and the recommended gate.
 Pure torch, no new dependencies;abler on CPU for edge profiles.
 """
 
-from eci.neural.graph import MeshGraph, build_graph, gnn_step
-from eci.neural.world import WorldModel, rollout as world_rollout
 from eci.neural.cortex import Cortex, advise
+from eci.neural.graph import MeshGraph, build_graph, gnn_step
+from eci.neural.world import WorldModel
+from eci.neural.world import rollout as world_rollout
 
 __all__ = ["MeshGraph", "build_graph", "gnn_step", "WorldModel", "world_rollout", "Cortex", "advise"]

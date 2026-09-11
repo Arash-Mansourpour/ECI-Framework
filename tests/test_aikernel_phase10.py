@@ -71,6 +71,7 @@ def test_no_inline_dunder_imports_in_aik_src():
 def test_pec_extended_table():
     """q=0.02/0.10/0.20 at n=8192: unbiased within ~1 sigma, cost grows with q."""
     import torch
+
     from eci.aikernel.functors import pauli_string_matrix
     from eci.quantum.mitigation import apply_depolarizing, pec_mitigate
     bell = torch.zeros(4, 4, dtype=torch.complex64)
@@ -87,6 +88,7 @@ def test_pec_extended_table():
 def test_pyphi_crosscheck_agreement():
     """Repertoires agree to 1e-9 (AND + asymmetric mutual-copy probes)."""
     import importlib.util
+
     import pytest
     if importlib.util.find_spec("pyphi") is None:
         pytest.skip("pyphi not installed")
@@ -102,6 +104,7 @@ def test_pyphi_crosscheck_agreement():
 def test_pyphi_skip_paths_without_pyphi(monkeypatch):
     """Absent PyPhi and oversized systems refuse with reasons, not crashes."""
     import importlib.util
+
     from eci.consciousness.iit4 import DiscreteSubstrate, crosscheck_pyphi, disconnected_system
     monkeypatch.setattr(importlib.util, "find_spec", lambda *a, **k: None)
     out = crosscheck_pyphi(disconnected_system())

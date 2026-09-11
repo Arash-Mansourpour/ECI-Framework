@@ -13,8 +13,8 @@ import hashlib
 import hmac
 import os
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["SecretManager", "SecretLease"]
 
@@ -39,7 +39,7 @@ class SecretManager:
 
     def __init__(self, master: bytes | None = None) -> None:
         self._master = master or os.urandom(32)
-        self._store: Dict[str, Dict[str, Any]] = {}
+        self._store: dict[str, dict[str, Any]] = {}
         self._version = 1
 
     def put(self, name: str, value: bytes, ttl_s: float = 0.0) -> SecretLease:
@@ -65,7 +65,7 @@ class SecretManager:
 
     def rotate(self, new_master: bytes | None = None) -> int:
         # decrypt all with old master, bump version, re-seal
-        plain: Dict[str, bytes] = {}
+        plain: dict[str, bytes] = {}
         for name in list(self._store):
             try:
                 plain[name] = self.get(name)
@@ -80,5 +80,5 @@ class SecretManager:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "secrets": len(self._store), "version": self._version}

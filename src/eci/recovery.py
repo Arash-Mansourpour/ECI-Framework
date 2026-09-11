@@ -12,18 +12,17 @@ from __future__ import annotations
 import secrets
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 __all__ = ["split", "combine", "RecoveryRequest"]
 
 P = 257
 
 
-def _eval(coeffs: List[int], x: int) -> int:
+def _eval(coeffs: list[int], x: int) -> int:
     return sum(c * pow(x, i, P) for i, c in enumerate(coeffs)) % P
 
 
-def split(secret: bytes, n: int, k: int) -> List[Dict]:
+def split(secret: bytes, n: int, k: int) -> list[dict]:
     """Split into n shares, any k of which recover. k>=2, n>=k."""
     if not 2 <= k <= n <= 255:
         raise ValueError("need 2 <= k <= n <= 255")
@@ -39,7 +38,7 @@ def split(secret: bytes, n: int, k: int) -> List[Dict]:
     return out
 
 
-def _lagrange_at0(points: List[tuple]) -> int:
+def _lagrange_at0(points: list[tuple]) -> int:
     total = 0
     for j, (xj, yj) in enumerate(points):
         num, den = 1, 1
@@ -51,7 +50,7 @@ def _lagrange_at0(points: List[tuple]) -> int:
     return total
 
 
-def combine(shares: List[Dict]) -> bytes:
+def combine(shares: list[dict]) -> bytes:
     """Recover from >= k shares (same idx set, same len enforced)."""
     if not shares:
         raise ValueError("no shares")
@@ -71,7 +70,7 @@ def combine(shares: List[Dict]) -> bytes:
 class RecoveryRequest:
     agent_id: str
     unlock_at: float
-    shares: List[Dict] = field(default_factory=list)
+    shares: list[dict] = field(default_factory=list)
 
     def ready(self) -> bool:
         return time.time() >= self.unlock_at and len(self.shares) >= (self.shares[0]["need"] if self.shares else 2)

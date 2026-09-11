@@ -1,6 +1,8 @@
 """Frontier batch: ZK bands, federation, HLC merge, economy, twin, recovery."""
 import time
 
+import pytest
+
 from eci.causal import HLC, hlc_now, merge_chains
 from eci.economy import Economy
 from eci.federation.bridge import Bridge, TranslationMap, anchor, translate_vote
@@ -16,11 +18,8 @@ def test_zk_band_not_value():
     v = verify_proof(c.published, p)
     assert v["ok"] is True and v["disclosed"] == {"awareness": ">=0.5"}
     # 0.8 band unprovable (absence = fail proof); exact value never disclosed
-    try:
+    with pytest.raises(LookupError):
         prove(c, "awareness", 0.8)
-        assert False, "should not prove unpassed band"
-    except LookupError:
-        pass
     assert all("0.65" not in str(x) for x in [p, v])
 
 
@@ -29,6 +28,7 @@ def test_federation_anchor_and_weights():
     la.append("genesis", {})
     b = Bridge("east", "west", TranslationMap({"vote": 0.5}), TranslationMap({"vote": 0.25}))
     r = anchor(b, la, lb)
+    assert r is not None  # anchor records on both ledgers as a side effect
     assert la.verify()["ok"] and lb.verify()["ok"]
     assert translate_vote(b, "east", "vote", 2.0) == 1.0
     assert translate_vote(b, "west", "vote", 2.0) == 0.5
@@ -72,22 +72,13 @@ def test_shamir_recovery_gates():
     shares = split(secret, n=5, k=3)
     assert combine(shares[:3]) == secret
     assert combine(shares[1:4]) == secret
-    try:
+    with pytest.raises(ValueError):
         combine(shares[:2])
-        assert False
-    except ValueError:
-        pass
     req = RecoveryRequest("alice", unlock_at=time.time() + 1000, shares=shares[:3])
     assert req.ready() is False
-    try:
+    with pytest.raises(PermissionError):
         req.attempt(True)
-        assert False
-    except PermissionError:
-        pass
     req.unlock_at = time.time() - 1
-    try:
+    with pytest.raises(PermissionError):
         req.attempt(False)
-        assert False
-    except PermissionError:
-        pass
     assert req.attempt(True) == secret

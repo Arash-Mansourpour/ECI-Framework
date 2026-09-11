@@ -1,5 +1,4 @@
 """Protocol-0: spec validation, attestation, policy gates, ledger chain."""
-import time
 
 import pytest
 

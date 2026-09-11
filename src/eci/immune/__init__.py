@@ -1,4 +1,7 @@
 """Artificial immune system for Protocol-0 networks.
+Validation note: threat scores have no ground truth for "threat"
+(see docs/VALIDATION_STATUS.md) — hence challenge-gated quarantine with
+appeal-only release.
 
 Self/non-self discrimination over behavior-feature vectors
 (awareness, obedience, vote rate, message rate, challenge score):

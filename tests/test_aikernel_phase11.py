@@ -17,7 +17,6 @@ def live():
 
 
 def test_framework_exposes_live_mesh(live):
-    import torch
     aik = live._aik
     assert set(aik["ledger"].members()) == {"quantum", "noisy", "phi", "agent",
                                             "world", "sci", "fep", "ewc"}
@@ -28,7 +27,6 @@ def test_framework_exposes_live_mesh(live):
                sum(st["aik"]["describe"][k]["share"] for k in st["aik"]["members"])) < 1e-6
     assert all(m["category"] in ("good-fit", "adaptable") for m in st["aik"]["describe"].values())
     # identity with what the MCP tools read (not a copy)
-    import torch as _t
     direct = float(aik["ledger"].total_free_energy().detach().item())
     assert abs(st["aik"]["total_free_energy"] - direct) < 1e-9
 

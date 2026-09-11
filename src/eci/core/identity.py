@@ -11,7 +11,7 @@ import hashlib
 import json
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any
 
 from eci.constants import ARCHITECT_NAME, ARCHITECT_SIGNATURE, ARCHITECT_TITLE, CREATOR_WALLET
 
@@ -52,7 +52,7 @@ class ArchitectIdentity:
     def key(self) -> str:
         return self._key
 
-    def stamp(self, payload: Any, timestamp: Optional[float] = None) -> Dict[str, Any]:
+    def stamp(self, payload: Any, timestamp: float | None = None) -> dict[str, Any]:
         """Produce an auditable architect stamp for an arbitrary payload."""
         if timestamp is None:
             timestamp = time.time()
@@ -91,7 +91,7 @@ class ArchitectIdentity:
         expected = hashlib.sha512(f"{self._key}|{canonical}|{timestamp}".encode()).hexdigest()
         return expected == digest
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         return {
             "name": self.name,
             "title": self.title,

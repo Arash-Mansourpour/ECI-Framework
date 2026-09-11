@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import time
-from typing import Dict, Optional
 
 import torch
 
@@ -18,7 +17,7 @@ __all__ = ["NodeFactory"]
 class NodeFactory:
     """Creates network nodes whose identity is bound to the sovereign architect."""
 
-    def __init__(self, n_signature_qubits: int = 8, seed: Optional[int] = None) -> None:
+    def __init__(self, n_signature_qubits: int = 8, seed: int | None = None) -> None:
         self.n_signature_qubits = n_signature_qubits
         self.seed = seed
 
@@ -39,15 +38,15 @@ class NodeFactory:
     def create_node(
         self,
         role: NetworkRole,
-        capabilities: Optional[Dict[str, float]] = None,
-        consciousness_profile: Optional[ConsciousnessProfile] = None,
+        capabilities: dict[str, float] | None = None,
+        consciousness_profile: ConsciousnessProfile | None = None,
         trust_score: float = 1.0,
         reputation_score: float = 1.0,
         stake: float = 1.0,
         computational_power: float = 1.0,
         memory_capacity: float = 8.0,
         network_bandwidth: float = 100.0,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> NetworkNode:
         """Create a new node with architect-signed identity."""
         node_seed = seed if seed is not None else (self.seed if self.seed is not None else int(time.time() * 1e6) % (2 ** 31))

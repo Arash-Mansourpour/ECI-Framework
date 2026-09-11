@@ -49,8 +49,6 @@ SAME covariance. The floor value is reported, never hidden.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
-
 import torch
 
 from eci.aikernel.generative_model import GenerativeState, Prior
@@ -82,12 +80,12 @@ class PhiContributor:
         self.iit = IntegratedInformationTheory(device=device)
         self._state = GenerativeState(self.prior.mu0.clone(),
                                       self.prior.Sigma0.clone())
-        self.last_phi: Optional[Dict[str, float]] = None
+        self.last_phi: dict[str, float] | None = None
         self.phi_stale = True
 
     # -- analysis ---------------------------------------------------------
     def analyze(self, state: GenerativeState,
-                recompute_phi: bool = True) -> Dict[str, float]:
+                recompute_phi: bool = True) -> dict[str, float]:
         from eci.constants import COVARIANCE_REGULARIZER
         cov = 0.5 * (state.cov + state.cov.T)
         n = cov.shape[0]
@@ -113,7 +111,8 @@ class PhiContributor:
         with the prior by precision weighting (two-independent-beliefs
         rule), empirical weight = T/(T+T0). Phi NOT recomputed by default
         (exhaustive Phi is 2^n — see module docstring)."""
-        obs = torch.as_tensor(observation, dtype=torch.float32)
+        from eci.aikernel.state_contract import require_finite
+        obs = torch.as_tensor(require_finite(observation, "phi"), dtype=torch.float32)
         if obs.dim() == 1:
             obs = obs.unsqueeze(0)
         from eci.constants import COVARIANCE_REGULARIZER
@@ -176,7 +175,8 @@ class FEPContributor:
         return _GS(mu.float(), self._laplace_cov().float())
 
     def update(self, observation: torch.Tensor) -> GenerativeState:
-        obs = torch.as_tensor(observation, dtype=torch.float64).reshape(-1)
+        from eci.aikernel.state_contract import require_finite
+        obs = torch.as_tensor(require_finite(observation, "fep"), dtype=torch.float64).reshape(-1)
         if obs.numel() != self.agent.n_obs:
             raise ValueError(f"observation needs {self.agent.n_obs} values, "
                              f"got {obs.numel()}")

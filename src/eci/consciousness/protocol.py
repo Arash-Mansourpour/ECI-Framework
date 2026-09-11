@@ -22,8 +22,9 @@ from __future__ import annotations
 import math
 import time
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Deque, Dict, List, Optional
+from typing import Any
 
 import torch
 
@@ -55,14 +56,14 @@ class ConsciousnessMeasurement:
     consciousness_bits: float
     level: ConsciousnessLevel
     timestamp: float
-    kl_components: Dict[str, float] = field(default_factory=dict)
+    kl_components: dict[str, float] = field(default_factory=dict)
     intervention_triggered: bool = False
     # --- v2 additions (defaulted so old pickles/JSON still load) ---
     awareness_index: float = 0.0
     significance: float = 1.0
     intervention_tier: str = "none"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "consciousness_bits": self.consciousness_bits,
             "level": self.level.name,
@@ -100,7 +101,7 @@ class ConsciousnessProtocol:
         awareness_gain: float = 1.0,
         min_calibration: int = 2,
         flat_variance_floor: float = 1e-8,
-        on_intervention: Optional[Callable[[ConsciousnessMeasurement], None]] = None,
+        on_intervention: Callable[[ConsciousnessMeasurement], None] | None = None,
     ) -> None:
         if measurement_frequency <= 0:
             raise ValueError("measurement_frequency must be positive")
@@ -115,9 +116,9 @@ class ConsciousnessProtocol:
         self.flat_variance_floor = float(flat_variance_floor)
         self.on_intervention = on_intervention
         self.logger = get_logger("consciousness.protocol")
-        self.history: Deque[ConsciousnessMeasurement] = deque(maxlen=history_size)
-        self.baseline_density: Optional[torch.Tensor] = None
-        self.baseline_scales: Optional[Dict[str, torch.Tensor]] = None
+        self.history: deque[ConsciousnessMeasurement] = deque(maxlen=history_size)
+        self.baseline_density: torch.Tensor | None = None
+        self.baseline_scales: dict[str, torch.Tensor] | None = None
         self.n_baseline_samples = 0
         self.architect_stamp = ARCHITECT.stamp(
             {"kind": "consciousness_protocol_v2", "agent_id": agent_id}
@@ -162,7 +163,7 @@ class ConsciousnessProtocol:
         counts = torch.bincount(idx, minlength=self.n_bins).double()
         return counts / counts.sum().clamp_min(1e-12)
 
-    def _scales(self, neural_state: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def _scales(self, neural_state: torch.Tensor) -> dict[str, torch.Tensor]:
         """Global + channel-mean + temporal-difference densities."""
         x = neural_state.detach().to(torch.float64).flatten()
         out = {"global": self._hist(x)}
@@ -188,7 +189,7 @@ class ConsciousnessProtocol:
         self.baseline_density = scales["global"]
         self.n_baseline_samples = 1
 
-    def calibrate_baseline(self, samples: List[torch.Tensor]) -> Dict[str, float]:
+    def calibrate_baseline(self, samples: list[torch.Tensor]) -> dict[str, float]:
         """Calibrate rho_0 from K unconscious samples (mean of scales).
 
         Returns the mean pairwise JS spread of the calibration set so callers
@@ -196,7 +197,7 @@ class ConsciousnessProtocol:
         """
         if not samples:
             raise ValueError("calibrate_baseline needs >= 1 sample")
-        acc: Dict[str, torch.Tensor] = {}
+        acc: dict[str, torch.Tensor] = {}
         scales_list = [self._scales(s) for s in samples]
         for k in ("global", "channel", "temporal"):
             acc[k] = sum(s[k] for s in scales_list) / len(scales_list)
@@ -216,7 +217,7 @@ class ConsciousnessProtocol:
             "mean_js_spread": float(sum(spreads) / len(spreads)) if spreads else 0.0,
         }
 
-    def _adapt_baseline(self, scales: Dict[str, torch.Tensor]) -> None:
+    def _adapt_baseline(self, scales: dict[str, torch.Tensor]) -> None:
         if self.baseline_scales is None or self.baseline_ema <= 0:
             return
         for k in scales:
@@ -267,8 +268,8 @@ class ConsciousnessProtocol:
         return (ge + 1) / (n_perm + 1)
 
     def _fused_bits(
-        self, scales: Dict[str, torch.Tensor]
-    ) -> tuple[float, Dict[str, float]]:
+        self, scales: dict[str, torch.Tensor]
+    ) -> tuple[float, dict[str, float]]:
         assert self.baseline_scales is not None
         kl_g = self.relative_entropy(scales["global"], self.baseline_scales["global"])
         kl_c = self.relative_entropy(scales["channel"], self.baseline_scales["channel"])
@@ -387,7 +388,7 @@ class ConsciousnessProtocol:
         return measurement
 
     # ------------------------------------------------------------------
-    def trend(self, window: int = 16) -> Dict[str, float]:
+    def trend(self, window: int = 16) -> dict[str, float]:
         """Recent trend of C(t) + awareness slope + stability."""
         if not self.history:
             return {"mean": 0.0, "std": 0.0, "slope": 0.0, "n": 0.0,
@@ -398,7 +399,7 @@ class ConsciousnessProtocol:
         mean = sum(recent) / n
         var = sum((v - mean) ** 2 for v in recent) / max(1, n - 1)
 
-        def _slope(vs: List[float]) -> float:
+        def _slope(vs: list[float]) -> float:
             if len(vs) < 2:
                 return 0.0
             xs = list(range(len(vs)))
@@ -416,7 +417,7 @@ class ConsciousnessProtocol:
         """Latest measurement at the intervene tier?"""
         return bool(self.history and self.history[-1].intervention_triggered)
 
-    def awareness_trajectory(self, window: int = 64) -> Dict[str, Any]:
+    def awareness_trajectory(self, window: int = 64) -> dict[str, Any]:
         """Sparkline-ready awareness history for dashboards/GitHub plots."""
         seq = list(self.history)[-window:]
         return {

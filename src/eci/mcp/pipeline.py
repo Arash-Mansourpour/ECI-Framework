@@ -22,8 +22,8 @@ from __future__ import annotations
 import asyncio
 import fnmatch
 import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["CallCtx", "McpPipeline"]
 
@@ -31,7 +31,7 @@ __all__ = ["CallCtx", "McpPipeline"]
 @dataclass
 class CallCtx:
     tool_name: str
-    args: Dict[str, Any]
+    args: dict[str, Any]
     session: Any = None
     idempotency_key: str = ""
     dry_run: bool = False
@@ -41,7 +41,7 @@ class CallCtx:
     duration_s: float = 0.0
 
 
-def _caps_allow(granted: List[str], needed: List[str]) -> List[str]:
+def _caps_allow(granted: list[str], needed: list[str]) -> list[str]:
     missing = []
     for n in needed:
         if not any(fnmatch.fnmatchcase(n, g) or fnmatch.fnmatchcase(g, n) for g in granted):
@@ -65,15 +65,15 @@ class McpPipeline:
         self.audit = audit
         self.provenance = provenance
         self.bus = bus
-        self._idem: Dict[str, Any] = {}
-        self._idem_order: List[str] = []
+        self._idem: dict[str, Any] = {}
+        self._idem_order: list[str] = []
         self._idem_cap = idempotency_capacity
-        self._sema: Dict[str, asyncio.Semaphore] = {}
+        self._sema: dict[str, asyncio.Semaphore] = {}
 
     # -- public --------------------------------------------------------
-    async def run(self, tool_name: str, args: Dict[str, Any] | None = None,
+    async def run(self, tool_name: str, args: dict[str, Any] | None = None,
                   session: Any | None = None, session_id: str = "",
-                  idempotency_key: str = "", dry_run: bool = False) -> Dict[str, Any]:
+                  idempotency_key: str = "", dry_run: bool = False) -> dict[str, Any]:
         t0 = time.time()
         ctx = CallCtx(tool_name=tool_name, args=dict(args or {}),
                       idempotency_key=idempotency_key or str((args or {}).pop("idempotency_key", "")),

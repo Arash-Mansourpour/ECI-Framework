@@ -9,8 +9,9 @@ isolated per-plugin so one bad extension can't halt the mesh.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 __all__ = ["PluginManifest", "PluginRecord", "PluginManager"]
 
@@ -20,8 +21,8 @@ class PluginManifest:
     name: str
     version: str = "0.1.0"
     entry: str = "main"
-    capabilities: List[str] = field(default_factory=list)
-    depends_on: List[str] = field(default_factory=list)
+    capabilities: list[str] = field(default_factory=list)
+    depends_on: list[str] = field(default_factory=list)
     description: str = ""
 
     def validate(self) -> None:
@@ -50,8 +51,8 @@ class PluginManager:
 
     def __init__(self, bus: Any | None = None) -> None:
         self.bus = bus
-        self._plugins: Dict[str, PluginRecord] = {}
-        self._entries: Dict[str, Callable[..., Any]] = {}
+        self._plugins: dict[str, PluginRecord] = {}
+        self._entries: dict[str, Callable[..., Any]] = {}
 
     def register(self, manifest: PluginManifest, entry: Callable[..., Any]) -> None:
         manifest.validate()
@@ -61,11 +62,11 @@ class PluginManager:
         self._plugins[manifest.name] = PluginRecord(manifest=manifest)
         self._entries[manifest.name] = entry
 
-    def load_order(self) -> List[str]:
-        visited: Dict[str, str] = {}
-        out: List[str] = []
+    def load_order(self) -> list[str]:
+        visited: dict[str, str] = {}
+        out: list[str] = []
 
-        def visit(n: str, stack: List[str]) -> None:
+        def visit(n: str, stack: list[str]) -> None:
             if n not in self._plugins:
                 raise KeyError(f"unknown plugin dependency {n!r}")
             m = visited.get(n)
@@ -83,9 +84,9 @@ class PluginManager:
             visit(name, [])
         return out
 
-    def load_all(self, ctx: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    def load_all(self, ctx: dict[str, Any] | None = None) -> dict[str, Any]:
         ctx = ctx or {}
-        results: Dict[str, Any] = {}
+        results: dict[str, Any] = {}
         for name in self.load_order():
             rec = self._plugins[name]
             try:
@@ -103,5 +104,5 @@ class PluginManager:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "plugins": {k: {"loaded": v.loaded, "error": v.error} for k, v in self._plugins.items()}}

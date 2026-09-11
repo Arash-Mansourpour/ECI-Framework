@@ -30,7 +30,7 @@ import os
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 __all__ = ["CaveatError", "CapToken", "Issuer"]
 
@@ -47,10 +47,10 @@ def _hmac(key: bytes, msg: str) -> bytes:
 class CapToken:
     tid: str
     issuer: str
-    caveats: List[str] = field(default_factory=list)
+    caveats: list[str] = field(default_factory=list)
     sig: str = ""  # hex of chained HMAC
 
-    def attenuate(self, root: bytes, *caveats: str) -> "CapToken":
+    def attenuate(self, root: bytes, *caveats: str) -> CapToken:
         """Return a NARROWED copy (original untouched, chain extended)."""
         for c in caveats:
             _check_syntax(c)
@@ -67,7 +67,7 @@ class CapToken:
         return base64.urlsafe_b64encode(raw).decode().rstrip("=")
 
     @classmethod
-    def deserialize(cls, s: str) -> "CapToken":
+    def deserialize(cls, s: str) -> CapToken:
         raw = base64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
         d = json.loads(raw)
         return cls(d["t"], d["i"], list(d.get("c", [])), d.get("s", ""))
@@ -85,10 +85,10 @@ class Issuer:
     """Holds root keys per issuer id; mints and verifies."""
 
     def __init__(self) -> None:
-        self._roots: Dict[str, bytes] = {}
+        self._roots: dict[str, bytes] = {}
         self.minted = 0
 
-    def mint(self, issuer: str, *caveats: str, root: bytes | None = None) -> Tuple[CapToken, str]:
+    def mint(self, issuer: str, *caveats: str, root: bytes | None = None) -> tuple[CapToken, str]:
         """Mint + serialize. Returns (token, serialized)."""
         for c in caveats:
             try:
@@ -107,7 +107,7 @@ class Issuer:
 
     def verify(self, serialized: str, action: str = "", namespace: str = "",
                spend: float = 0.0, now: float | None = None,
-               epoch: int = 0) -> Dict[str, Any]:
+               epoch: int = 0) -> dict[str, Any]:
         """Recompute the chain; enforce every caveat. Structured verdict."""
         now = time.time() if now is None else now
         try:

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 __all__ = ["Envelope", "Treasury"]
 
@@ -31,7 +31,7 @@ class Envelope:
     def remaining(self) -> float:
         return max(0.0, self.amount - self.spent)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"id": self.id, "purpose": self.purpose, "amount": self.amount,
                 "owner": self.owner, "expiry_epoch": self.expiry_epoch,
                 "spent": self.spent, "remaining": self.remaining}
@@ -43,8 +43,8 @@ class Treasury:
     def __init__(self, epoch: int = 0) -> None:
         self.epoch = epoch
         self.pool = 0.0
-        self._envs: Dict[str, Envelope] = {}
-        self._deleg: Dict[str, Dict[str, float]] = {}  # from -> {to: w}
+        self._envs: dict[str, Envelope] = {}
+        self._deleg: dict[str, dict[str, float]] = {}  # from -> {to: w}
         self._seq = 0
 
     # -- funding ------------------------------------------------------
@@ -62,7 +62,7 @@ class Treasury:
         self._envs[env.id] = env
         return env
 
-    def spend(self, env_id: str, amount: float, by: str) -> Dict[str, Any]:
+    def spend(self, env_id: str, amount: float, by: str) -> dict[str, Any]:
         env = self._envs.get(env_id)
         if env is None:
             return {"ok": False, "error": "unknown envelope"}
@@ -75,7 +75,7 @@ class Treasury:
         env.spent += amount
         return {"ok": True, "remaining": env.remaining}
 
-    def advance_epoch(self) -> Dict[str, Any]:
+    def advance_epoch(self) -> dict[str, Any]:
         self.epoch += 1
         reclaimed = 0.0
         for env in self._envs.values():
@@ -95,8 +95,8 @@ class Treasury:
             raise ValueError("delegation cycle rejected")
 
     def _has_cycle(self) -> bool:
-        visited: Dict[str, str] = {}
-        def visit(n: str, stack: List[str]) -> bool:
+        visited: dict[str, str] = {}
+        def visit(n: str, stack: list[str]) -> bool:
             m = visited.get(n)
             if m == "done": return False
             if m == "wip": return True
@@ -107,16 +107,16 @@ class Treasury:
             return False
         return any(visit(n, []) for n in list(self._deleg))
 
-    def power(self, agent: str, base: Dict[str, float]) -> float:
+    def power(self, agent: str, base: dict[str, float]) -> float:
         incoming = sum(w for frm, outs in self._deleg.items() for to, w in outs.items() if to == agent)
         return base.get(agent, 0.0) + incoming
 
-    def status(self) -> Dict[str, Any]:
+    def status(self) -> dict[str, Any]:
         return {"epoch": self.epoch, "pool": self.pool,
                 "envelopes": [e.to_dict() for e in self._envs.values()],
                 "delegations": {k: dict(v) for k, v in self._deleg.items()}}
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "epoch": self.epoch, "pool": self.pool, "envelopes": len(self._envs)}

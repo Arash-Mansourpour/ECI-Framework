@@ -7,7 +7,8 @@ keeps the three-layer architecture decoupled.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Generic, Iterable, List, Optional, Type, TypeVar
+from collections.abc import Callable
+from typing import Generic, TypeVar
 
 __all__ = ["Registry", "GLOBAL_REGISTRY", "register_component"]
 
@@ -19,13 +20,13 @@ class Registry(Generic[T]):
 
     def __init__(self, name: str = "registry") -> None:
         self.name = name
-        self._factories: Dict[str, Callable[..., T]] = {}
-        self._protocols: Dict[str, str] = {}
+        self._factories: dict[str, Callable[..., T]] = {}
+        self._protocols: dict[str, str] = {}
 
     def register(
         self,
         name: str,
-        factory: Optional[Callable[..., T]] = None,
+        factory: Callable[..., T] | None = None,
         protocol: str = "generic",
     ) -> Callable:
         """Register ``factory`` under ``name``. Usable as a decorator."""
@@ -56,7 +57,7 @@ class Registry(Generic[T]):
     def create(self, name: str, *args: object, **kwargs: object) -> T:
         return self.get(name)(*args, **kwargs)
 
-    def names(self, protocol: Optional[str] = None) -> List[str]:
+    def names(self, protocol: str | None = None) -> list[str]:
         if protocol is None:
             return sorted(self._factories)
         return sorted(n for n, p in self._protocols.items() if p == protocol)

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any
 
 __all__ = ["ProvisionalHold"]
 
@@ -19,9 +19,9 @@ __all__ = ["ProvisionalHold"]
 @dataclass
 class ProvisionalHold:
     ttl_s: float = 600.0
-    held: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    held: dict[str, dict[str, Any]] = field(default_factory=dict)
 
-    def place(self, agent_id: str, p: float, ledger=None) -> Dict[str, Any]:
+    def place(self, agent_id: str, p: float, ledger=None) -> dict[str, Any]:
         self.held[agent_id] = {"p": p, "until": time.time() + self.ttl_s}
         if ledger:
             ledger.append("precog_hold", {"node": agent_id, "p": round(p, 3)})
@@ -36,7 +36,7 @@ class ProvisionalHold:
             return False
         return True
 
-    def check(self, agent_id: str, action: str) -> Optional[str]:
+    def check(self, agent_id: str, action: str) -> str | None:
         """Return deny-reason, or None if allowed. Challenges always pass."""
         if not self.is_held(agent_id):
             return None

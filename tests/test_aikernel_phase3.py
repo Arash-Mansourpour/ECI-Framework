@@ -39,8 +39,8 @@ def test_intrinsic_information_hand_calc():
 def test_repertoires_normalize_on_random_tpms():
     """Property: every repertoire is a distribution (sums to 1)."""
     import random
-    from eci.consciousness.iit4 import (DiscreteSubstrate, cause_repertoire,
-                                        effect_repertoire)
+
+    from eci.consciousness.iit4 import DiscreteSubstrate, cause_repertoire, effect_repertoire
     rng = random.Random(0)
     for trial in range(10):
         n = 3
@@ -81,9 +81,13 @@ def test_xor_whole_distinction_measured():
 
 def test_mutual_copy_and_and_reported():
     """Strongly-coupled swap loop integrates more than degenerate AND."""
-    from eci.consciousness.iit4 import (and_system, mutual_copy_system,
-                                        phi_structure)
-    from eci.consciousness.iit4 import DiscreteSubstrate, _gate_tpm
+    from eci.consciousness.iit4 import (
+        DiscreteSubstrate,
+        _gate_tpm,
+        and_system,
+        mutual_copy_system,
+        phi_structure,
+    )
     mc = phi_structure(mutual_copy_system())
     an = phi_structure(and_system())
     assert mc["phi"] > an["phi"] >= 0.0, (mc["phi"], an["phi"])
@@ -96,7 +100,7 @@ def test_mutual_copy_and_and_reported():
 
 def test_relations_zero_without_overlap_nonzero_with_partial():
     """Disjoint purviews -> exactly 0. Partial overlap -> 1.0 (hand-built)."""
-    from eci.consciousness.iit4 import intrinsic_information, relation_phi
+    from eci.consciousness.iit4 import relation_phi
     # disjoint: different units entirely
     r = relation_phi({(0,): 1.0}, (5,), {(0,): 1.0}, (7,),
                      {(0,): 1.0}, (5,), {(0,): 1.0}, (7,))
@@ -113,6 +117,7 @@ def test_relations_zero_without_overlap_nonzero_with_partial():
 def test_three_node_chain_runs():
     """Scaling smoke: 3-node COPY ring completes fast with sane output."""
     import time
+
     from eci.consciousness.iit4 import DiscreteSubstrate, _gate_tpm, phi_structure
     s = DiscreteSubstrate(3, _gate_tpm(3, {0: lambda b: b[2], 1: lambda b: b[0], 2: lambda b: b[1]}),
                           (1, 1, 1))
@@ -126,6 +131,7 @@ def test_crosscheck_reports_skip_honestly():
     """Without PyPhi: skip-with-reason. With PyPhi (Phase 10): real bridge —
     repertoires agree, sia runs, version caveat attached."""
     import importlib.util
+
     from eci.consciousness.iit4 import crosscheck_pyphi, disconnected_system
     out = crosscheck_pyphi(disconnected_system())
     if importlib.util.find_spec("pyphi") is None:

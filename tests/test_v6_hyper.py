@@ -250,6 +250,7 @@ def test_chaos_plan_abort():
 
 def test_config_env_overlay_and_flags():
     import os
+
     from eci.config import ECIConfig
     os.environ["ECI_QUANTUM_N_QUBITS"] = "5"
     try:

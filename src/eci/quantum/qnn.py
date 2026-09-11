@@ -12,7 +12,6 @@ propagate from the classical loss back into the rotation parameters.
 from __future__ import annotations
 
 import math
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -35,7 +34,7 @@ class QuantumLayer(nn.Module):
         self,
         n_qubits: int,
         n_layers: int = 2,
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
     ) -> None:
         super().__init__()
         if n_qubits < 1:
@@ -109,7 +108,7 @@ class QuantumNeuralNetwork(nn.Module):
         n_qubits: int = 6,
         out_features: int = 2,
         n_layers: int = 2,
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
     ) -> None:
         super().__init__()
         if in_features < 1 or out_features < 1:

@@ -1,5 +1,4 @@
 """Omniverse MCP Fabric: registry, sessions, pipeline, protocol, federation."""
-import asyncio
 
 import pytest
 
@@ -111,6 +110,7 @@ def test_prompts_and_resources(fabric):
 
 def test_federation_prefix_and_breaker():
     import asyncio
+
     from eci.mcp.federation import FederatedUpstream, Federation
     fed = Federation()
     async def remote(tool, args):

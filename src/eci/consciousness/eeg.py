@@ -12,7 +12,6 @@ exposes raw.get_data() in the same layout.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Tuple
 
 import numpy as np
 import torch
@@ -56,14 +55,14 @@ def load_timeseries(path: str | Path, zscore: bool = True, max_seconds: int | No
     return torch.from_numpy(arr)
 
 
-def bandpower(x: torch.Tensor, sfreq: float = 256.0) -> Dict[str, float]:
+def bandpower(x: torch.Tensor, sfreq: float = 256.0) -> dict[str, float]:
     """Welch-free FFT bandpower (delta/theta/alpha/beta/gamma) mean over channels."""
     xd = x.double()
     fft = torch.fft.rfft(xd, dim=0)
     freqs = torch.fft.rfftfreq(xd.shape[0], d=1.0 / sfreq)
     power = (fft.abs() ** 2).mean(dim=1)
     bands = {"delta": (0.5, 4), "theta": (4, 8), "alpha": (8, 13), "beta": (13, 30), "gamma": (30, 100)}
-    out: Dict[str, float] = {}
+    out: dict[str, float] = {}
     total = float(power.sum().item()) + 1e-12
     for name, (lo, hi) in bands.items():
         m = (freqs >= lo) & (freqs < hi)
@@ -71,7 +70,7 @@ def bandpower(x: torch.Tensor, sfreq: float = 256.0) -> Dict[str, float]:
     return out
 
 
-def read_mne_raw(path: str | Path) -> Tuple[torch.Tensor, float]:
+def read_mne_raw(path: str | Path) -> tuple[torch.Tensor, float]:
     """Load via MNE if installed; returns (tensor [time, ch], sfreq)."""
     try:
         import mne as _mne

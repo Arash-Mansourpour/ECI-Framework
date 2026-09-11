@@ -14,13 +14,10 @@ Theory
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Dict, List, Sequence, Tuple
 
 import torch
-
-from eci.quantum import gates as qg
-from eci.quantum.statevector import StatevectorSimulator
 
 __all__ = [
     "SurfaceCode",
@@ -45,7 +42,7 @@ def logical_error_estimate(p_phys: float, distance: int, p_th: float = 0.0075) -
     return threshold_scaling(p_phys, p_th, distance)
 
 
-def code_parameters_table() -> List[Dict[str, object]]:
+def code_parameters_table() -> list[dict[str, object]]:
     return [
         {"code": "Bit-flip [[3,1,3]]", "n": 3, "k": 1, "d": 3, "rate": 1 / 3, "use": "pedagogy / X-only"},
         {"code": "Shor [[9,1,3]]", "n": 9, "k": 1, "d": 3, "rate": 1 / 9, "use": "any single-qubit error"},
@@ -57,7 +54,7 @@ def code_parameters_table() -> List[Dict[str, object]]:
     ]
 
 
-def wilson_interval(k: int, n: int, z: float = 1.96) -> Dict[str, float]:
+def wilson_interval(k: int, n: int, z: float = 1.96) -> dict[str, float]:
     """Wilson 95% CI for a binomial rate k/n (stable at k=0/n)."""
     if n <= 0:
         return {"p": 0.0, "lo": 0.0, "hi": 1.0}
@@ -68,7 +65,7 @@ def wilson_interval(k: int, n: int, z: float = 1.96) -> Dict[str, float]:
     return {"p": p, "lo": max(0.0, center - half), "hi": min(1.0, center + half)}
 
 
-def pl_curve(code: "SurfaceCode", p_list: Sequence[float], shots: int = 200, seed: int = 0) -> List[Dict[str, object]]:
+def pl_curve(code: SurfaceCode, p_list: Sequence[float], shots: int = 200, seed: int = 0) -> list[dict[str, object]]:
     """Shot-based logical failure curve with Wilson CIs + analytic estimate."""
     out = []
     for p in p_list:
@@ -99,7 +96,7 @@ class SurfaceCode:
         self.n_data = distance * distance
         self.name = f"Surface-{distance} [[{self.n_data},1,{distance}]]"
 
-    def _plaquette_qubits(self, r: int, c: int) -> List[int]:
+    def _plaquette_qubits(self, r: int, c: int) -> list[int]:
         """Data qubits around plaquette (r,c) on the d×d lattice."""
         d = self.distance
         qs = [r * d + c]
@@ -111,7 +108,7 @@ class SurfaceCode:
             qs.append((r + 1) * d + c + 1)
         return sorted(set(qs))
 
-    def x_stabilizers(self) -> List[List[int]]:
+    def x_stabilizers(self) -> list[list[int]]:
         """X-type stars: (d²-1)/2 plaquettes, weight-2 boundary / weight-4 bulk."""
         d = self.distance
         stabs = []
@@ -129,7 +126,7 @@ class SurfaceCode:
                 break
         return stabs
 
-    def z_stabilizers(self) -> List[List[int]]:
+    def z_stabilizers(self) -> list[list[int]]:
         d = self.distance
         stabs = []
         for r in range(d - 1):
@@ -145,7 +142,7 @@ class SurfaceCode:
                 break
         return stabs
 
-    def syndrome(self, x_errors: Sequence[int], z_errors: Sequence[int]) -> Dict[str, List[int]]:
+    def syndrome(self, x_errors: Sequence[int], z_errors: Sequence[int]) -> dict[str, list[int]]:
         """Compute triggered stabilizer indices for given Pauli errors."""
         xs, zs = set(x_errors), set(z_errors)
         # Z stabilizers detect X errors; X stabilizers detect Z errors
@@ -153,7 +150,7 @@ class SurfaceCode:
         x_trig = [i for i, s in enumerate(self.x_stabilizers()) if len(set(s) & zs) % 2 == 1]
         return {"x_syndrome": x_trig, "z_syndrome": z_trig}
 
-    def decode_correction(self, syndrome: Dict[str, List[int]], decoder: str = "mwpm") -> Dict[str, List[int]]:
+    def decode_correction(self, syndrome: dict[str, list[int]], decoder: str = "mwpm") -> dict[str, list[int]]:
         """Minimum-weight decoder for triggered stabilizers.
 
         ``mwpm``: optimal pairwise matching via Hungarian assignment on the
@@ -161,14 +158,13 @@ class SurfaceCode:
         above that or when scipy is missing). ``greedy``: nearest-neighbour
         pairing. Returns data-qubit correction lists (not just hints).
         """
-        def _match(trig: List[int], stabs: List[List[int]]) -> List[int]:
+        def _match(trig: list[int], stabs: list[list[int]]) -> list[int]:
             if len(trig) < 2:
                 return []
             if decoder == "mwpm":
                 # Prefer real Blossom (pymatching) when installed — exact MWPM
                 # on the trigger graph; else Hungarian assignment; else greedy.
                 try:
-                    import pymatching as _pm  # type: ignore
                     import numpy as _np
 
                     m = len(trig)
@@ -181,7 +177,7 @@ class SurfaceCode:
                             sa, sb = set(stabs[trig[i]]), set(stabs[trig[j]])
                             g.add_edge(i, j, weight=-len(sa.symmetric_difference(sb)))
                     matching = _nx.algorithms.matching.max_weight_matching(g, maxcardinality=True)
-                    corr: List[int] = []
+                    corr: list[int] = []
                     for a, b in matching:
                         sa, sb = set(stabs[trig[a]]), set(stabs[trig[b]])
                         corr += list(sa.symmetric_difference(sb))[:2]
@@ -190,7 +186,7 @@ class SurfaceCode:
                     pass
             if decoder != "mwpm" or len(trig) > 8:
                 # Greedy: pair in trigger order (corrects weight-1 pairs).
-                corr: List[int] = []
+                corr: list[int] = []
                 for a, b in zip(trig[::2], trig[1::2]):
                     sa, sb = set(stabs[a]), set(stabs[b])
                     corr += list(sa.symmetric_difference(sb))[:2]
@@ -233,7 +229,7 @@ class SurfaceCode:
     def logical_error_rate(self, p_phys: float) -> float:
         return logical_error_estimate(p_phys, self.distance)
 
-    def run_trial(self, p_phys: float = 0.01, seed: int = 0, decoder: str = "mwpm") -> Dict[str, object]:
+    def run_trial(self, p_phys: float = 0.01, seed: int = 0, decoder: str = "mwpm") -> dict[str, object]:
         g = torch.Generator().manual_seed(seed)
         x_err = [q for q in range(self.n_data) if torch.rand((), generator=g).item() < p_phys]
         z_err = [q for q in range(self.n_data) if torch.rand((), generator=g).item() < p_phys]
@@ -262,7 +258,7 @@ class SurfaceCode:
             "p_logical_estimate": self.logical_error_rate(p_phys),
         }
 
-    def run_trials(self, p_phys: float = 0.01, shots: int = 200, seed: int = 0, decoder: str = "mwpm") -> Dict[str, object]:
+    def run_trials(self, p_phys: float = 0.01, shots: int = 200, seed: int = 0, decoder: str = "mwpm") -> dict[str, object]:
         """Shot-based Monte-Carlo: failure rate + Wilson CI (not just heuristic)."""
         fails = 0
         for s in range(shots):
@@ -292,7 +288,7 @@ class BivariateBicycleCode:
     name: str = "BB [[144,12,12]]"
 
     @classmethod
-    def eci_lpu(cls) -> "BivariateBicycleCode":
+    def eci_lpu(cls) -> BivariateBicycleCode:
         return cls(n=1024, k=64, d=16, p_th=1e-4, name="ECI-LPU [[1024,64,16]]")
 
     @property
@@ -307,7 +303,7 @@ class BivariateBicycleCode:
     def logical_error_rate(self, p_phys: float) -> float:
         return threshold_scaling(p_phys, self.p_th, self.d)
 
-    def resource_estimate(self, p_phys: float, target_logical: float = 1e-12) -> Dict[str, float]:
+    def resource_estimate(self, p_phys: float, target_logical: float = 1e-12) -> dict[str, float]:
         """Physical qubits needed to hit target logical error (scaling law)."""
         # Solve 0.1 (p/p_th)^{d/2} = target for effective distance, then n_eff.
         import math as _m

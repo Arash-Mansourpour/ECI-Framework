@@ -10,12 +10,11 @@ steers a Hamiltonian drive to counteract decoherence.
 
 from __future__ import annotations
 
-from typing import Callable, List, Optional, Sequence, Tuple
+from collections.abc import Callable, Sequence
 
 import torch
 
 from eci.constants import EPS
-from eci.quantum import density as qd
 
 __all__ = [
     "lindblad_derivative",
@@ -46,8 +45,8 @@ def lindblad_evolve(
     collapse_ops: Sequence[torch.Tensor],
     n_steps: int,
     dt: float = 0.05,
-    hamiltonian_schedule: Optional[Callable[[int, torch.Tensor], torch.Tensor]] = None,
-) -> List[torch.Tensor]:
+    hamiltonian_schedule: Callable[[int, torch.Tensor], torch.Tensor] | None = None,
+) -> list[torch.Tensor]:
     """RK4-integrate the Lindblad equation; returns the trajectory.
 
     Args:
@@ -131,7 +130,7 @@ class MockQuantumStabilizer:
         self.target_coherence = target_coherence
         self.feedback_gain = feedback_gain
         self.max_drive = max_drive
-        self.history: List[float] = []
+        self.history: list[float] = []
 
     def _drive_operator(self, rho: torch.Tensor) -> torch.Tensor:
         """Hermitian drive built from the off-diagonal structure of rho."""

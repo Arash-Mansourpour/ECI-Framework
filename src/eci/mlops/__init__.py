@@ -1,4 +1,6 @@
-"""MLOps facade."""
+"""MLOps facade.
+Validation note: drift statistics are exact, their thresholds conventional;
+drift is not wrongness (see docs/VALIDATION_STATUS.md)."""
 
 from eci.mlops.drift import drift_report, ks_distance, psi
 from eci.mlops.registry import ModelRegistry, ModelVersion

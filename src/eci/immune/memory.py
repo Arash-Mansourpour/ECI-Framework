@@ -9,8 +9,8 @@ for `retention` encounters are demoted (forgetting prevents autoimmunity).
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import List, Sequence
 
 from eci.immune.detectors import Detector
 
@@ -19,11 +19,11 @@ __all__ = ["ImmuneMemory"]
 
 @dataclass
 class ImmuneMemory:
-    cells: List[Detector] = field(default_factory=list)
+    cells: list[Detector] = field(default_factory=list)
     retention: int = 500
     _idle: dict = field(default_factory=dict)
 
-    def promote(self, detectors: List[Detector]) -> int:
+    def promote(self, detectors: list[Detector]) -> int:
         n = 0
         known = {d.center for d in self.cells}
         for d in detectors:
@@ -34,7 +34,7 @@ class ImmuneMemory:
                 n += 1
         return n
 
-    def recall(self, x: Sequence[float]) -> List[Detector]:
+    def recall(self, x: Sequence[float]) -> list[Detector]:
         """Fast path: memory hits (also refreshes their idle counters)."""
         hits = [d for d in self.cells if d.binds(x)]
         for d in self.cells:

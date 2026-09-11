@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
 
 __all__ = ["Member", "Membership"]
 
@@ -26,7 +25,7 @@ class Member:
 @dataclass
 class Membership:
     timeout_s: float = 300.0
-    members: Dict[str, Member] = field(default_factory=dict)
+    members: dict[str, Member] = field(default_factory=dict)
     clock: float = 0.0  # injectable for tests; 0 = wall time
 
     def _now(self) -> float:
@@ -43,7 +42,7 @@ class Membership:
         if node_id in self.members:
             self.members[node_id].last_beat = self._now()
 
-    def sweep(self) -> List[str]:
+    def sweep(self) -> list[str]:
         """Evict timed-out nodes. Returns evicted ids."""
         now, dead = self._now(), []
         for nid, m in list(self.members.items()):
@@ -52,7 +51,7 @@ class Membership:
                 del self.members[nid]
         return dead
 
-    def voters(self) -> List[str]:
+    def voters(self) -> list[str]:
         self.sweep()
         return sorted(self.members)
 

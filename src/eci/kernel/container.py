@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Container", "CircularDependencyError"]
 
@@ -25,8 +26,8 @@ class Container:
     """Minimal DI container: register factories/instances, resolve by name."""
 
     def __init__(self) -> None:
-        self._bindings: Dict[str, _Binding] = {}
-        self._resolving: List[str] = []
+        self._bindings: dict[str, _Binding] = {}
+        self._resolving: list[str] = []
 
     def register(self, name: str, factory: Callable[..., Any] | None = None,
                  instance: Any = None, singleton: bool = True) -> None:
@@ -42,7 +43,7 @@ class Container:
     def has(self, name: str) -> bool:
         return name in self._bindings
 
-    def names(self) -> List[str]:
+    def names(self) -> list[str]:
         return sorted(self._bindings)
 
     def resolve(self, name: str) -> Any:

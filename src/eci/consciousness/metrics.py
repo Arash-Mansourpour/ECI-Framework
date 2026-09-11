@@ -7,8 +7,6 @@ information via joint histogram bincounting, spectral entropy via FFT.
 
 from __future__ import annotations
 
-from typing import Tuple
-
 import numpy as np
 import torch
 

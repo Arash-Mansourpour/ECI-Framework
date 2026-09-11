@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import copy
 import math
-from typing import Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 import torch
 import torch.nn as nn
@@ -34,7 +34,7 @@ class FederatedLearningCoordinator:
         clip_norm: float = 1.0,
         participation_fraction: float = 0.3,
         local_lr: float = 0.01,
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
     ) -> None:
         if n_clients < 1:
             raise ValueError("n_clients must be >= 1")
@@ -51,7 +51,7 @@ class FederatedLearningCoordinator:
         self.local_lr = local_lr
         self.device = device if device is not None else get_device()
         self.logger = get_logger("learning.federated")
-        self.round_history: List[Dict[str, float]] = []
+        self.round_history: list[dict[str, float]] = []
         self.noise_multiplier = self._compute_noise_multiplier(privacy_epsilon, privacy_delta)
 
     @staticmethod
@@ -64,8 +64,8 @@ class FederatedLearningCoordinator:
         self,
         client_data: Sequence[DataLoader],
         n_local_epochs: int = 2,
-        rng: Optional[torch.Generator] = None,
-    ) -> Dict[str, float]:
+        rng: torch.Generator | None = None,
+    ) -> dict[str, float]:
         """One FedAvg round: sample clients, train, clip+noise, aggregate."""
         n_participants = max(
             1, min(self.n_clients, len(client_data)),
@@ -76,8 +76,8 @@ class FederatedLearningCoordinator:
         if not selected:
             selected = [0]
 
-        updates: List[Dict[str, torch.Tensor]] = []
-        weights: List[float] = []
+        updates: list[dict[str, torch.Tensor]] = []
+        weights: list[float] = []
         for client_id in selected:
             update, weight = self._client_update(client_data[client_id], n_local_epochs)
             updates.append(update)
@@ -101,7 +101,7 @@ class FederatedLearningCoordinator:
         self,
         data_loader: DataLoader,
         n_epochs: int,
-    ) -> Tuple[Dict[str, torch.Tensor], float]:
+    ) -> tuple[dict[str, torch.Tensor], float]:
         local_model = copy.deepcopy(self.global_model).to(self.device)
         optimizer = torch.optim.SGD(local_model.parameters(), lr=self.local_lr)
         criterion = nn.CrossEntropyLoss()
@@ -118,25 +118,25 @@ class FederatedLearningCoordinator:
                 n_samples += data.size(0)
 
         global_params = dict(self.global_model.named_parameters())
-        update: Dict[str, torch.Tensor] = {}
+        update: dict[str, torch.Tensor] = {}
         for name, param in local_model.named_parameters():
             if name in global_params:
                 update[name] = (param.data - global_params[name].data).cpu()
         return update, float(max(1, n_samples))
 
-    def _clip_update(self, update: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    def _clip_update(self, update: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         norm = torch.sqrt(sum((u ** 2).sum() for u in update.values()))
         scale = min(1.0, self.clip_norm / (norm.item() + 1e-12))
         return {k: v * scale for k, v in update.items()}
 
     def _aggregate_with_privacy(
         self,
-        updates: List[Dict[str, torch.Tensor]],
-        weights: List[float],
-    ) -> Dict[str, torch.Tensor]:
+        updates: list[dict[str, torch.Tensor]],
+        weights: list[float],
+    ) -> dict[str, torch.Tensor]:
         clipped = [self._clip_update(u) for u in updates]
         total_weight = sum(weights)
-        aggregated: Dict[str, torch.Tensor] = {}
+        aggregated: dict[str, torch.Tensor] = {}
         names = clipped[0].keys()
         sigma = self.noise_multiplier * self.clip_norm / math.sqrt(len(clipped))
         for name in names:
@@ -146,13 +146,13 @@ class FederatedLearningCoordinator:
             aggregated[name] = weighted + torch.randn_like(weighted) * sigma
         return aggregated
 
-    def _apply_update(self, update: Dict[str, torch.Tensor]) -> None:
+    def _apply_update(self, update: dict[str, torch.Tensor]) -> None:
         with torch.no_grad():
             for name, param in self.global_model.named_parameters():
                 if name in update:
                     param.data += update[name].to(param.device)
 
-    def _evaluate_global_model(self, client_data: List[DataLoader]) -> float:
+    def _evaluate_global_model(self, client_data: list[DataLoader]) -> float:
         self.global_model.eval()
         criterion = nn.CrossEntropyLoss()
         total_loss, n_samples = 0.0, 0

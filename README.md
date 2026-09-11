@@ -139,6 +139,17 @@ Every subsystem optimizes one shared objective, variational free energy
 | 13 | EWC full cycle (no new adapter) | batch=replace vs online=accumulate (different scales); adoption resets share |
 | 14 | PyPhi table + glob gate (no new adapter) | sia vs Φ agree on extremes; hygiene gate self-maintaining |
 | 15 | Coverage closure + snapshots (no new adapter) | all 8 contributors registered; snapshot JSON round-trips |
+| 16 | Hardening + operability (no new adapter) | NaN guard on all updates; mesh in status + CLI (`eci aik`) |
+| 17 | Codebase honesty pass (this phase) | Per-package audit: `docs/CODEBASE_AUDIT.md` · validation ledger: `docs/VALIDATION_STATUS.md` · full record: `docs/AIKERNEL_UNIFICATION.md` |
+| 16 | Hardening + operability (no new adapter) | NaN guard on all updates; mesh in status + CLI (`eci aik`) |
+| 17 | Codebase honesty pass (this phase) | Per-package audit: `docs/CODEBASE_AUDIT.md` · validation ledger: `docs/VALIDATION_STATUS.md` · full record: `docs/AIKERNEL_UNIFICATION.md` |
+
+> Start here, in order: [audit](docs/AIKERNEL_AUDIT.md) (what conforms
+> and what deliberately doesn't) → [unification record](docs/AIKERNEL_UNIFICATION.md)
+> (contract + per-phase numbers) → [codebase audit](docs/CODEBASE_AUDIT.md)
+> (test/lint/type ground truth for everything else) → [validation ledger](docs/VALIDATION_STATUS.md)
+> + [consciousness ledger](src/eci/consciousness/LIMITATIONS.md) (what each
+> number is and is not validated against — read before quoting any metric).
 
 > Honesty ledger for all consciousness metrics (what each number is and
 > is not validated against): `src/eci/consciousness/LIMITATIONS.md` —

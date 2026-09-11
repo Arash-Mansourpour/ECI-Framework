@@ -1,4 +1,6 @@
-"""ECI cybernetics package: autopoietic closure + second-order control."""
+"""ECI cybernetics package: autopoietic closure + second-order control.
+Validation note: viability is a directional scalar with no external
+reference (see docs/VALIDATION_STATUS.md)."""
 
 from eci.cybernetics.autopoiesis import (
     AutopoieticNetwork,

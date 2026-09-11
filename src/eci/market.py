@@ -1,4 +1,6 @@
 """Risk prediction markets: the collective prices disobedience.
+Validation note: price ≈ probability only for risk-neutral, funded,
+unmanipulated traders (see docs/VALIDATION_STATUS.md) — thin markets drift.
 
 Each subject (agent) gets a binary market "violates within H epochs?".
 Logarithmic Market Scoring Rule (Hanson 2003): bounded maker loss,
@@ -12,7 +14,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 __all__ = ["Market", "Marketplace"]
 
@@ -53,27 +54,27 @@ class Market:
             self.q_no += shares
         return price
 
-    def resolve(self, violated: bool) -> Dict:
+    def resolve(self, violated: bool) -> dict:
         self.resolved, self.outcome = True, bool(violated)
         return {"subject": self.subject, "outcome": self.outcome, "price_at_close": self.price_yes()}
 
 
 @dataclass
 class Marketplace:
-    markets: Dict[str, Market] = field(default_factory=dict)
-    positions: Dict[str, Dict[str, float]] = field(default_factory=dict)  # trader -> {subject+side: shares}
+    markets: dict[str, Market] = field(default_factory=dict)
+    positions: dict[str, dict[str, float]] = field(default_factory=dict)  # trader -> {subject+side: shares}
 
     def market_for(self, subject: str) -> Market:
         return self.markets.setdefault(subject, Market(subject))
 
-    def trade(self, trader: str, subject: str, side: str, shares: float) -> Dict:
+    def trade(self, trader: str, subject: str, side: str, shares: float) -> dict:
         cost = self.market_for(subject).buy(side, shares)
         key = f"{subject}:{side}"
         self.positions.setdefault(trader, {}).setdefault(key, 0.0)
         self.positions[trader][key] += shares
         return {"cost": round(cost, 4), "price": round(self.markets[subject].price_yes(), 4)}
 
-    def settle(self, subject: str, violated: bool) -> Dict[str, float]:
+    def settle(self, subject: str, violated: bool) -> dict[str, float]:
         """Pay 1.0 per winning share. Returns trader -> payout."""
         m = self.market_for(subject)
         m.resolve(violated)

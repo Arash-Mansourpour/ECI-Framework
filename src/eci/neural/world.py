@@ -9,8 +9,6 @@ of hand rules. Trains on ledger history in seconds on CPU.
 
 from __future__ import annotations
 
-from typing import Dict, List
-
 import torch
 import torch.nn as nn
 
@@ -31,7 +29,7 @@ class WorldModel(nn.Module):
         return torch.sigmoid(self.head(h.squeeze(0)))
 
 
-def rollout(model: WorldModel, history: torch.Tensor, policy_bias: float, horizon: int = 5) -> List[Dict[str, float]]:
+def rollout(model: WorldModel, history: torch.Tensor, policy_bias: float, horizon: int = 5) -> list[dict[str, float]]:
     """Autoregressive unroll: each predicted mean becomes the next input (fixed spread)."""
     model.eval()
     seq = history.clone()

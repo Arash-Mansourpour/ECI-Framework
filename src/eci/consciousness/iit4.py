@@ -46,8 +46,8 @@ from __future__ import annotations
 
 import itertools
 import math
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["DiscreteSubstrate", "and_system", "or_system", "xor_system",
            "copy_system", "disconnected_system", "cause_repertoire",
@@ -66,8 +66,8 @@ class DiscreteSubstrate:
     """
 
     n: int
-    tpm: Dict[int, List[float]]
-    state: Tuple[int, ...]
+    tpm: dict[int, list[float]]
+    state: tuple[int, ...]
 
     def __post_init__(self) -> None:
         assert len(self.state) == self.n
@@ -80,17 +80,17 @@ class DiscreteSubstrate:
         return self.tpm[node][past]
 
 
-def _statespace(k: int) -> List[Tuple[int, ...]]:
+def _statespace(k: int) -> list[tuple[int, ...]]:
     return list(itertools.product((0, 1), repeat=k))
 
 
-def _past_int(full: Dict[int, int], n: int) -> int:
+def _past_int(full: dict[int, int], n: int) -> int:
     return sum(v << i for i, v in ((i, full[i]) for i in range(n)))
 
 
-def _gate_tpm(n: int, rules: Dict[int, Any]) -> Dict[int, List[float]]:
+def _gate_tpm(n: int, rules: dict[int, Any]) -> dict[int, list[float]]:
     """rules: node -> f(past_tuple) -> P(1). Deterministic gates use 0/1."""
-    tpm: Dict[int, List[float]] = {}
+    tpm: dict[int, list[float]] = {}
     for j in range(n):
         col = []
         for past in range(2 ** n):
@@ -129,13 +129,13 @@ def mutual_copy_system() -> DiscreteSubstrate:
 # ----------------------------------------------------------------------
 # 2. Repertoires (intervention, not correlation)
 # ----------------------------------------------------------------------
-def cause_repertoire(sub: DiscreteSubstrate, mech: Tuple[int, ...],
-                     m_state: Tuple[int, ...],
-                     purview: Tuple[int, ...]) -> Dict[Tuple[int, ...], float]:
+def cause_repertoire(sub: DiscreteSubstrate, mech: tuple[int, ...],
+                     m_state: tuple[int, ...],
+                     purview: tuple[int, ...]) -> dict[tuple[int, ...], float]:
     """pi_c(z_c | m): fix mechanism, average non-purview past uniformly,
     Bayes-invert with a uniform prior over past purview states."""
     rest = [i for i in range(sub.n) if i not in purview]
-    scores: Dict[Tuple[int, ...], float] = {}
+    scores: dict[tuple[int, ...], float] = {}
     for z in _statespace(len(purview)):
         like = 1.0
         for j, mj in zip(mech, m_state):
@@ -152,9 +152,9 @@ def cause_repertoire(sub: DiscreteSubstrate, mech: Tuple[int, ...],
     return {z: v / tot for z, v in scores.items()}
 
 
-def effect_repertoire(sub: DiscreteSubstrate, mech: Tuple[int, ...],
-                      m_state: Tuple[int, ...],
-                      purview: Tuple[int, ...]) -> Dict[Tuple[int, ...], float]:
+def effect_repertoire(sub: DiscreteSubstrate, mech: tuple[int, ...],
+                      m_state: tuple[int, ...],
+                      purview: tuple[int, ...]) -> dict[tuple[int, ...], float]:
     """pi_e(z_e | m): do(mech = m), uniform-average the rest, per-unit
     marginals multiplied (exact for this TPM class)."""
     rest = [i for i in range(sub.n) if i not in mech]
@@ -168,7 +168,7 @@ def effect_repertoire(sub: DiscreteSubstrate, mech: Tuple[int, ...],
             tot += sub.prob1(i, _past_int(full, sub.n))
             cnt += 1
         marginals.append(tot / cnt)
-    out: Dict[Tuple[int, ...], float] = {}
+    out: dict[tuple[int, ...], float] = {}
     for z in _statespace(len(purview)):
         p = 1.0
         for zi, mi in zip(z, marginals):
@@ -177,14 +177,14 @@ def effect_repertoire(sub: DiscreteSubstrate, mech: Tuple[int, ...],
     return out
 
 
-def _subsets(units: Tuple[int, ...]) -> List[Tuple[int, ...]]:
+def _subsets(units: tuple[int, ...]) -> list[tuple[int, ...]]:
     out = []
     for k in range(1, len(units) + 1):
         out.extend(tuple(sorted(c)) for c in itertools.combinations(units, k))
     return out
 
 
-def _bipartitions(mech: Tuple[int, ...]) -> List[Tuple[Tuple[int, ...], Tuple[int, ...]]]:
+def _bipartitions(mech: tuple[int, ...]) -> list[tuple[tuple[int, ...], tuple[int, ...]]]:
     """Proper bipartitions, canonical (smallest unit always in part A)."""
     if len(mech) < 2:
         return []
@@ -200,7 +200,7 @@ def _bipartitions(mech: Tuple[int, ...]) -> List[Tuple[Tuple[int, ...], Tuple[in
     return uniq
 
 
-def intrinsic_information(rep: Dict[Tuple[int, ...], float]) -> Tuple[float, Tuple[int, ...]]:
+def intrinsic_information(rep: dict[tuple[int, ...], float]) -> tuple[float, tuple[int, ...]]:
     """Box 3: ii = selectivity x informativeness at the maximal state."""
     tot = sum(rep.values()) or 1.0
     rep = {z: v / tot for z, v in rep.items()}
@@ -210,25 +210,24 @@ def intrinsic_information(rep: Dict[Tuple[int, ...], float]) -> Tuple[float, Tup
     return p * math.log2(p / u), z_star
 
 
-def _mechanism_state(sub: DiscreteSubstrate, mech: Tuple[int, ...]) -> Tuple[int, ...]:
+def _mechanism_state(sub: DiscreteSubstrate, mech: tuple[int, ...]) -> tuple[int, ...]:
     return tuple(sub.state[j] for j in mech)
 
 
-def _phi_side(sub: DiscreteSubstrate, mech: Tuple[int, ...],
-              purviews: List[Tuple[int, ...]], side: str,
-              cache: Dict[Any, Any]) -> Tuple[float, Tuple[int, ...]]:
+def _phi_side(sub: DiscreteSubstrate, mech: tuple[int, ...],
+              purviews: list[tuple[int, ...]], side: str,
+              cache: dict[Any, Any]) -> tuple[float, tuple[int, ...]]:
     """Max over purviews of (ii - best-partitioned-ii); the exclusion step.
 
     MIP = dual partition: mechanism split (A,B) x purview split
-    (ZA,ZB), each part constraining only its own slice. The single-sided
-    scheme (part constrains the WHOLE purview) is included as the
-    ZA=Z degenerate split — and is exactly what fails the disconnected
-    test on its own (it lets one part 'see' the other's purview slice).
+    (ZA,ZB), each part constraining only its own slice. Single-sided
+    candidates are NOT valid partitions here (see module docstring R1):
+    letting one part see the whole purview lets redundant parts pose as
+    integrated wholes and deflates every coupled system toward zero.
     """
     rep_fn = cause_repertoire if side == "cause" else effect_repertoire
-    m = _mechanism_state(sub, mech)
 
-    def _rep(M: Tuple[int, ...], Z: Tuple[int, ...]) -> Dict[Tuple[int, ...], float]:
+    def _rep(M: tuple[int, ...], Z: tuple[int, ...]) -> dict[tuple[int, ...], float]:
         if not M or not Z:
             return {(): 1.0}
         key = (side, M, tuple(sub.state[j] for j in M), Z)
@@ -236,11 +235,11 @@ def _phi_side(sub: DiscreteSubstrate, mech: Tuple[int, ...],
             cache[key] = rep_fn(sub, M, tuple(sub.state[j] for j in M), Z)
         return cache[key]
 
-    def _joint(rA: Dict, ZA: Tuple[int, ...], rB: Dict,
-               ZB: Tuple[int, ...], Z: Tuple[int, ...]) -> Dict[Tuple[int, ...], float]:
+    def _joint(rA: dict, ZA: tuple[int, ...], rB: dict,
+               ZB: tuple[int, ...], Z: tuple[int, ...]) -> dict[tuple[int, ...], float]:
         ia = [Z.index(x) for x in ZA]
         ib = [Z.index(x) for x in ZB]
-        out: Dict[Tuple[int, ...], float] = {}
+        out: dict[tuple[int, ...], float] = {}
         for z in _statespace(len(Z)):
             out[z] = rA.get(tuple(z[i] for i in ia), 0.0) * rB.get(tuple(z[i] for i in ib), 0.0)
         tot = sum(out.values()) or 1.0
@@ -271,8 +270,8 @@ def _phi_side(sub: DiscreteSubstrate, mech: Tuple[int, ...],
     return best_phi, best_pv
 
 
-def distinction(sub: DiscreteSubstrate, mech: Tuple[int, ...],
-                cache: Dict[Any, Any] | None = None) -> Dict[str, Any]:
+def distinction(sub: DiscreteSubstrate, mech: tuple[int, ...],
+                cache: dict[Any, Any] | None = None) -> dict[str, Any]:
     """phi_d = min(max-cause, max-effect); purviews chosen independently."""
     cache = cache if cache is not None else {}
     units = tuple(range(sub.n))
@@ -287,12 +286,12 @@ def distinction(sub: DiscreteSubstrate, mech: Tuple[int, ...],
 # ----------------------------------------------------------------------
 # 3. Relations (R2 operationalization) + Phi-structure
 # ----------------------------------------------------------------------
-def _extend(rep: Dict[Tuple[int, ...], float], from_pv: Tuple[int, ...],
-            to_pv: Tuple[int, ...]) -> Dict[Tuple[int, ...], float]:
+def _extend(rep: dict[tuple[int, ...], float], from_pv: tuple[int, ...],
+            to_pv: tuple[int, ...]) -> dict[tuple[int, ...], float]:
     """Marginal extension: spread uniformly outside the home purview."""
     idx = {u: k for k, u in enumerate(from_pv)}
     extra = len(to_pv) - len(from_pv)
-    out: Dict[Tuple[int, ...], float] = {}
+    out: dict[tuple[int, ...], float] = {}
     for u in _statespace(len(to_pv)):
         home = tuple(u[to_pv.index(x)] if x in idx else 0 for x in from_pv)
         out[u] = rep.get(home, 0.0) / (2 ** extra)
@@ -300,33 +299,33 @@ def _extend(rep: Dict[Tuple[int, ...], float], from_pv: Tuple[int, ...],
     return {z: v / tot for z, v in out.items()}
 
 
-def relation_phi(r1c: Dict[Tuple[int, ...], float], z1c: Tuple[int, ...],
-                 r2c: Dict[Tuple[int, ...], float], z2c: Tuple[int, ...],
-                 r1e: Dict[Tuple[int, ...], float], z1e: Tuple[int, ...],
-                 r2e: Dict[Tuple[int, ...], float], z2e: Tuple[int, ...]) -> float:
+def relation_phi(r1c: dict[tuple[int, ...], float], z1c: tuple[int, ...],
+                 r2c: dict[tuple[int, ...], float], z2c: tuple[int, ...],
+                 r1e: dict[tuple[int, ...], float], z1e: tuple[int, ...],
+                 r2e: dict[tuple[int, ...], float], z2e: tuple[int, ...]) -> float:
     """Pair-relation irreducibility, R2: joint constraint minus the best
     overlap-severed assignment, normalized by |d| = 2, min over sides."""
     return min(_side_pair(r1c, z1c, r2c, z2c),
                _side_pair(r1e, z1e, r2e, z2e))
 
 
-def _extend_marginal(rep: Dict[Tuple[int, ...], float], home_pv: Tuple[int, ...],
-                     keep: Tuple[int, ...], U: Tuple[int, ...]) -> Dict[Tuple[int, ...], float]:
+def _extend_marginal(rep: dict[tuple[int, ...], float], home_pv: tuple[int, ...],
+                     keep: tuple[int, ...], U: tuple[int, ...]) -> dict[tuple[int, ...], float]:
     """Keep only `keep` units' constraint; uniform elsewhere on U."""
     if not keep:
         n = len(U)
         return {u: 1.0 / (2 ** n) for u in _statespace(n)}
     # marginalize rep down to `keep`, then extend uniformly to U
     pos = [home_pv.index(x) for x in keep]
-    marg: Dict[Tuple[int, ...], float] = {}
+    marg: dict[tuple[int, ...], float] = {}
     for z, v in rep.items():
         key = tuple(z[i] for i in pos)
         marg[key] = marg.get(key, 0.0) + v
     return _extend(marg, keep, U)
 
 
-def _side_pair(r1: Dict[Tuple[int, ...], float], z1: Tuple[int, ...],
-               r2: Dict[Tuple[int, ...], float], z2: Tuple[int, ...]) -> float:
+def _side_pair(r1: dict[tuple[int, ...], float], z1: tuple[int, ...],
+               r2: dict[tuple[int, ...], float], z2: tuple[int, ...]) -> float:
     U = tuple(sorted(set(z1) | set(z2)))
     O = tuple(sorted(set(z1) & set(z2)))
     if not O:
@@ -350,7 +349,7 @@ def _side_pair(r1: Dict[Tuple[int, ...], float], z1: Tuple[int, ...],
     return max(0.0, ii - best) / 2.0
 
 
-def phi_structure(sub: DiscreteSubstrate) -> Dict[str, Any]:
+def phi_structure(sub: DiscreteSubstrate) -> dict[str, Any]:
     """Full Phi-structure + system-level Phi.
 
     Composition sum S = sum(distinctions) + sum(relations) is reported but
@@ -373,11 +372,11 @@ def phi_structure(sub: DiscreteSubstrate) -> Dict[str, Any]:
             "n_distinctions": len(distinctions), "n_relations": len(relations)}
 
 
-def _severed(sub: DiscreteSubstrate, part_a: Tuple[int, ...]) -> DiscreteSubstrate:
+def _severed(sub: DiscreteSubstrate, part_a: tuple[int, ...]) -> DiscreteSubstrate:
     """Copy of sub where units ignore inputs from the other partition:
     severed inputs are averaged uniformly (causal marginalization)."""
     set_a = set(part_a)
-    tpm: Dict[int, List[float]] = {}
+    tpm: dict[int, list[float]] = {}
     for j in range(sub.n):
         col = []
         for past in range(2 ** sub.n):
@@ -399,12 +398,12 @@ def _severed(sub: DiscreteSubstrate, part_a: Tuple[int, ...]) -> DiscreteSubstra
     return DiscreteSubstrate(sub.n, tpm, sub.state)
 
 
-def _composition_sum(sub: DiscreteSubstrate) -> Tuple[float, List, List]:
+def _composition_sum(sub: DiscreteSubstrate) -> tuple[float, list, list]:
     """Composition sum without system MIP (shared core with phi_structure)."""
     units = tuple(range(sub.n))
-    cache: Dict[Any, Any] = {}
+    cache: dict[Any, Any] = {}
     distinctions = []
-    reps: Dict[Any, Any] = {}
+    reps: dict[Any, Any] = {}
     for M in _subsets(units):
         d = distinction(sub, M, cache)
         if d["phi"] > 1e-12:
@@ -431,7 +430,7 @@ def _composition_sum(sub: DiscreteSubstrate) -> Tuple[float, List, List]:
     return total, distinctions, relations
 
 
-def _system_mip(sub: DiscreteSubstrate, composition: float) -> Tuple[float, Any]:
+def _system_mip(sub: DiscreteSubstrate, composition: float) -> tuple[float, Any]:
     """Minimum-loss system bipartition (both parts nonempty, canonical)."""
     units = tuple(range(sub.n))
     if len(units) < 2:
@@ -451,7 +450,7 @@ def _system_mip(sub: DiscreteSubstrate, composition: float) -> Tuple[float, Any]
     return max(0.0, composition - best_kept), best_cut
 
 
-def crosscheck_pyphi(sub: DiscreteSubstrate, run_sia: bool = True) -> Dict[str, Any]:
+def crosscheck_pyphi(sub: DiscreteSubstrate, run_sia: bool = True) -> dict[str, Any]:
     """Cross-check against PyPhi 1.2.0 (IIT 3.0) — validated Phase 10.
 
     Compares cause/effect repertoires (pre-measure machinery, where the
@@ -512,7 +511,7 @@ def crosscheck_pyphi(sub: DiscreteSubstrate, run_sia: bool = True) -> Dict[str, 
                 diffs.append({"mech": mech, "purview": purv, "side": direction,
                               "max_abs_diff": float(_np.abs(got - ref).max())})
         worst = max(d["max_abs_diff"] for d in diffs)
-        out: Dict[str, Any] = {"ok": True, "skipped": False, "probes": diffs,
+        out: dict[str, Any] = {"ok": True, "skipped": False, "probes": diffs,
                                "worst_abs_diff": worst}
         if run_sia:
             out["pyphi_phi_30"] = float(_pyphi.compute.sia(pym).phi)

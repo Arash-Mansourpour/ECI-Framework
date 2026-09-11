@@ -17,8 +17,6 @@ split as Phase 6's weighted-F reporting).
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
 import torch
 
 from eci.aikernel.generative_model import GenerativeState
@@ -37,7 +35,7 @@ class EWCContributor:
         self.ewc = ewc
         self.prior_prec = prior_prec
 
-    def _flat(self, d: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def _flat(self, d: dict[str, torch.Tensor]) -> torch.Tensor:
         return torch.cat([d[k].reshape(-1).float()
                           for k, _ in self.ewc.model.named_parameters()])
 
@@ -50,7 +48,8 @@ class EWCContributor:
 
     def update(self, observation: torch.Tensor) -> GenerativeState:
         """Adopt a flattened parameter vector as the new snapshot θ*."""
-        flat = torch.as_tensor(observation, dtype=torch.float32).reshape(-1)
+        from eci.aikernel.state_contract import require_finite
+        flat = torch.as_tensor(require_finite(observation, "ewc"), dtype=torch.float32).reshape(-1)
         expect = sum(p.numel() for _, p in self.ewc.model.named_parameters())
         if flat.numel() != expect:
             raise ValueError(f"observation needs {expect} values, got {flat.numel()}")
@@ -63,7 +62,7 @@ class EWCContributor:
         self.ewc.update_optimal_params()
         return self.posterior()
 
-    def consolidate(self, data_loader, max_batches=None) -> Dict[str, float]:
+    def consolidate(self, data_loader, max_batches=None) -> dict[str, float]:
         """Full EWC cycle half 2: (re)estimate Fisher on task data."""
         self.ewc.compute_fisher(data_loader, max_batches=max_batches)
         total = sum(float(v.sum().item()) for v in self.ewc.fisher_dict.values())

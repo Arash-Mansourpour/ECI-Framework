@@ -12,8 +12,9 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Snapshot", "Continuum"]
 
@@ -25,16 +26,16 @@ def _digest(obj: Any) -> str:
 @dataclass
 class Snapshot:
     epoch: int
-    digests: Dict[str, str]
+    digests: dict[str, str]
     prev: str
     ts: float = field(default_factory=time.time)
     hash: str = ""
 
-    def seal(self) -> "Snapshot":
+    def seal(self) -> Snapshot:
         self.hash = _digest({"e": self.epoch, "d": self.digests, "p": self.prev, "t": self.ts})
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -43,11 +44,11 @@ class Continuum:
 
     def __init__(self) -> None:
         self.epoch = 0
-        self._chain: List[Snapshot] = []
-        self._story: List[Dict[str, Any]] = []  # autobiography
+        self._chain: list[Snapshot] = []
+        self._story: list[dict[str, Any]] = []  # autobiography
         self.restores = 0
 
-    def snapshot(self, states: Dict[str, Any], note: str = "") -> Snapshot:
+    def snapshot(self, states: dict[str, Any], note: str = "") -> Snapshot:
         digests = {k: _digest(v) for k, v in states.items()}
         snap = Snapshot(self.epoch, digests, self._chain[-1].hash if self._chain else "GENESIS").seal()
         self._chain.append(snap)
@@ -56,7 +57,7 @@ class Continuum:
         self.epoch += 1
         return snap
 
-    def verify_chain(self) -> Dict[str, Any]:
+    def verify_chain(self) -> dict[str, Any]:
         prev = "GENESIS"
         for s in self._chain:
             if s.prev != prev:
@@ -69,11 +70,11 @@ class Continuum:
             prev = s.hash
         return {"ok": True, "snapshots": len(self._chain), "head": prev[:12] if prev != "GENESIS" else None}
 
-    def autobiography(self, limit: int = 20) -> List[Dict[str, Any]]:
+    def autobiography(self, limit: int = 20) -> list[dict[str, Any]]:
         return self._story[-limit:]
 
-    def replay_check(self, events: List[Any], reducer: Callable[[Any, Any], Any],
-                     initial: Any, expect_digest: str) -> Dict[str, Any]:
+    def replay_check(self, events: list[Any], reducer: Callable[[Any, Any], Any],
+                     initial: Any, expect_digest: str) -> dict[str, Any]:
         """Refold events; compare digest. Determinism, checked."""
         state = initial
         for ev in events:
@@ -84,5 +85,5 @@ class Continuum:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "epoch": self.epoch, **self.verify_chain()}

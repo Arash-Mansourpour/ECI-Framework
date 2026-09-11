@@ -9,8 +9,9 @@ tools appear in tools/list with ``federated: true`` + origin labels.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 __all__ = ["FederatedUpstream", "Federation"]
 
@@ -18,8 +19,8 @@ __all__ = ["FederatedUpstream", "Federation"]
 @dataclass
 class FederatedUpstream:
     prefix: str
-    call_remote: Callable[[str, Dict[str, Any]], Any]  # (tool, args) -> data|awaitable
-    allow: List[str] = field(default_factory=lambda: ["*"])
+    call_remote: Callable[[str, dict[str, Any]], Any]  # (tool, args) -> data|awaitable
+    allow: list[str] = field(default_factory=lambda: ["*"])
     failures: int = 0
     opened_until: float = 0.0
     breaker_threshold: int = 5
@@ -29,18 +30,17 @@ class FederatedUpstream:
 class Federation:
     def __init__(self, registry=None) -> None:
         self.registry = registry
-        self.upstreams: List[FederatedUpstream] = []
+        self.upstreams: list[FederatedUpstream] = []
 
     def add(self, upstream: FederatedUpstream) -> None:
-        import fnmatch
         self.upstreams.append(upstream)
         # NOTE: remote tool enumeration is lazy (list on demand) to avoid
         # blocking the mesh on a slow upstream at boot.
 
-    def federated_names(self) -> List[str]:
+    def federated_names(self) -> list[str]:
         return [u.prefix for u in self.upstreams]
 
-    async def call(self, prefixed: str, args: Dict[str, Any]) -> Any:
+    async def call(self, prefixed: str, args: dict[str, Any]) -> Any:
         import asyncio
         import fnmatch
         for u in self.upstreams:

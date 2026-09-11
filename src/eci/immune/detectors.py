@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import List, Sequence, Tuple
 
 __all__ = ["Detector", "DetectorSet", "affinity", "breed", "evolve"]
 
@@ -28,7 +28,7 @@ def affinity(a: Sequence[float], b: Sequence[float]) -> float:
 
 @dataclass
 class Detector:
-    center: Tuple[float, ...]
+    center: tuple[float, ...]
     radius: float
     generation: int = 0
     kills: int = 0
@@ -40,12 +40,12 @@ class Detector:
 
 @dataclass
 class DetectorSet:
-    detectors: List[Detector] = field(default_factory=list)
+    detectors: list[Detector] = field(default_factory=list)
 
-    def scan(self, x: Sequence[float]) -> List[Detector]:
+    def scan(self, x: Sequence[float]) -> list[Detector]:
         return [d for d in self.detectors if d.binds(x)]
 
-    def false_positive_rate(self, self_samples: List[Sequence[float]]) -> float:
+    def false_positive_rate(self, self_samples: list[Sequence[float]]) -> float:
         if not self_samples:
             return 0.0
         hits = sum(1 for s in self_samples if self.scan(s))
@@ -53,7 +53,7 @@ class DetectorSet:
 
 
 def breed(
-    self_samples: List[Sequence[float]],
+    self_samples: list[Sequence[float]],
     n_detectors: int = 32,
     radius: float = 0.35,
     seed: int = 0,
@@ -62,7 +62,7 @@ def breed(
     """Negative selection: keep random detectors that tolerate ALL self."""
     rng = random.Random(seed)
     dim = len(self_samples[0]) if self_samples else 5
-    out: List[Detector] = []
+    out: list[Detector] = []
     tried = 0
     while len(out) < n_detectors and tried < max_candidates:
         tried += 1
@@ -76,7 +76,7 @@ def breed(
 def evolve(
     repertoire: DetectorSet,
     anomaly: Sequence[float],
-    self_samples: List[Sequence[float]],
+    self_samples: list[Sequence[float]],
     clones_each: int = 6,
     mutation: float = 0.12,
     seed: int = 1,
@@ -84,7 +84,7 @@ def evolve(
     """Clonal selection: mutate binders toward the anomaly, keep self-tolerant."""
     rng = random.Random(seed)
     binders = repertoire.scan(anomaly) or list(repertoire.detectors)
-    offspring: List[Detector] = []
+    offspring: list[Detector] = []
     for b in binders:
         for _ in range(clones_each):
             step = mutation * (1.0 - affinity(b.center, anomaly) + 0.1)

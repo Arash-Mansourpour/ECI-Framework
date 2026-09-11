@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 try:
     import yaml as _yaml
@@ -30,7 +30,7 @@ class Protocol0Spec:
     protocol: str
     version: str
     architect: str
-    actions: Dict[str, ActionRule] = field(default_factory=dict)
+    actions: dict[str, ActionRule] = field(default_factory=dict)
     max_divergence: float = 0.4
     min_coherence: float = 0.5
     max_attest_age_s: float = 300.0
@@ -67,11 +67,11 @@ def load_spec(path: str | Path = SPEC_PATH) -> Protocol0Spec:
         raise FileNotFoundError(f"protocol0 spec not found: {p}")
     if _yaml is None:
         raise ImportError("pyyaml is required to load protocol0 spec")
-    raw: Dict[str, Any] = _yaml.safe_load(p.read_text(encoding="utf-8"))
+    raw: dict[str, Any] = _yaml.safe_load(p.read_text(encoding="utf-8"))
     _require(raw.get("protocol") == "ECI-Protocol-0", "protocol != ECI-Protocol-0")
     _require(bool(raw.get("version")), "missing version")
-    actions: Dict[str, ActionRule] = {}
-    lst: List[Dict[str, Any]] = raw.get("actions", [])
+    actions: dict[str, ActionRule] = {}
+    lst: list[dict[str, Any]] = raw.get("actions", [])
     _require(bool(lst), "no actions defined")
     for a in lst:
         name = a.get("name", "")

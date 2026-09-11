@@ -17,8 +17,9 @@ from __future__ import annotations
 
 import math
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
 __all__ = ["Commitment", "Executive"]
 
@@ -33,7 +34,7 @@ def _cos(a: Sequence[float], b: Sequence[float]) -> float:
 @dataclass
 class Commitment:
     goal: str
-    embedding: List[float]
+    embedding: list[float]
     stakes: float = 0.5
     created: float = field(default_factory=time.time)
     drift: float = 0.0
@@ -44,9 +45,9 @@ class Executive:
     name = "executive"
 
     def __init__(self, ece_bins: int = 10, drift_threshold: float = 0.35) -> None:
-        self._cal: List[tuple] = []  # (confidence, correct)
+        self._cal: list[tuple] = []  # (confidence, correct)
         self.ece_bins = ece_bins
-        self.commits: Dict[str, Commitment] = {}
+        self.commits: dict[str, Commitment] = {}
         self.drift_threshold = drift_threshold
         self.escalations = 0
 
@@ -54,17 +55,17 @@ class Executive:
     def note(self, confidence: float, correct: bool) -> None:
         self._cal.append((confidence, 1.0 if correct else 0.0))
 
-    def ece(self) -> Dict[str, Any]:
+    def ece(self) -> dict[str, Any]:
         if not self._cal:
             return {"ece": 0.0, "n": 0, "calibrated": True}
-        bins: Dict[int, List[float]] = {}
+        bins: dict[int, list[float]] = {}
         for c, y in self._cal:
             bins.setdefault(min(self.ece_bins - 1, int(c * self.ece_bins)), []).append(y - c)
         ece = sum(abs(sum(v) / len(v)) * len(v) for v in bins.values()) / len(self._cal)
         return {"ece": ece, "n": len(self._cal), "calibrated": bool(ece < 0.1)}
 
     # -- strategy ---------------------------------------------------------
-    def strategy(self, stakes: float, uncertainty: float, reversible: bool = True) -> Dict[str, Any]:
+    def strategy(self, stakes: float, uncertainty: float, reversible: bool = True) -> dict[str, Any]:
         score = stakes * (0.5 + uncertainty)
         if not reversible or (stakes > 0.8 and uncertainty > 0.4):
             mode = "council"
@@ -81,7 +82,7 @@ class Executive:
         self.commits[goal_id] = c
         return c
 
-    def check_drift(self, goal_id: str, current_embedding: Sequence[float]) -> Dict[str, Any]:
+    def check_drift(self, goal_id: str, current_embedding: Sequence[float]) -> dict[str, Any]:
         c = self.commits.get(goal_id)
         if c is None:
             return {"ok": False, "error": "unknown commitment"}
@@ -93,7 +94,7 @@ class Executive:
                 "escalate": drifted, "active": c.active}
 
     # -- adjudication -------------------------------------------------------
-    def adjudicate(self, kind: str, evidence: Dict[str, Any]) -> Dict[str, Any]:
+    def adjudicate(self, kind: str, evidence: dict[str, Any]) -> dict[str, Any]:
         """Route to court (harm/rights), market (forecastable risk) or DAO (policy)."""
         route = {"harm": "court", "rights": "court", "forecast": "market",
                  "risk": "market", "policy": "dao"}.get(kind, "dao")
@@ -103,6 +104,6 @@ class Executive:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "ece": self.ece(), "commitments": len(self.commits),
                 "escalations": self.escalations}

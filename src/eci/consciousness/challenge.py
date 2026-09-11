@@ -12,8 +12,8 @@ Flow: issue(seed, n) -> challenges -> respond(agent_fn) -> verdict.
 from __future__ import annotations
 
 import secrets
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Tuple
 
 __all__ = ["Challenge", "Transcript", "issue", "grade"]
 
@@ -29,9 +29,9 @@ class Challenge:
 
 @dataclass
 class Transcript:
-    challenges: List[Challenge] = field(default_factory=list)
-    responses: List[float] = field(default_factory=list)
-    passed: List[bool] = field(default_factory=list)
+    challenges: list[Challenge] = field(default_factory=list)
+    responses: list[float] = field(default_factory=list)
+    passed: list[bool] = field(default_factory=list)
 
     def score(self) -> float:
         if not self.challenges:
@@ -40,7 +40,7 @@ class Transcript:
         return sum(wi for wi, p in zip(w, self.passed) if p) / sum(w)
 
 
-def issue(n: int = 8, seed: int | None = None) -> List[Challenge]:
+def issue(n: int = 8, seed: int | None = None) -> list[Challenge]:
     """Issue n unpredictable challenges (seeded when given, secret otherwise)."""
     import random as _r
 
@@ -56,7 +56,7 @@ def issue(n: int = 8, seed: int | None = None) -> List[Challenge]:
     return out
 
 
-def grade(challenges: List[Challenge], respond: Callable[[Challenge], float]) -> Transcript:
+def grade(challenges: list[Challenge], respond: Callable[[Challenge], float]) -> Transcript:
     t = Transcript()
     for c in challenges:
         try:
@@ -70,7 +70,7 @@ def grade(challenges: List[Challenge], respond: Callable[[Challenge], float]) ->
     return t
 
 
-def to_dict(t: Transcript) -> Dict:
+def to_dict(t: Transcript) -> dict:
     return {
         "score": t.score(), "n": len(t.challenges),
         "passed": sum(t.passed),

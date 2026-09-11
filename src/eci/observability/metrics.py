@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import math
 import threading
-import time
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 __all__ = ["Counter", "Gauge", "Histogram", "MetricsRegistry"]
 
@@ -34,8 +31,8 @@ class Gauge:
 @dataclass
 class Histogram:
     name: str
-    buckets: List[float] = field(default_factory=lambda: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0])
-    counts: List[int] = field(default_factory=list)
+    buckets: list[float] = field(default_factory=lambda: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0])
+    counts: list[int] = field(default_factory=list)
     count: int = 0
     total: float = 0.0
     def __post_init__(self) -> None:
@@ -59,9 +56,9 @@ class MetricsRegistry:
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self.counters: Dict[str, Counter] = {}
-        self.gauges: Dict[str, Gauge] = {}
-        self.histograms: Dict[str, Histogram] = {}
+        self.counters: dict[str, Counter] = {}
+        self.gauges: dict[str, Gauge] = {}
+        self.histograms: dict[str, Histogram] = {}
 
     def counter(self, name: str) -> Counter:
         with self._lock:
@@ -76,7 +73,7 @@ class MetricsRegistry:
             return self.histograms.setdefault(name, Histogram(name))
 
     def to_prometheus(self) -> str:
-        lines: List[str] = []
+        lines: list[str] = []
         for c in self.counters.values():
             lines.append(f"# TYPE {c.name} counter\n{c.name} {c.value}")
         for g in self.gauges.values():
@@ -88,8 +85,8 @@ class MetricsRegistry:
             lines.append(f'{h.name}_bucket{{le="+Inf"}} {h.count}')
         return "\n".join(lines) + ("\n" if lines else "")
 
-    def snapshot(self) -> Dict[str, float]:
-        out: Dict[str, float] = {}
+    def snapshot(self) -> dict[str, float]:
+        out: dict[str, float] = {}
         out.update({k: v.value for k, v in self.counters.items()})
         out.update({k: v.value for k, v in self.gauges.items()})
         out.update({k + "_mean": v.mean for k, v in self.histograms.items()})

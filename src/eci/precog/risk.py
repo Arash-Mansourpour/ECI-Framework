@@ -13,8 +13,8 @@ Tiers: watch p>=0.5 / escalate p>=0.7 (harder challenges) / hold p>=0.9
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Dict, List, Sequence
 
 __all__ = ["RiskTier", "RiskEngine", "forecast"]
 
@@ -34,14 +34,14 @@ def RiskTier(p: float) -> str:
 
 @dataclass
 class RiskEngine:
-    weights: List[float] = field(default_factory=lambda: [0.0] * 5)
+    weights: list[float] = field(default_factory=lambda: [0.0] * 5)
     bias: float = -2.0  # prior: violations are rare
     seen: int = 0
     # calibration bins: (sum_p, n, positives)
-    bins: List[List[float]] = field(default_factory=lambda: [[0.0, 0, 0] for _ in range(10)])
+    bins: list[list[float]] = field(default_factory=lambda: [[0.0, 0, 0] for _ in range(10)])
 
     @staticmethod
-    def features(awareness: float, obedience: float, challenge_pass: float, coherence: float, anomaly: float) -> List[float]:
+    def features(awareness: float, obedience: float, challenge_pass: float, coherence: float, anomaly: float) -> list[float]:
         # Oriented so LARGER = riskier (invert the healthy signals).
         return [1.0 - awareness, 1.0 - obedience, 1.0 - challenge_pass, 1.0 - coherence, anomaly]
 
@@ -74,6 +74,6 @@ class RiskEngine:
         return (MISS_COST * (1 - p) if violated else ALARM_COST * p)
 
 
-def forecast(engine: RiskEngine, x: Sequence[float]) -> Dict:
+def forecast(engine: RiskEngine, x: Sequence[float]) -> dict:
     p = engine.score(x)
     return {"p": p, "tier": RiskTier(p), "ece": engine.ece(), "seen": engine.seen}

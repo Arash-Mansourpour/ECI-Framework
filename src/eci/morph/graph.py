@@ -15,10 +15,9 @@ hidden — anything bigger shards first (documented in MORPHOGENESIS.md).
 from __future__ import annotations
 
 import itertools
-import math
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 import torch
 
@@ -32,7 +31,7 @@ class Node:
     utility: float = 0.0
     energy: float = 1.0
     born: float = field(default_factory=time.time)
-    attrs: Dict[str, Any] = field(default_factory=dict)
+    attrs: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -46,9 +45,9 @@ class Edge:
 
 class MorphGraph:
     def __init__(self) -> None:
-        self.nodes: Dict[str, Node] = {}
-        self.edges: Dict[Tuple[str, str], Edge] = {}
-        self.scars: List[Dict[str, Any]] = []  # tombstone ledger
+        self.nodes: dict[str, Node] = {}
+        self.edges: dict[tuple[str, str], Edge] = {}
+        self.scars: list[dict[str, Any]] = []  # tombstone ledger
         self.edits = 0
 
     # -- structure ------------------------------------------------------
@@ -92,7 +91,7 @@ class MorphGraph:
         self.edits += 1
         return True
 
-    def order(self) -> List[str]:
+    def order(self) -> list[str]:
         return sorted(self.nodes)
 
     def adjacency(self, weighted: bool = True) -> torch.Tensor:
@@ -108,7 +107,7 @@ class MorphGraph:
         S = A + A.T  # symmetrized coupling for connectivity analysis
         return torch.diag(S.sum(1)) - S
 
-    def spectrum(self) -> List[float]:
+    def spectrum(self) -> list[float]:
         n = len(self.nodes)
         if n == 0:
             return []
@@ -132,10 +131,10 @@ class MorphGraph:
             return float("inf")
         return len(sp) * sum(1.0 / l for l in sp[1:] if l > 1e-9)
 
-    def components(self) -> List[Set[str]]:
-        seen: Set[str] = set()
+    def components(self) -> list[set[str]]:
+        seen: set[str] = set()
         comps = []
-        adj: Dict[str, Set[str]] = {n: set() for n in self.nodes}
+        adj: dict[str, set[str]] = {n: set() for n in self.nodes}
         for (s, d) in self.edges:
             adj[s].add(d)
             adj[d].add(s)
@@ -153,7 +152,7 @@ class MorphGraph:
             comps.append(comp)
         return comps
 
-    def modularity(self, labels: Dict[str, int] | None = None) -> float:
+    def modularity(self, labels: dict[str, int] | None = None) -> float:
         """Standard undirected Q on the symmetrized coupling (exact).
 
         Q = (1/2m)·Σ_ij [S_ij − k_i·k_j/2m]·δ(c_i, c_j), communities from
@@ -173,9 +172,9 @@ class MorphGraph:
                     Q += float(S[i, j].item()) - float(k[i].item() * k[j].item()) / (2 * m)
         return Q / (2 * m)
 
-    def _label_propagate(self, iters: int = 10) -> Dict[str, int]:
+    def _label_propagate(self, iters: int = 10) -> dict[str, int]:
         labels = {n: i for i, n in enumerate(self.order())}
-        adj: Dict[str, Set[str]] = {n: set() for n in self.nodes}
+        adj: dict[str, set[str]] = {n: set() for n in self.nodes}
         for (s, d) in self.edges:
             adj[s].add(d)
             adj[d].add(s)
@@ -183,16 +182,16 @@ class MorphGraph:
             for n in self.order():
                 if not adj[n]:
                     continue
-                votes: Dict[int, float] = {}
+                votes: dict[int, float] = {}
                 for m in adj[n]:
                     w = self.edges.get((n, m), self.edges.get((m, n))).w
                     votes[labels[m]] = votes.get(labels[m], 0.0) + w
                 labels[n] = max(votes.items(), key=lambda kv: (kv[1], -kv[0]))[0]
         return labels
 
-    def triad_census(self) -> Dict[str, int]:
+    def triad_census(self) -> dict[str, int]:
         """Exact directed triad census over all 3-node subsets (sparse-safe)."""
-        census: Dict[str, int] = {}
+        census: dict[str, int] = {}
         ids = self.order()
         eset = set(self.edges)
         for a, b, c in itertools.combinations(ids, 3):
@@ -204,13 +203,12 @@ class MorphGraph:
             # canonicalize node labels to motif class (permutation-invariant-ish key)
             census[key] = census.get(key, 0) + 1
         # also report class totals by link count (interpretable at a glance)
-        totals: Dict[str, int] = {}
+        totals: dict[str, int] = {}
         for k, v in census.items():
             totals[f"triads_L{k.split(':')[0]}"] = totals.get(f"triads_L{k.split(':')[0]}", 0) + v
         return totals
 
-    def health(self) -> Dict[str, Any]:
-        sp = self.spectrum()
+    def health(self) -> dict[str, Any]:
         return {"nodes": len(self.nodes), "edges": len(self.edges),
                 "lambda2": self.algebraic_connectivity(),
                 "radius": self.spectral_radius(),
@@ -221,7 +219,7 @@ class MorphGraph:
                 **self.triad_census()}
 
     # -- (de)serialization --------------------------------------------------
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"nodes": [{"id": n.id, "kind": n.kind, "utility": n.utility,
                            "energy": n.energy, "attrs": n.attrs} for n in self.nodes.values()],
                 "edges": [{"src": e.src, "dst": e.dst, "w": e.w,
@@ -229,7 +227,7 @@ class MorphGraph:
                 "scars": self.scars}
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "MorphGraph":
+    def from_dict(cls, d: dict[str, Any]) -> MorphGraph:
         g = cls()
         for n in d.get("nodes", []):
             nd = g.add_node(n["id"], n.get("kind", "unit"))

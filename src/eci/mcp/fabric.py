@@ -22,8 +22,7 @@ the pipeline converts it to structured {ok:false} envelopes.
 
 from __future__ import annotations
 
-import asyncio
-from typing import Any, Dict
+from typing import Any
 
 __all__ = ["build_default_registry"]
 
@@ -117,8 +116,9 @@ def build_default_registry(framework: Any, registry=None):
         return p.to_dict()
 
     def _validate(args, ctx):
-        from eci.consciousness.validation import AdherenceHead, eeg_closed_loop, pyphi_crosscheck
         import random
+
+        from eci.consciousness.validation import AdherenceHead, eeg_closed_loop, pyphi_crosscheck
         rng = random.Random(0)
         rest = [rng.gauss(0, 1) for _ in range(128)]
         act = [rng.gauss(0, 2) for _ in range(128)]

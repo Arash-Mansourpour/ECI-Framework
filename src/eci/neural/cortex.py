@@ -9,8 +9,6 @@ nervous system: every subsystem reports IN, one decision comes OUT.
 
 from __future__ import annotations
 
-from typing import Dict, List
-
 import torch
 import torch.nn as nn
 
@@ -27,7 +25,7 @@ class Cortex(nn.Module):
         self.risk_head = nn.Linear(feat, 1)
         self.world = WorldModel(feat)
 
-    def forward(self, g: MeshGraph, history: torch.Tensor) -> Dict:
+    def forward(self, g: MeshGraph, history: torch.Tensor) -> dict:
         h = self.gnn(g, self.gnn(g, g.x))
         risk = torch.sigmoid(self.risk_head(h)).squeeze(1)
         hist = history if history.dim() == 3 else history.unsqueeze(0)
@@ -48,8 +46,8 @@ class Cortex(nn.Module):
         return float(loss.item())
 
 
-def advise(states: Dict[str, Dict[str, float]], edges: List[tuple], history: torch.Tensor,
-           model: Cortex | None = None, seed: int = 0) -> Dict:
+def advise(states: dict[str, dict[str, float]], edges: list[tuple], history: torch.Tensor,
+           model: Cortex | None = None, seed: int = 0) -> dict:
     """One decision-ready struct for the whole mesh (deterministic if model None)."""
     torch.manual_seed(seed)
     g = build_graph(states, edges)

@@ -11,7 +11,7 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Session", "SessionManager"]
 
@@ -21,8 +21,8 @@ class Session:
     id: str
     subject: str = "anon"
     namespace: str = "default"
-    attestation: Dict[str, float] = field(default_factory=dict)
-    capabilities: List[str] = field(default_factory=list)
+    attestation: dict[str, float] = field(default_factory=dict)
+    capabilities: list[str] = field(default_factory=list)
     budget: float = 100.0
     created: float = field(default_factory=time.time)
     last_seen: float = field(default_factory=time.time)
@@ -43,7 +43,7 @@ class Session:
         self.tokens -= cost
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"session_id": self.id, "subject": self.subject, "namespace": self.namespace,
                 "budget": self.budget, "calls": self.calls}
 
@@ -51,18 +51,18 @@ class Session:
 class SessionManager:
     def __init__(self, ttl_s: float = 1800.0) -> None:
         self.ttl = ttl_s
-        self._sessions: Dict[str, Session] = {}
+        self._sessions: dict[str, Session] = {}
 
     def create(self, subject: str = "anon", namespace: str = "default",
-               attestation: Dict[str, float] | None = None,
-               capabilities: List[str] | None = None,
+               attestation: dict[str, float] | None = None,
+               capabilities: list[str] | None = None,
                budget: float = 100.0) -> Session:
         s = Session(id=uuid.uuid4().hex[:12], subject=subject, namespace=namespace,
                     attestation=attestation or {}, capabilities=capabilities or [], budget=budget)
         self._sessions[s.id] = s
         return s
 
-    def get(self, session_id: str = "") -> Optional[Session]:
+    def get(self, session_id: str = "") -> Session | None:
         s = self._sessions.get(session_id)
         if s is None:
             return None
@@ -82,5 +82,5 @@ class SessionManager:
             self._sessions.pop(k, None)
         return len(dead)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         return {"sessions": len(self._sessions)}

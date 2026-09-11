@@ -13,7 +13,7 @@ Design notes
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
 
 import torch
 
@@ -24,7 +24,7 @@ from eci.quantum import gates as qg
 __all__ = ["StatevectorSimulator", "GateOp"]
 
 #: A gate operation: ("1q", gate, qubit) | ("2q", gate, q0, q1) | ("c1q", gate, control, target)
-GateOp = Union[Tuple[str, torch.Tensor, int], Tuple[str, torch.Tensor, int, int]]
+GateOp = tuple[str, torch.Tensor, int] | tuple[str, torch.Tensor, int, int]
 
 
 class StatevectorSimulator:
@@ -33,7 +33,7 @@ class StatevectorSimulator:
     def __init__(
         self,
         n_qubits: int,
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
         dtype: torch.dtype = torch.complex64,
     ) -> None:
         if n_qubits < 1:
@@ -65,7 +65,7 @@ class StatevectorSimulator:
     def random_state(
         self,
         batch: int = 1,
-        generator: Optional[torch.Generator] = None,
+        generator: torch.Generator | None = None,
     ) -> torch.Tensor:
         real = torch.randn(batch, self.dim, generator=generator, device=self.device)
         imag = torch.randn(batch, self.dim, generator=generator, device=self.device)
@@ -159,11 +159,11 @@ class StatevectorSimulator:
         for op in ops:
             kind = op[0]
             if kind == "1q":
-                state = self.apply_1q(state, op[1], op[2])  # type: ignore[index]
+                state = self.apply_1q(state, op[1], op[2])  # type: ignore[misc]
             elif kind == "2q":
-                state = self.apply_2q(state, op[1], op[2], op[3])  # type: ignore[index]
+                state = self.apply_2q(state, op[1], op[2], op[3])  # type: ignore[misc]
             elif kind == "c1q":
-                state = self.apply_controlled(state, op[1], op[2], op[3])  # type: ignore[index]
+                state = self.apply_controlled(state, op[1], op[2], op[3])  # type: ignore[misc]
             else:
                 raise ValueError(f"unknown op kind: {kind}")
         return state
@@ -180,8 +180,8 @@ class StatevectorSimulator:
         self,
         state: torch.Tensor,
         shots: int = 1024,
-        generator: Optional[torch.Generator] = None,
-    ) -> List[Dict[str, int]]:
+        generator: torch.Generator | None = None,
+    ) -> list[dict[str, int]]:
         """Sample computational-basis shots; returns per-batch counts dict.
 
         Uses one vectorized ``multinomial`` per batch row with an optional
@@ -189,10 +189,10 @@ class StatevectorSimulator:
         for uncorrelated batches; reusing one generator correlates rows).
         """
         probs = self.probabilities(state).clamp_min(0)
-        counts: List[Dict[str, int]] = []
+        counts: list[dict[str, int]] = []
         for b in range(state.shape[0]):
             idx = torch.multinomial(probs[b].cpu().float(), shots, replacement=True, generator=generator)
-            c: Dict[str, int] = {}
+            c: dict[str, int] = {}
             for i in idx.tolist():
                 key = format(i, f"0{self.n_qubits}b")
                 c[key] = c.get(key, 0) + 1
@@ -232,7 +232,7 @@ class StatevectorSimulator:
     def expectation_pauli(
         self,
         state: torch.Tensor,
-        paulis: Dict[int, str],
+        paulis: dict[int, str],
     ) -> torch.Tensor:
         """Expectation of a Pauli string, e.g. ``{0: 'X', 1: 'Z'}``.
 
@@ -288,7 +288,7 @@ class StatevectorSimulator:
         entropy = -(p * torch.log2(p)).sum(dim=1)
         return entropy
 
-    def state_info(self, state: torch.Tensor) -> Dict[str, float]:
+    def state_info(self, state: torch.Tensor) -> dict[str, float]:
         """Diagnostic summary of a (single) state."""
         probs = self.probabilities(state[0])
         return {

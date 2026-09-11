@@ -11,18 +11,18 @@ from __future__ import annotations
 
 import time
 from collections import deque
-from typing import Any, Deque, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import torch
 
+from eci.consciousness import metrics as cmetrics
+from eci.consciousness.iit import IntegratedInformationTheory
 from eci.constants import PHI_THRESHOLDS
 from eci.core.device import get_device
 from eci.core.identity import ARCHITECT
 from eci.core.types import ConsciousnessLevel, ConsciousnessProfile, QuantumState
 from eci.logging import get_logger
-from eci.consciousness.iit import IntegratedInformationTheory
-from eci.consciousness import metrics as cmetrics
 
 __all__ = ["AdvancedConsciousnessAnalyzer"]
 
@@ -32,7 +32,7 @@ class AdvancedConsciousnessAnalyzer:
 
     def __init__(
         self,
-        device: Optional[torch.device] = None,
+        device: torch.device | None = None,
         phi_method: str = "gaussian",
         history_size: int = 256,
     ) -> None:
@@ -40,15 +40,15 @@ class AdvancedConsciousnessAnalyzer:
         self.phi_method = phi_method
         self.logger = get_logger("consciousness.analyzer")
         self.iit = IntegratedInformationTheory(self.device)
-        self.measurement_history: Deque[Dict[str, Any]] = deque(maxlen=history_size)
+        self.measurement_history: deque[dict[str, Any]] = deque(maxlen=history_size)
 
     # ------------------------------------------------------------------
     async def analyze_consciousness(
         self,
         neural_data: torch.Tensor,
-        connectivity: Optional[torch.Tensor] = None,
-        quantum_state: Optional[QuantumState] = None,
-        method: Optional[str] = None,
+        connectivity: torch.Tensor | None = None,
+        quantum_state: QuantumState | None = None,
+        method: str | None = None,
     ) -> ConsciousnessProfile:
         """Comprehensive consciousness analysis of ``[time, neurons]`` data."""
         neural_data = neural_data.to(self.device).double()

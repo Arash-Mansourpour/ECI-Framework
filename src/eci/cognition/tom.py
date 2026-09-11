@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["PeerBelief", "TheoryOfMind"]
 
@@ -28,28 +28,28 @@ class PeerBelief:
     flags: int = 0
     updated: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"peer": self.peer, "capability": self.capability, "coop": self.coop,
                 "reliability": self.reliability, "obs": self.obs, "flags": self.flags}
 
 
 class TheoryOfMind:
     def __init__(self, lr: float = 0.2, flag_threshold: int = 3) -> None:
-        self.peers: Dict[str, PeerBelief] = {}
+        self.peers: dict[str, PeerBelief] = {}
         self.lr = lr
         self.flag_threshold = flag_threshold
 
     def peer(self, peer_id: str) -> PeerBelief:
         return self.peers.setdefault(peer_id, PeerBelief(peer_id))
 
-    def predict(self, peer_id: str) -> Dict[str, Any]:
+    def predict(self, peer_id: str) -> dict[str, Any]:
         b = self.peer(peer_id)
         p_coop_success = b.capability * b.coop
         return {"peer": peer_id, "p_coop_success": p_coop_success,
                 "recommend": "cooperate" if p_coop_success > 0.5 else "verify-first",
                 "confidence": b.reliability}
 
-    def recursive_predict(self, peer_id: str, our_signal: float = 0.7) -> Dict[str, Any]:
+    def recursive_predict(self, peer_id: str, our_signal: float = 0.7) -> dict[str, Any]:
         """Level-1: they model us as cooperating with p=our_signal."""
         b = self.peer(peer_id)
         they_think_we_coop = our_signal * b.reliability + 0.5 * (1 - b.reliability)

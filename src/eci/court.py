@@ -1,4 +1,6 @@
 """Adjudication court: collective, auditable justice for violations.
+Validation note: verdicts record that process ran (ballots + quorum),
+not truth-finding (see docs/VALIDATION_STATUS.md).
 
 A case bundles evidence (ledger refs, challenge transcript, precog p,
 immune hits). A rotating panel of the highest-trust agents (seeded by
@@ -12,7 +14,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any
 
 __all__ = ["Case", "Court", "Verdict"]
 
@@ -23,8 +25,8 @@ VERDICTS = ("acquit", "extend_hold", "quarantine", "downgrade")
 class Case:
     case_id: str
     accused: str
-    evidence: Dict[str, Any]
-    votes: Dict[str, str] = field(default_factory=dict)
+    evidence: dict[str, Any]
+    votes: dict[str, str] = field(default_factory=dict)
     appealed: bool = False
 
 
@@ -42,14 +44,14 @@ class Court:
         self.appeal_size = appeal_size
 
     @staticmethod
-    def select_panel(candidates: List[str], epoch: str, size: int) -> List[str]:
+    def select_panel(candidates: list[str], epoch: str, size: int) -> list[str]:
         """Deterministic rotation: hash(epoch||node) order (unpredictable ex ante)."""
         ranked = sorted(candidates, key=lambda n: hashlib.sha256(f"{epoch}|{n}".encode()).hexdigest())
         return ranked[: max(3, min(size, len(ranked)))]
 
-    def try_case(self, case: Case, panel: List[str], ballots: Dict[str, str], ledger=None) -> Verdict:
+    def try_case(self, case: Case, panel: list[str], ballots: dict[str, str], ledger=None) -> Verdict:
         """ballots: voter -> verdict. Conviction needs 2/3 for the top non-acquit choice."""
-        counts: Dict[str, int] = {}
+        counts: dict[str, int] = {}
         for v in panel:
             b = ballots.get(v, "acquit")
             if b not in VERDICTS:
@@ -64,7 +66,7 @@ class Court:
                                             "verdict": verdict, "votes": counts})
         return Verdict(case.case_id, verdict, counts.get(verdict, 0), total)
 
-    def appeal(self, case: Case, panel: List[str], ballots: Dict[str, str], ledger=None) -> Verdict:
+    def appeal(self, case: Case, panel: list[str], ballots: dict[str, str], ledger=None) -> Verdict:
         if case.appealed:
             raise PermissionError("one appeal only (finality)")
         case.appealed = True

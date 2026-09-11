@@ -38,12 +38,12 @@ test rests on this identity, not on tuning.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import torch
 
-from eci.aikernel.functors import fuse_beliefs, split_belief
-from eci.aikernel.generative_model import GenerativeState, Likelihood, Prior
+from eci.aikernel.generative_model import GenerativeState, Prior
 from eci.consciousness.aikernel_adapter import gaussian_complexity
 
 __all__ = ["AgentContributor", "fuse_with_shared_prior", "reconcile",
@@ -63,9 +63,10 @@ class AgentContributor:
         self._mu = self.prior.mu0.clone().float()
         self._cov = self.prior.Sigma0.clone().float()
 
-    def observe(self, o: torch.Tensor) -> "AgentContributor":
+    def observe(self, o: torch.Tensor) -> AgentContributor:
         """Exact conjugate update for o = s + N(0, R)."""
-        o = torch.as_tensor(o, dtype=torch.float32).reshape(self.dim)
+        from eci.aikernel.state_contract import require_finite
+        o = torch.as_tensor(require_finite(o, "agent"), dtype=torch.float32).reshape(self.dim)
         Rinv = torch.linalg.inv(self.R)
         Lam_old = torch.linalg.inv(self._cov)
         Lam_new = Lam_old + Rinv
@@ -125,7 +126,6 @@ def stacked_likelihood(obs_list: Sequence[torch.Tensor],
     A = torch.cat([torch.eye(o.numel()) for o in obs_list], dim=0)
     R = torch.block_diag(*R_list)
     o = torch.cat([o.reshape(-1) for o in obs_list], dim=0)
-    d = obs_list[0].numel()
     from eci.aikernel.generative_model import Likelihood as _L
     return o, _L(A.float(), R.float())
 
@@ -144,7 +144,7 @@ def pooled_free_energy(mu: torch.Tensor, cov: torch.Tensor,
 def market_vs_fusion(s_star: float, prior: Prior, noises: Sequence[float],
                      obs: Sequence[float], threshold: float = 1.0,
                      b: float = 10.0, rounds: int = 6, trade_k: float = 1.0,
-                     tol: float = 1e-3, seed: int = 0) -> Dict[str, Any]:
+                     tol: float = 1e-3, seed: int = 0) -> dict[str, Any]:
     """Same scenario, two reconciliation paths. Returns both, unmerged.
 
     Fusion path: exact conjugate posteriors + shared-prior fusion.
@@ -169,7 +169,7 @@ def market_vs_fusion(s_star: float, prior: Prior, noises: Sequence[float],
     mk = Marketplace()
     mkt = mk.market_for("s_gt_thr")
     price0 = mkt.price_yes()
-    trades: List[Dict[str, Any]] = []
+    trades: list[dict[str, Any]] = []
     for _ in range(rounds):
         moved = False
         for ag in agents:

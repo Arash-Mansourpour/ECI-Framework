@@ -7,16 +7,16 @@ budget-aware. Each prompt renders with caller-supplied arguments.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 __all__ = ["PROMPTS", "get_prompt"]
 
 
-def _p(name: str, title: str, template: str, args: List[Dict[str, str]]) -> Dict[str, Any]:
+def _p(name: str, title: str, template: str, args: list[dict[str, str]]) -> dict[str, Any]:
     return {"name": name, "title": title, "template": template, "arguments": args}
 
 
-PROMPTS: List[Dict[str, Any]] = [
+PROMPTS: list[dict[str, Any]] = [
     _p("consciousness-audit", "Consciousness audit",
        "Audit agent {agent_id}: calibrate resting baseline, measure active state, "
        "report iPDF bits + awareness_index + IIT Phi + GNWT broadcast. Evidence, not claims: "
@@ -41,7 +41,7 @@ PROMPTS: List[Dict[str, Any]] = [
 ]
 
 
-def get_prompt(name: str, arguments: Dict[str, Any] | None = None) -> Dict[str, Any]:
+def get_prompt(name: str, arguments: dict[str, Any] | None = None) -> dict[str, Any]:
     for p in PROMPTS:
         if p["name"] == name:
             text = p["template"]

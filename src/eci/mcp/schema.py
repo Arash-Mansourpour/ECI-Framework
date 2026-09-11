@@ -8,7 +8,7 @@ agents validate args client-side. We generate it from the lightweight
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["pytype_to_schema", "build_input_schema"]
 
@@ -23,20 +23,20 @@ _PY = {
 }
 
 
-def pytype_to_schema(t: str) -> Dict[str, Any]:
+def pytype_to_schema(t: str) -> dict[str, Any]:
     return dict(_PY.get(t, {}))
 
 
-def build_input_schema(params: Dict[str, str],
-                       required: List[str] | None = None,
-                       descriptions: Dict[str, str] | None = None,
-                       defaults: Dict[str, Any] | None = None,
-                       enums: Dict[str, List[Any]] | None = None) -> Dict[str, Any]:
+def build_input_schema(params: dict[str, str],
+                       required: list[str] | None = None,
+                       descriptions: dict[str, str] | None = None,
+                       defaults: dict[str, Any] | None = None,
+                       enums: dict[str, list[Any]] | None = None) -> dict[str, Any]:
     required = required if required is not None else sorted(params)
     descriptions, defaults, enums = descriptions or {}, defaults or {}, enums or {}
-    props: Dict[str, Any] = {}
+    props: dict[str, Any] = {}
     for name, t in params.items():
-        sch: Dict[str, Any] = pytype_to_schema(t)
+        sch: dict[str, Any] = pytype_to_schema(t)
         if name in descriptions:
             sch["description"] = descriptions[name]
         if name in defaults:

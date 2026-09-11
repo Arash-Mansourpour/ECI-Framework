@@ -17,10 +17,11 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
-from eci.constants import PBFT_QUORUM_FRACTION, WBFT_QUORUM_WEIGHT
+from eci.constants import WBFT_QUORUM_WEIGHT
 from eci.core.identity import ARCHITECT
 from eci.core.types import ConsensusOutcome, NetworkNode
 from eci.logging import get_logger
@@ -37,13 +38,13 @@ class ConsensusResult:
     proposal_hash: str
     view: int
     sequence: int
-    votes: List[str] = field(default_factory=list)
+    votes: list[str] = field(default_factory=list)
     quorum: float = 0.0
     required: float = 0.0
     reason: str = ""
-    architect_stamp: Optional[Dict[str, Any]] = None
+    architect_stamp: dict[str, Any] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = self.__dict__.copy()
         d["outcome"] = self.outcome.value
         return d
@@ -67,7 +68,7 @@ class PBFTConsensus:
     def __init__(
         self,
         n_nodes: int,
-        f_tolerance: Optional[int] = None,
+        f_tolerance: int | None = None,
         byzantine_rate: float = 0.05,
         consensus_seed: int = 7,
         min_trust: float = 0.5,
@@ -91,7 +92,7 @@ class PBFTConsensus:
 
         self.view_number = 0
         self.sequence_number = 0
-        self.message_log: Dict[str, List[Dict[str, Any]]] = {}
+        self.message_log: dict[str, list[dict[str, Any]]] = {}
         self._msg_cap = 4096
 
     # ------------------------------------------------------------------
@@ -114,7 +115,7 @@ class PBFTConsensus:
         ordered = sorted(node_ids)
         return ordered[self.view_number % len(ordered)]
 
-    def _fault_set(self, nodes: Dict[str, NetworkNode]) -> set:
+    def _fault_set(self, nodes: dict[str, NetworkNode]) -> set:
         if self.byzantine_mode == "silent":
             ordered = sorted(nodes.items(), key=lambda kv: kv[1].trust_score)
             return {nid for nid, _ in ordered[: self.f]}
@@ -126,7 +127,7 @@ class PBFTConsensus:
     # ------------------------------------------------------------------
     def achieve_consensus(
         self,
-        nodes: Dict[str, NetworkNode],
+        nodes: dict[str, NetworkNode],
         proposal: Any,
     ) -> ConsensusResult:
         """Run pre-prepare / prepare / commit for ``proposal``."""
@@ -139,11 +140,12 @@ class PBFTConsensus:
 
         digest = _proposal_digest(proposal)
         primary = self._primary(list(nodes.keys()))
+        self.logger.debug("view %d primary %s seq %d", self.view_number, primary, self.sequence_number)
         quorum = 2 * self.f + 1
         faults = self._fault_set(nodes)
 
-        prepare_votes: List[str] = []
-        commit_votes: List[str] = []
+        prepare_votes: list[str] = []
+        commit_votes: list[str] = []
         for node_id, node in sorted(nodes.items()):
             faulty = (node_id in faults) or node.trust_score < self.min_trust
             # Prepare phase: honest nodes validate and vote
@@ -202,7 +204,7 @@ class WBFTConsensus(PBFTConsensus):
 
     def achieve_consensus(
         self,
-        nodes: Dict[str, NetworkNode],
+        nodes: dict[str, NetworkNode],
         proposal: Any,
     ) -> ConsensusResult:
         if not nodes:
@@ -216,7 +218,7 @@ class WBFTConsensus(PBFTConsensus):
 
         total_weight = sum(self.node_weight(n) for n in nodes.values())
         commit_weight = 0.0
-        commit_nodes: List[str] = []
+        commit_nodes: list[str] = []
         for node_id, node in sorted(nodes.items()):
             faulty = self._is_faulty(self.sequence_number, node_id) or node.trust_score < self.min_trust
             if not faulty:

@@ -13,6 +13,7 @@ def test_world_model_learns_and_imagines():
     obs = torch.randn(B, 8)
     act = torch.randn(B, 2).tanh()
     first = wm.train_step(obs, act, torch.randn(B), obs + 0.1 * torch.randn(B, 8))["total"]
+    assert math.isfinite(first)
     for _ in range(5):
         last = wm.train_step(obs, act, torch.randn(B), obs + 0.1 * torch.randn(B, 8))["total"]
     assert math.isfinite(last)
@@ -38,7 +39,7 @@ def test_planner_returns_bounded_action():
 
 def test_curiosity_bonus_and_learning():
     torch.manual_seed(2)
-    from eci.cognition.curiosity import IntrinsicMotivation, CuriosityConfig
+    from eci.cognition.curiosity import CuriosityConfig, IntrinsicMotivation
     cu = IntrinsicMotivation(CuriosityConfig(obs_dim=8, hidden=32))
     obs = torch.randn(8, 8)
     b0 = cu.bonus(obs)["bonus"].mean().item()
@@ -50,8 +51,8 @@ def test_curiosity_bonus_and_learning():
 
 
 def test_dream_consolidation_report():
-    from eci.cognition.consolidation import DreamConsolidator
     from eci.agents.memory import VectorMemory
+    from eci.cognition.consolidation import DreamConsolidator
     d = DreamConsolidator(capacity=32)
     for i in range(10):
         d.wake([float(i)] * 4, [0.1], rew=float(i % 3 - 1), surprise=0.1 * i)
@@ -106,7 +107,7 @@ def test_tom_predict_observe_quarantine():
 
 
 def test_charter_duties_and_amendment():
-    from eci.cognition.charter import Charter, DUTIES
+    from eci.cognition.charter import DUTIES, Charter
     assert len(DUTIES) == 7
     ch = Charter()
     assert ch.check("read_state")["allow"] is True

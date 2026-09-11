@@ -13,7 +13,8 @@ release requires a fresh passing challenge (no time-based auto-release).
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from eci.immune.detectors import DetectorSet, evolve
 from eci.immune.memory import ImmuneMemory
@@ -23,7 +24,7 @@ __all__ = ["Quarantine", "quarantine_flow"]
 
 class Quarantine:
     def __init__(self) -> None:
-        self.held: Dict[str, Dict[str, Any]] = {}
+        self.held: dict[str, dict[str, Any]] = {}
 
     def hold(self, agent_id: str, reason: str) -> None:
         self.held[agent_id] = {"reason": reason, "appeals": 0}
@@ -47,11 +48,11 @@ def quarantine_flow(
     x: Sequence[float],
     repertoire: DetectorSet,
     memory: ImmuneMemory,
-    self_samples: List[Sequence[float]],
+    self_samples: list[Sequence[float]],
     challenge_fn: Callable[[], bool],
     ledger=None,
     reputation=None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run the full suspect pipeline. Returns {verdict, ...} with verdict in
     {clear, false_alarm, quarantined, memory_quarantined}."""
     mem_hits = memory.recall(x)

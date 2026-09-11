@@ -15,8 +15,9 @@ from __future__ import annotations
 
 import itertools
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any
 
 __all__ = ["CausalGraph", "discover", "ate_backdoor"]
 
@@ -44,17 +45,17 @@ def _fisher_z(r: float, n: int) -> float:
 
 @dataclass
 class CausalGraph:
-    names: List[str]
-    edges: Dict[Tuple[str, str], float] = field(default_factory=dict)  # (cause->effect): strength
+    names: list[str]
+    edges: dict[tuple[str, str], float] = field(default_factory=dict)  # (cause->effect): strength
 
-    def parents(self, node: str) -> List[str]:
+    def parents(self, node: str) -> list[str]:
         return [a for (a, b) in self.edges if b == node]
 
-    def children(self, node: str) -> List[str]:
+    def children(self, node: str) -> list[str]:
         return [b for (a, b) in self.edges if a == node]
 
     def backdoor_set(self, cause: str, effect: str,
-                     data: Dict[str, Sequence[float]] | None = None) -> List[str]:
+                     data: dict[str, Sequence[float]] | None = None) -> list[str]:
         """Parents of cause that also reach effect, plus contemporaneous
         confounder proxies (|corr| with both cause and effect)."""
         out = [p for p in self.parents(cause) if p != effect]
@@ -70,12 +71,12 @@ class CausalGraph:
                     pass
         return out
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"nodes": self.names,
                 "edges": [{"from": a, "to": b, "w": w} for (a, b), w in self.edges.items()]}
 
 
-def discover(data: Dict[str, Sequence[float]], thresh: float = 2.0,
+def discover(data: dict[str, Sequence[float]], thresh: float = 2.0,
              lags: Sequence[int] = (1,)) -> CausalGraph:
     """PC-lite: lagged correlation edges, pruned by partial correlation.
 
@@ -85,8 +86,7 @@ def discover(data: Dict[str, Sequence[float]], thresh: float = 2.0,
     """
     names = sorted(data)
     n = min(len(v) for v in data.values())
-    edges: Dict[Tuple[str, str], float] = {}
-    L = max(lags)
+    edges: dict[tuple[str, str], float] = {}
     for a, b in itertools.permutations(names, 2):
         best, best_lag = 0.0, 0
         for lag in lags:
@@ -117,8 +117,8 @@ def discover(data: Dict[str, Sequence[float]], thresh: float = 2.0,
     return CausalGraph(names, edges)
 
 
-def ate_backdoor(data: Dict[str, Sequence[float]], cause: str, effect: str,
-                 graph: CausalGraph | None = None, max_lag: int = 2) -> Dict[str, Any]:
+def ate_backdoor(data: dict[str, Sequence[float]], cause: str, effect: str,
+                 graph: CausalGraph | None = None, max_lag: int = 2) -> dict[str, Any]:
     """ATE via backdoor linear adjustment, lag-aware.
 
     Cause can precede effect: each lag L in 0..max_lag regresses Y[t] on
@@ -130,7 +130,7 @@ def ate_backdoor(data: Dict[str, Sequence[float]], cause: str, effect: str,
     graph = graph or discover(data)
     adj = graph.backdoor_set(cause, effect, data)
     n = min(len(data[cause]), len(data[effect]))
-    best: Dict[str, Any] | None = None
+    best: dict[str, Any] | None = None
     for lag in range(max_lag + 1):
         m = n - lag
         if m < 16:
@@ -139,7 +139,7 @@ def ate_backdoor(data: Dict[str, Sequence[float]], cause: str, effect: str,
         Y = list(data[effect])[lag:]
         Z = {c: list(data[c])[lag:] for c in adj}
         med = {c: sorted(v)[len(v) // 2] for c, v in Z.items()}
-        cells: Dict[Tuple, List[int]] = {}
+        cells: dict[tuple, list[int]] = {}
         for i in range(m):
             key = tuple(1 if Z[c][i] > med[c] else 0 for c in adj) if adj else (0,)
             cells.setdefault(key, []).append(i)

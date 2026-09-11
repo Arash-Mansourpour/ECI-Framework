@@ -9,8 +9,7 @@ risk propagate: a rogue's neighbors' embeddings shift BEFORE it acts.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Dict, List
+from dataclasses import dataclass
 
 import torch
 import torch.nn as nn
@@ -22,7 +21,7 @@ FEATURES = ["awareness", "obedience", "trust", "challenge", "vote_rate", "anomal
 
 @dataclass
 class MeshGraph:
-    node_ids: List[str]
+    node_ids: list[str]
     x: torch.Tensor  # (n, 8) node features
     edge_index: torch.Tensor  # (2, E) directed edges
     edge_weight: torch.Tensor  # (E,)
@@ -32,7 +31,7 @@ class MeshGraph:
         return len(self.node_ids)
 
 
-def build_graph(states: Dict[str, Dict[str, float]], edges: List[tuple]) -> MeshGraph:
+def build_graph(states: dict[str, dict[str, float]], edges: list[tuple]) -> MeshGraph:
     """states: agent -> feature dict (missing keys default neutrally)."""
     ids = sorted(states)
     defaults = {"awareness": 0.5, "obedience": 0.5, "trust": 0.5, "challenge": 0.5,

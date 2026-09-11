@@ -16,7 +16,6 @@ Theory
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 import torch
 
@@ -31,7 +30,7 @@ class FreeEnergyAgent:
     lr: float = 0.05
     mu: torch.Tensor | None = None
     A: torch.Tensor | None = None  # likelihood mapping hidden -> obs
-    free_energy_history: List[float] = field(default_factory=list)
+    free_energy_history: list[float] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         g = torch.Generator().manual_seed(0)
@@ -48,7 +47,7 @@ class FreeEnergyAgent:
         F = 0.5 * (self.precision * (err ** 2).sum() + (self.mu.double() ** 2).sum())
         return F
 
-    def perceive(self, obs: torch.Tensor, steps: int = 20) -> Dict[str, float]:
+    def perceive(self, obs: torch.Tensor, steps: int = 20) -> dict[str, float]:
         """Gradient descent on F w.r.t. beliefs μ (perception)."""
         mu = self.mu.double().clone().requires_grad_(True)
         opt = torch.optim.SGD([mu], lr=self.lr)
@@ -73,7 +72,7 @@ class FreeEnergyAgent:
         self.precision = 1.0 + float(min(max(phi, 0.0), 5.0))
         return self.precision
 
-    def select_action(self, obs: torch.Tensor, actions: torch.Tensor, preferences: torch.Tensor) -> Dict[str, object]:
+    def select_action(self, obs: torch.Tensor, actions: torch.Tensor, preferences: torch.Tensor) -> dict[str, object]:
         """Active inference: pick the action minimizing expected free energy.
 
         Args:

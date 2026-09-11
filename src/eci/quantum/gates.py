@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import cmath
 import math
-from typing import Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 import torch
 
@@ -26,7 +26,7 @@ __all__ = [
 _COMPLEX = torch.complex64
 
 
-def _c(mat: List[List[complex]], dtype: torch.dtype = _COMPLEX) -> torch.Tensor:
+def _c(mat: list[list[complex]], dtype: torch.dtype = _COMPLEX) -> torch.Tensor:
     return torch.tensor(mat, dtype=dtype)
 
 
@@ -44,7 +44,7 @@ SDAG = S.conj().T.contiguous()
 T = _c([[1, 0], [0, cmath.exp(1j * math.pi / 4)]])
 TDAG = T.conj().T.contiguous()
 
-STANDARD_GATES: Dict[str, torch.Tensor] = {
+STANDARD_GATES: dict[str, torch.Tensor] = {
     "I": I, "X": X, "Y": Y, "Z": Z, "H": H,
     "S": S, "Sdag": SDAG, "T": T, "Tdag": TDAG,
 }
@@ -184,7 +184,6 @@ def batched_RY(theta: torch.Tensor, dtype: torch.dtype = _COMPLEX) -> torch.Tens
     t = torch.as_tensor(theta, dtype=torch.float64)
     cos = torch.cos(t / 2).to(dtype).unsqueeze(-1).unsqueeze(-1)
     sin = torch.sin(t / 2).to(dtype).unsqueeze(-1).unsqueeze(-1)
-    zero = torch.zeros((), dtype=dtype).expand(t.shape)
     # Build [[c,-s],[s,c]] batched without Python loop.
     row0 = torch.cat([cos.expand(*t.shape, 1, 1), (-sin).expand(*t.shape, 1, 1)], dim=-1)
     row1 = torch.cat([sin.expand(*t.shape, 1, 1), cos.expand(*t.shape, 1, 1)], dim=-1)
@@ -200,10 +199,10 @@ def kron_list(mats: Sequence[torch.Tensor]) -> torch.Tensor:
 
 
 def pauli_string_matrix(
-    paulis: Dict[int, str],
+    paulis: dict[int, str],
     n_qubits: int,
     dtype: torch.dtype = _COMPLEX,
-    device: Optional[torch.device] = None,
+    device: torch.device | None = None,
 ) -> torch.Tensor:
     """Dense matrix of a Pauli string, e.g. ``{0: 'X', 2: 'Z'}``.
 
@@ -211,8 +210,8 @@ def pauli_string_matrix(
     significant factor in the Kronecker order (matching the statevector
     convention).
     """
-    single: Dict[str, torch.Tensor] = {"I": I, "X": X, "Y": Y, "Z": Z}
-    factors: List[torch.Tensor] = []
+    single: dict[str, torch.Tensor] = {"I": I, "X": X, "Y": Y, "Z": Z}
+    factors: list[torch.Tensor] = []
     for q in range(n_qubits):
         p = paulis.get(q, "I").upper()
         if p not in single:

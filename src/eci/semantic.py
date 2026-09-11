@@ -1,4 +1,6 @@
 """Semantic commons: shared reality with provenance, versioned, disputable.
+Validation note: confidence tracks endorsement, not truth (see
+docs/VALIDATION_STATUS.md) — contradictions become Disputes by design.
 
 Facts are (subject, predicate, object) triples with author, witnesses,
 version and supersedes-links. Two live facts with same subject+predicate
@@ -11,7 +13,7 @@ verifiable reality, obedience has no meaning.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 __all__ = ["Fact", "Commons", "Dispute"]
 
@@ -23,28 +25,28 @@ class Fact:
     predicate: str
     obj: Any
     author: str
-    witnesses: List[str] = field(default_factory=list)
+    witnesses: list[str] = field(default_factory=list)
     version: int = 1
     live: bool = True
-    supersedes: Optional[str] = None
+    supersedes: str | None = None
 
 
 @dataclass
 class Dispute:
     subject: str
     predicate: str
-    fact_ids: List[str]
+    fact_ids: list[str]
     resolved: bool = False
-    winner: Optional[str] = None
+    winner: str | None = None
 
 
 class Commons:
     def __init__(self) -> None:
-        self.facts: Dict[str, Fact] = {}
-        self.disputes: List[Dispute] = []
+        self.facts: dict[str, Fact] = {}
+        self.disputes: list[Dispute] = []
         self._seq = 0
 
-    def assert_fact(self, subject: str, predicate: str, obj: Any, author: str, witnesses: List[str] | None = None) -> Fact:
+    def assert_fact(self, subject: str, predicate: str, obj: Any, author: str, witnesses: list[str] | None = None) -> Fact:
         self._seq += 1
         f = Fact(f"f{self._seq}", subject, predicate, obj, author, witnesses or [])
         # New version supersedes author's own prior live fact on same key.

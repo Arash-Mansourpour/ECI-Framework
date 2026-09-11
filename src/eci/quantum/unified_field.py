@@ -20,8 +20,8 @@ All builders return PauliSum Hamiltonians executable on the simulator.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Dict, List, Sequence, Tuple
 
 import torch
 
@@ -52,7 +52,7 @@ class ECIFieldConfig:
     lambda_phi: float = 0.15  # consciousness coupling λ_Φ
     gamma_stab: float = 0.02  # stabilizer energy scale
     consensus_J: float = 0.1  # network coordination energy
-    architect_stamp: Dict = field(default_factory=dict)
+    architect_stamp: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.architect_stamp = ARCHITECT.stamp({"kind": "eci_field_config", "n": self.n_qubits})
@@ -60,7 +60,7 @@ class ECIFieldConfig:
 
 def transverse_ising_hamiltonian(n: int, J: float = 0.25, h: float = 0.3, omega: float = 1.0) -> PauliSum:
     """H = Σᵢ (ω/2) Zᵢ + Σ_{<i,i+1>} J ZᵢZ_{i+1} + h Σᵢ Xᵢ."""
-    terms: List[PauliTerm] = []
+    terms: list[PauliTerm] = []
     for i in range(n):
         terms.append(PauliTerm(omega / 2, {i: "Z"}))
         terms.append(PauliTerm(h, {i: "X"}))
@@ -71,7 +71,7 @@ def transverse_ising_hamiltonian(n: int, J: float = 0.25, h: float = 0.3, omega:
 
 def heisenberg_hamiltonian(n: int, J: float = 0.25) -> PauliSum:
     """H = J Σ_{<ij>} (XᵢXⱼ + YᵢYⱼ + ZᵢZⱼ)."""
-    terms: List[PauliTerm] = []
+    terms: list[PauliTerm] = []
     for i in range(n - 1):
         for P in ("X", "Y", "Z"):
             terms.append(PauliTerm(J, {i: P, i + 1: P}))
@@ -80,7 +80,7 @@ def heisenberg_hamiltonian(n: int, J: float = 0.25) -> PauliSum:
 
 def spin_boson_hamiltonian(n: int, g: float = 0.05) -> PauliSum:
     """Effective spin-boson shift after adiabatic elimination: g Σᵢ Zᵢ + g' ΣZᵢZⱼ."""
-    terms: List[PauliTerm] = [PauliTerm(g, {i: "Z"}) for i in range(n)]
+    terms: list[PauliTerm] = [PauliTerm(g, {i: "Z"}) for i in range(n)]
     for i in range(n - 1):
         terms.append(PauliTerm(g / 2, {i: "Z", i + 1: "Z"}))
     return PauliSum(terms)
@@ -94,7 +94,7 @@ def consciousness_operator_hamiltonian(
     Fully-connected w_{ij} rewards global correlation (integration) while
     penalizing factorization — the Hamiltonian avatar of Φ.
     """
-    terms: List[PauliTerm] = [PauliTerm(lambda_phi * 0.5, {i: "Z"}) for i in range(n)]
+    terms: list[PauliTerm] = [PauliTerm(lambda_phi * 0.5, {i: "Z"}) for i in range(n)]
     for i in range(n):
         for j in range(i + 1, n):
             w = 1.0
@@ -118,7 +118,7 @@ def consensus_hamiltonian(n: int, Jc: float = 0.1) -> PauliSum:
 def eci_unified_hamiltonian(cfg: ECIFieldConfig) -> PauliSum:
     """Assemble the full H_ECI from all sectors."""
     n = cfg.n_qubits
-    merged: List[PauliTerm] = []
+    merged: list[PauliTerm] = []
     for H in (
         transverse_ising_hamiltonian(n, J=cfg.J, h=cfg.transverse_h, omega=cfg.omega),
         spin_boson_hamiltonian(n, g=cfg.g_bath),
@@ -132,7 +132,7 @@ def eci_unified_hamiltonian(cfg: ECIFieldConfig) -> PauliSum:
     return PauliSum(merged)
 
 
-def eci_hamiltonian_expectation(state: torch.Tensor, cfg: ECIFieldConfig) -> Dict[str, float]:
+def eci_hamiltonian_expectation(state: torch.Tensor, cfg: ECIFieldConfig) -> dict[str, float]:
     """Sector-resolved <H> decomposition for diagnostics."""
     from eci.quantum.statevector import StatevectorSimulator as _S
 
@@ -145,7 +145,7 @@ def eci_hamiltonian_expectation(state: torch.Tensor, cfg: ECIFieldConfig) -> Dic
         "consciousness": consciousness_operator_hamiltonian(cfg.n_qubits, cfg.lambda_phi),
         "consensus": consensus_hamiltonian(cfg.n_qubits, cfg.consensus_J),
     }
-    out: Dict[str, float] = {}
+    out: dict[str, float] = {}
     total = 0.0
     for name, H in sectors.items():
         e = float(H.expectation(state, sim)[0].item())

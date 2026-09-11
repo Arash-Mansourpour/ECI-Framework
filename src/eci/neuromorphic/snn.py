@@ -8,8 +8,6 @@ whose update was dimensionally incoherent.
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
-
 import torch
 import torch.nn as nn
 
@@ -43,6 +41,10 @@ class SpikingNeuralNetwork(nn.Module):
         self.hidden_layer = LIFNeuron(n_hidden)
         self.output_layer = LIFNeuron(n_output)
         self.input_weights = nn.Parameter(torch.randn(n_input, n_hidden) * 0.1)
+        self.output_weights = nn.Parameter(torch.randn(n_hidden, n_output) * 0.1)
+        # Hidden->output projection (Phase 18 fix: forward() previously reused
+        # the hidden RECURRENT matrix here, which crashes unless
+        # n_hidden == n_output and computes the wrong projection otherwise).
 
         # STDP parameters
         self.tau_plus = tau_plus
@@ -101,7 +103,7 @@ class SpikingNeuralNetwork(nn.Module):
                 hidden_current = pre_spikes @ self.input_weights
                 hidden_spikes = self.hidden_layer(hidden_current.unsqueeze(0))[0]
 
-                out_current = hidden_spikes @ self.hidden_layer.weight
+                out_current = hidden_spikes @ self.output_weights
                 out_spikes = self.output_layer(out_current.unsqueeze(0))[0]
                 output_spikes[b] += out_spikes.detach()
 

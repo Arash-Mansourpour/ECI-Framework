@@ -13,12 +13,12 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 __all__ = ["MOTIFS", "MotifGene", "MotifGenome"]
 
 # motif name -> internal edges over local ports (0..k-1)
-MOTIFS: Dict[str, List[Tuple[int, int]]] = {
+MOTIFS: dict[str, list[tuple[int, int]]] = {
     "chain": [(0, 1), (1, 2)],
     "fan-out": [(0, 1), (0, 2)],
     "fan-in": [(0, 2), (1, 2)],
@@ -32,20 +32,20 @@ MOTIFS: Dict[str, List[Tuple[int, int]]] = {
 @dataclass
 class MotifGene:
     motif: str
-    ports: List[str]                 # global node ids bound to local ports
+    ports: list[str]                 # global node ids bound to local ports
     w: float = 1.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"motif": self.motif, "ports": self.ports, "w": self.w}
 
 
 @dataclass
 class MotifGenome:
-    genes: List[MotifGene] = field(default_factory=list)
+    genes: list[MotifGene] = field(default_factory=list)
     generation: int = 0
     fitness: float = 0.0
 
-    def random(self, motifs: int = 3, seed: int = 0, prefix: str = "m") -> "MotifGenome":
+    def random(self, motifs: int = 3, seed: int = 0, prefix: str = "m") -> MotifGenome:
         rng = random.Random(seed)
         names = sorted(MOTIFS)
         for i in range(motifs):
@@ -63,7 +63,7 @@ class MotifGenome:
                 graph.add_edge(g.ports[a], g.ports[b], w=g.w)
         return graph
 
-    def mutate(self, seed: int = 0) -> "MotifGenome":
+    def mutate(self, seed: int = 0) -> MotifGenome:
         """Bounded-damage mutation: rewire one port OR swap one motif kind."""
         rng = random.Random(seed)
         if not self.genes:
@@ -81,7 +81,7 @@ class MotifGenome:
         self.generation += 1
         return self
 
-    def crossover(self, other: "MotifGenome", seed: int = 0) -> "MotifGenome":
+    def crossover(self, other: MotifGenome, seed: int = 0) -> MotifGenome:
         """Single-point motif-block crossover (function-preserving)."""
         rng = random.Random(seed)
         if not self.genes or not other.genes:
@@ -94,12 +94,12 @@ class MotifGenome:
             generation=max(self.generation, other.generation) + 1)
         return kid
 
-    def motif_histogram(self) -> Dict[str, int]:
-        h: Dict[str, int] = {}
+    def motif_histogram(self) -> dict[str, int]:
+        h: dict[str, int] = {}
         for g in self.genes:
             h[g.motif] = h.get(g.motif, 0) + 1
         return h
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"genes": [g.to_dict() for g in self.genes],
                 "generation": self.generation, "fitness": self.fitness}

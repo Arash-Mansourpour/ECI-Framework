@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import importlib.metadata as _md
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 __all__ = ["sbom", "tree_fingerprint"]
 
@@ -19,8 +19,8 @@ _TRACKED = ("torch", "numpy", "scipy", "pyyaml", "cryptography", "pytest",
             "reportlab", "matplotlib", "stim", "pymatching", "mne", "liboqs-python")
 
 
-def sbom(root: Path | str | None = None) -> Dict[str, Any]:
-    comps: List[Dict[str, Any]] = []
+def sbom(root: Path | str | None = None) -> dict[str, Any]:
+    comps: list[dict[str, Any]] = []
     for name in _TRACKED:
         try:
             comps.append({"name": name, "version": _md.version(name)})

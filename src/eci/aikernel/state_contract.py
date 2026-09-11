@@ -16,13 +16,13 @@ integration by construction, not by convention.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 import torch
 
 from eci.aikernel.generative_model import GenerativeState
 
-__all__ = ["StateContributor", "KernelLedger", "conforms"]
+__all__ = ["StateContributor", "KernelLedger", "conforms", "require_finite"]
 
 
 @runtime_checkable
@@ -43,9 +43,7 @@ def conforms(obj: Any) -> bool:
         share = obj.free_energy_contribution()
         if not torch.is_tensor(share) or share.numel() != 1:
             return False
-        if not torch.isfinite(share.detach()):
-            return False
-        return True
+        return bool(torch.isfinite(share.detach()).item())
     except Exception:  # noqa: BLE001
         return False
 
@@ -54,17 +52,17 @@ class KernelLedger:
     """Accumulates per-subsystem F shares into the one shared objective."""
 
     def __init__(self) -> None:
-        self._members: Dict[str, StateContributor] = {}
+        self._members: dict[str, StateContributor] = {}
 
     def register(self, name: str, member: StateContributor) -> None:
         if not conforms(member):
             raise TypeError(f"{name!r} does not conform to StateContributor")
         self._members[name] = member
 
-    def members(self) -> Dict[str, StateContributor]:
+    def members(self) -> dict[str, StateContributor]:
         return dict(self._members)
 
-    def shares(self) -> Dict[str, float]:
+    def shares(self) -> dict[str, float]:
         return {k: float(m.free_energy_contribution().detach().item())
                 for k, m in self._members.items()}
 
@@ -75,7 +73,7 @@ class KernelLedger:
             total = total + m.free_energy_contribution()
         return total
 
-    def snapshot(self) -> Dict[str, Any]:
+    def snapshot(self) -> dict[str, Any]:
         """Audit artifact: shares + posteriors, JSON-safe (Phase 15).
 
         This is a RECORD, not a resurrection: optimizer states, RNG
@@ -86,3 +84,23 @@ class KernelLedger:
         return {"members": {k: {"share": float(m.free_energy_contribution().detach().item()),
                                 "posterior": m.posterior().to_dict()}
                             for k, m in self._members.items()}}
+
+
+def require_finite(observation: Any, who: str) -> torch.Tensor:
+    """Contract-level precondition (Phase 16 hardening).
+
+    NaN/Inf observations used to be absorbed silently (agent/fep shares
+    went NaN and poisoned the ledger total) or crashed deep inside
+    numerics (quantum eigh ``_LinAlgError``). Both are now a loud,
+    attributable ``ValueError`` at the boundary. Shape is preserved
+    (callers that need windows keep them); valid-input behavior unchanged.
+    """
+    t = (observation if torch.is_tensor(observation)
+         else torch.as_tensor(observation, dtype=torch.float32))
+    try:
+        ok = bool(torch.isfinite(t.float()).all().item())
+    except Exception:  # noqa: BLE001
+        ok = False
+    if not ok:
+        raise ValueError(f"{who}: non-finite observation")
+    return t

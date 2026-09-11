@@ -9,7 +9,7 @@ Conventions
 from __future__ import annotations
 
 import math
-from typing import List, Sequence
+from collections.abc import Sequence
 
 import torch
 

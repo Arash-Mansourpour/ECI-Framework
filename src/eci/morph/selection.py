@@ -11,8 +11,8 @@ funds growth — structure obeys thermodynamics.
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["SelectionConfig", "DarwinSelector"]
 
@@ -30,11 +30,11 @@ class DarwinSelector:
     def __init__(self, cfg: SelectionConfig | None = None) -> None:
         self.cfg = cfg or SelectionConfig()
         self.energy_pool = 10.0
-        self.elig: Dict[str, float] = {}  # node -> eligibility trace
+        self.elig: dict[str, float] = {}  # node -> eligibility trace
         self.rounds = 0
 
     # -- credit ---------------------------------------------------------
-    def credit(self, graph: Any, reward: float, active: List[str] | None = None,
+    def credit(self, graph: Any, reward: float, active: list[str] | None = None,
                decay: float = 0.9) -> None:
         for n in list(self.elig):
             self.elig[n] *= decay
@@ -44,7 +44,7 @@ class DarwinSelector:
                 graph.nodes[n].utility += 0.1 * reward
         self.energy_pool = max(0.0, self.energy_pool + reward)
 
-    def robustness(self, graph: Any, edge: Tuple[str, str], samples: int = 0) -> float:
+    def robustness(self, graph: Any, edge: tuple[str, str], samples: int = 0) -> float:
         """Marginal λ2 contribution of an edge (exact leave-one-out)."""
         base = graph.algebraic_connectivity()
         e = graph.edges.get(edge)
@@ -55,14 +55,14 @@ class DarwinSelector:
         graph.edges[edge] = e
         return drop
 
-    def fitness_edge(self, graph: Any, edge: Tuple[str, str]) -> float:
+    def fitness_edge(self, graph: Any, edge: tuple[str, str]) -> float:
         c = self.cfg
         e = graph.edges[edge]
         u = 0.5 * (graph.nodes[e.src].utility + graph.nodes[e.dst].utility)
         return u - c.lmbda_cost * e.w + c.mu_robust * self.robustness(graph, edge)
 
-    def shapley_module(self, graph: Any, members: List[str], value_fn: Any,
-                       seed: int = 0) -> Dict[str, float]:
+    def shapley_module(self, graph: Any, members: list[str], value_fn: Any,
+                       seed: int = 0) -> dict[str, float]:
         """Sampled Shapley-lite over a module's nodes (exact formula, sampled perms)."""
         rng = random.Random(seed)
         phi = {m: 0.0 for m in members}
@@ -77,7 +77,7 @@ class DarwinSelector:
         return phi
 
     # -- triage -----------------------------------------------------------
-    def triage(self, graph: Any, seed: int = 0) -> Dict[str, Any]:
+    def triage(self, graph: Any, seed: int = 0) -> dict[str, Any]:
         """Tournament prune bottom-k edges; returns receipt."""
         rng = random.Random(seed)
         c = self.cfg

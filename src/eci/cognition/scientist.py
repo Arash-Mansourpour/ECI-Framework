@@ -10,8 +10,9 @@ crossing evidence + replication thresholds — no hype-driven facts.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["Hypothesis", "Scientist"]
 
@@ -32,7 +33,7 @@ class Hypothesis:
             return float("inf")
         return self.n * math.log(self.rss / self.n) + self.k * math.log(self.n)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"name": self.name, "equation": self.equation, "k": self.k,
                 "n": self.n, "bic": self.bic(), "mean": self.mean,
                 "prec": self.prec, "replications": self.replications}
@@ -42,7 +43,7 @@ class Scientist:
     """Competing-hypothesis engine with conjugate updates."""
 
     def __init__(self, promote_bic_gap: float = 6.0, promote_reps: int = 2) -> None:
-        self.hypos: Dict[str, Hypothesis] = {}
+        self.hypos: dict[str, Hypothesis] = {}
         self.promote_bic_gap = promote_bic_gap
         self.promote_reps = promote_reps
 
@@ -67,7 +68,7 @@ class Scientist:
         h.replications += 1
         return h
 
-    def compete(self) -> Dict[str, Any]:
+    def compete(self) -> dict[str, Any]:
         ranked = sorted(self.hypos.values(), key=lambda h: h.bic())
         table = [h.to_dict() for h in ranked]
         gap = (ranked[1].bic() - ranked[0].bic()) if len(ranked) > 1 else float("inf")
@@ -80,7 +81,7 @@ class Scientist:
                 "promote_to_commons": promotable}
 
     def design_next(self, candidates: Sequence[float],
-                    unc: Sequence[float]) -> Dict[str, Any]:
+                    unc: Sequence[float]) -> dict[str, Any]:
         """Maximum-uncertainty design: sample where we know least."""
         i = max(range(len(candidates)), key=lambda j: unc[j])
         return {"x": candidates[i], "expected_info_gain": float(unc[i]), "rule": "max-variance"}

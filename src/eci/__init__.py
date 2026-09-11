@@ -5,19 +5,129 @@ Quantum-Supremacy Autonomous AI Research Framework, v5.
 Architect (Sovereign / Ma'mar-e A'zam): Arash Mansourpour
 """
 
-from eci.version import FRAMEWORK_VERSION, PAPER_VERSION, __version__
-from eci.constants import ARCHITECT_NAME, CREATOR_WALLET
-from eci.core.identity import ARCHITECT, ArchitectIdentity
-from eci.core.device import get_device, configure_seeds
+from eci import aikernel as aikernel
+from eci import federation as federation
+from eci import immune as immune
+from eci import mcp as mcp
+from eci import neural as neural
+from eci import precog as precog
+
+# Protocol-0 + immune + frontier systems
+from eci import protocol0 as protocol0
+
+# v6.1 deep systems (agents / data-plane / treasury / eval / supply / mcp)
+from eci.agents import AgentLoop, Agents, EpisodicMemory, ToolRegistry, VectorMemory
+from eci.aikernel import GenerativeState, KernelLedger, Likelihood, Prior, StateContributor
+from eci.api import Gateway
+from eci.authz import RBAC, Permission, PolicyEngine, PolicyRule, Role
+from eci.benchmarking.benchmark import ResearchBenchmark
+from eci.caps import CapToken
+from eci.caps import Issuer as CapIssuer
+from eci.causal import HLC, hlc_now, merge_chains, sort_key
+from eci.chaos import ChaosPlan, Fault, run_plan
+from eci.cognition import Cognition, CognitionConfig
+from eci.compat import CompatRegistry, Interface
 from eci.config import ECIConfig, ExperimentConfig
+from eci.consciousness.adherence import AdherenceTracker, calibration_tasks
+from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
+from eci.consciousness.challenge import Transcript, grade
+from eci.consciousness.challenge import issue as issue_challenges
+from eci.consciousness.collective import CollectiveState, collective_awareness
+from eci.consciousness.eeg import bandpower, load_timeseries
+from eci.consciousness.free_energy import FreeEnergyAgent
+from eci.consciousness.gnwt import GNWTWorkspace
+
+# Consciousness (IIT + GNWT + FEP + quantum-mind + collective + challenge)
+from eci.consciousness.iit import IntegratedInformationTheory
+from eci.consciousness.protocol import ConsciousnessProtocol, awareness_index_from_bits
+from eci.consciousness.quantum_mind import quantum_mind_audit
+from eci.constants import ARCHITECT_NAME, CREATOR_WALLET
+from eci.continuum import Continuum
+from eci.core.device import configure_seeds, get_device
+from eci.core.identity import ARCHITECT, ArchitectIdentity
 from eci.core.types import (
     ConsciousnessLevel,
-    NetworkRole,
-    LearningParadigm,
-    QuantumState,
     ConsciousnessProfile,
+    LearningParadigm,
     NetworkNode,
+    NetworkRole,
+    QuantumState,
 )
+from eci.court import Case, Court, Verdict
+from eci.cybernetics.autopoiesis import AutopoieticNetwork
+from eci.data import BlobStore, Cache, DataPlane
+from eci.economy import ACTION_COSTS, Economy
+from eci.eval import EvalReport, run_gates
+
+# Facade (completes and supersedes legacy ECIFrameworkResearch)
+from eci.framework import ECIFramework, ECIFrameworkResearch
+from eci.futura import EmergencyPowers, Futarchy, Sortition
+from eci.genome import Gene, Genome, life_cycle, mutate
+
+# Governance + cybernetics (v5)
+from eci.governance.dao import ECIDataDAO
+
+# NOTE: treasury's Envelope is aliased on purpose — bare `Envelope` belongs to
+# the signed-transport envelope (network.envelope); importing both bare
+# silently rebound it (mypy [assignment], Phase 17).
+from eci.governance.treasury import Envelope as TreasuryEnvelope
+from eci.governance.treasury import Treasury
+from eci.health import metrics_text
+from eci.health import status as health_status
+
+# v6 hyper-architecture (kernel / ops / control / intelligence)
+from eci.kernel import Container, Event, EventBus, Kernel, LifecycleManager
+from eci.learning.continual import ElasticWeightConsolidation
+from eci.learning.federated import FederatedLearningCoordinator
+
+# Learning
+from eci.learning.maml import MAML, MetaMLP
+from eci.learning.nas import AdvancedNAS, DARTSSearchSpace
+from eci.mapek import MAPEK, SLO, Strategy
+from eci.market import Market, Marketplace
+from eci.mcp import McpFabric, McpRegistry, McpServer
+from eci.mlops import MLOps, ModelRegistry, drift_report
+from eci.morph import Morphogenesis
+from eci.network.aggregation import (
+    bulyan,
+    byzantine_robust_aggregate,
+    geometric_median,
+    krum,
+)
+
+# Network
+from eci.network.consensus import ConsensusResult, PBFTConsensus, WBFTConsensus
+from eci.network.dht import DHTNode, lookup, xor_distance
+from eci.network.envelope import Envelope, ReplayGuard, open_envelope, seal
+from eci.network.gossip import GossipNode, anti_entropy, gossip_round
+from eci.network.manager import AutonomousNetworkManager
+from eci.network.membership import Member, Membership
+from eci.network.reputation import Reputation, ReputationBoard
+from eci.network.tcp import FramedTcpTransport
+from eci.network.transport import AsyncMemoryChannel
+
+# Neuromorphic
+from eci.neuromorphic.neurons import LIFNeuron
+from eci.neuromorphic.snn import SpikingNeuralNetwork
+from eci.observability import AuditLogger, MetricsRegistry, Observability, Tracer
+from eci.orchestration import DAG, Orchestration, Scheduler
+from eci.persistence import EventStore, Persistence, Repository, UnitOfWork
+from eci.plugins import PluginManager, PluginManifest
+from eci.privacy import Guardian
+from eci.provenance import ProvenanceGraph
+from eci.quantum import algorithms as qalg
+from eci.quantum import channels as qchannels
+from eci.quantum import density as qdensity
+from eci.quantum import entanglement as qent
+from eci.quantum import information as qinformation
+from eci.quantum import lindblad as qlindblad
+from eci.quantum import metrology as qmetrology
+from eci.quantum import operator as qoperator
+from eci.quantum import qec as qqec
+from eci.quantum import tensor_network as qtensor
+from eci.quantum import topological as qtopological
+from eci.quantum import unified_field as qfield
+from eci.quantum.backend import SimBackend, transpile, zne_extrapolate
 
 # Quantum core (v5: operator algebra → field Hamiltonian)
 from eci.quantum.gates import (
@@ -25,143 +135,43 @@ from eci.quantum.gates import (
     CRX,
     CRZ,
     CZ,
+    RX,
+    RY,
+    RZ,
+    SWAP,
     H,
     I,
     S,
-    SWAP,
     T,
     X,
     Y,
     Z,
-    RX,
-    RY,
-    RZ,
     controlled,
     pauli_string_matrix,
 )
-from eci.quantum.statevector import StatevectorSimulator
-from eci.quantum import density as qdensity
-from eci.quantum import entanglement as qent
-from eci.quantum import channels as qchannels
-from eci.quantum import lindblad as qlindblad
-from eci.quantum import algorithms as qalg
-from eci.quantum import qec as qqec
-from eci.quantum import operator as qoperator
-from eci.quantum import information as qinformation
-from eci.quantum import topological as qtopological
-from eci.quantum import tensor_network as qtensor
-from eci.quantum import metrology as qmetrology
-from eci.quantum import unified_field as qfield
 from eci.quantum.hamiltonian import PauliSum, PauliTerm
-from eci.quantum.qnn import QuantumNeuralNetwork, QuantumLayer
+from eci.quantum.qnn import QuantumLayer, QuantumNeuralNetwork
+from eci.quantum.statevector import StatevectorSimulator
 from eci.quantum.topological import BivariateBicycleCode, SurfaceCode
 from eci.quantum.unified_field import ECIFieldConfig, eci_unified_hamiltonian
-
-# Consciousness (IIT + GNWT + FEP + quantum-mind + collective + challenge)
-from eci.consciousness.iit import IntegratedInformationTheory
-from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
-from eci.consciousness.protocol import ConsciousnessProtocol, awareness_index_from_bits
-from eci.consciousness.gnwt import GNWTWorkspace
-from eci.consciousness.free_energy import FreeEnergyAgent
-from eci.consciousness.quantum_mind import quantum_mind_audit
-from eci.consciousness.collective import CollectiveState, collective_awareness
-from eci.consciousness.adherence import AdherenceTracker, calibration_tasks
-from eci.consciousness.challenge import Transcript, grade, issue as issue_challenges
-from eci.consciousness.eeg import bandpower, load_timeseries
-
-# Learning
-from eci.learning.maml import MAML, MetaMLP
-from eci.learning.nas import AdvancedNAS, DARTSSearchSpace
-from eci.learning.federated import FederatedLearningCoordinator
-from eci.learning.continual import ElasticWeightConsolidation
-
-# Neuromorphic
-from eci.neuromorphic.neurons import LIFNeuron
-from eci.neuromorphic.snn import SpikingNeuralNetwork
-
-# Network
-from eci.network.consensus import PBFTConsensus, WBFTConsensus, ConsensusResult
-from eci.network.aggregation import (
-    geometric_median,
-    byzantine_robust_aggregate,
-    krum,
-    bulyan,
-)
-from eci.network.manager import AutonomousNetworkManager
-from eci.network.transport import AsyncMemoryChannel
-from eci.network.envelope import Envelope, ReplayGuard, open_envelope, seal
-from eci.network.gossip import GossipNode, anti_entropy, gossip_round
-from eci.network.reputation import Reputation, ReputationBoard
-from eci.network.dht import DHTNode, lookup, xor_distance
-from eci.network.membership import Member, Membership
-
-# Protocol-0 + immune + frontier systems
-from eci import protocol0 as protocol0
-from eci import immune as immune
-from eci import federation as federation
-from eci import precog as precog
-from eci import neural as neural
-from eci.causal import HLC, hlc_now, merge_chains, sort_key
-from eci.economy import ACTION_COSTS, Economy
-from eci.twin import TwinReport, what_if
-from eci.recovery import RecoveryRequest, combine as shamir_combine, split as shamir_split
-from eci.rollout import RolloutPlan, staged_rollout
-from eci.health import metrics_text, status as health_status
-from eci.court import Case, Court, Verdict
-from eci.market import Market, Marketplace
-from eci.semantic import Commons, Dispute, Fact
-from eci.privacy import Guardian
-from eci.genome import Gene, Genome, life_cycle, mutate
-
-# Governance + cybernetics (v5)
-from eci.governance.dao import ECIDataDAO
-from eci.cybernetics.autopoiesis import AutopoieticNetwork
-
-# v6 hyper-architecture (kernel / ops / control / intelligence)
-from eci.kernel import Kernel, EventBus, Event, Container, LifecycleManager
-from eci.observability import Observability, Tracer, MetricsRegistry, AuditLogger
-from eci.persistence import Persistence, EventStore, Repository, UnitOfWork
-from eci.resilience import Resilience, CircuitBreaker, RetryPolicy, TokenBucket, Saga
-from eci.orchestration import Orchestration, DAG, Scheduler
-from eci.plugins import PluginManager, PluginManifest
-from eci.authz import PolicyEngine, PolicyRule, RBAC, Role, Permission
-from eci.streaming import StreamBus
-from eci.mlops import MLOps, ModelRegistry, drift_report
-from eci.provenance import ProvenanceGraph
-from eci.api import Gateway
-from eci.tenancy import TenancyManager
-from eci.chaos import ChaosPlan, Fault, run_plan
-from eci.security.secrets import SecretManager
-from eci.security.secure_channel import HybridSecureChannel, SecureChannelConfig
-
-# v6.1 deep systems (agents / data-plane / treasury / eval / supply / mcp)
-from eci.agents import Agents, AgentLoop, ToolRegistry, EpisodicMemory, VectorMemory
-from eci.data import DataPlane, Cache, BlobStore
-from eci.governance.treasury import Treasury, Envelope
-from eci.eval import run_gates, EvalReport
-from eci.supply import sbom
-from eci.network.tcp import FramedTcpTransport
-from eci.quantum.backend import SimBackend, transpile, zne_extrapolate
-from eci import mcp as mcp
-from eci.mcp import McpFabric, McpServer, McpRegistry
-from eci.cognition import Cognition, CognitionConfig
-from eci.morph import Morphogenesis
-from eci import aikernel as aikernel
-from eci.aikernel import GenerativeState, Likelihood, Prior, StateContributor, KernelLedger
-from eci.caps import CapToken, Issuer as CapIssuer
-from eci.verify import Watchtower, Monitor, seal_proof, verify_proof
-from eci.continuum import Continuum
-from eci.mapek import MAPEK, SLO, Strategy
-from eci.compat import CompatRegistry, Interface
-from eci.futura import Futarchy, Sortition, EmergencyPowers
+from eci.recovery import RecoveryRequest
+from eci.recovery import combine as shamir_combine
+from eci.recovery import split as shamir_split
 from eci.redteam import Challenger, ForecasterRegistry, contradiction_scan
+from eci.resilience import CircuitBreaker, Resilience, RetryPolicy, Saga, TokenBucket
+from eci.rollout import RolloutPlan, staged_rollout
 
 # Security & benchmarking
-from eci.security.pqc import PQCSuite, HashBasedSigner, derive_key
-from eci.benchmarking.benchmark import ResearchBenchmark
-
-# Facade (completes and supersedes legacy ECIFrameworkResearch)
-from eci.framework import ECIFramework, ECIFrameworkResearch
+from eci.security.pqc import HashBasedSigner, PQCSuite, derive_key
+from eci.security.secrets import SecretManager
+from eci.security.secure_channel import HybridSecureChannel, SecureChannelConfig
+from eci.semantic import Commons, Dispute, Fact
+from eci.streaming import StreamBus
+from eci.supply import sbom
+from eci.tenancy import TenancyManager
+from eci.twin import TwinReport, what_if
+from eci.verify import Monitor, Watchtower, seal_proof, verify_proof
+from eci.version import FRAMEWORK_VERSION, PAPER_VERSION, __version__
 
 __all__ = [
     "__version__",
@@ -302,7 +312,7 @@ __all__ = [
     "SecretManager", "HybridSecureChannel", "SecureChannelConfig",
     "Agents", "AgentLoop", "ToolRegistry", "EpisodicMemory", "VectorMemory",
     "DataPlane", "Cache", "BlobStore",
-    "Treasury", "Envelope",
+    "Treasury", "TreasuryEnvelope",
     "run_gates", "EvalReport", "sbom",
     "FramedTcpTransport", "SimBackend", "transpile", "zne_extrapolate",
     "mcp", "McpFabric", "McpServer", "McpRegistry",

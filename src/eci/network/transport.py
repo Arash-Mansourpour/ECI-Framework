@@ -11,9 +11,8 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections import deque
-from dataclasses import dataclass, field
-from typing import Any, Deque, Dict, List
+from dataclasses import dataclass
+from typing import Any
 
 __all__ = ["AsyncMemoryChannel", "ChannelStats"]
 
@@ -31,7 +30,7 @@ class AsyncMemoryChannel:
     def __init__(self, capacity: int = 256, latency_s: float = 0.0) -> None:
         self.capacity = capacity
         self.latency_s = latency_s
-        self._inboxes: Dict[str, asyncio.Queue] = {}
+        self._inboxes: dict[str, asyncio.Queue] = {}
         self.stats = ChannelStats()
 
     def register(self, node_id: str) -> None:
@@ -54,10 +53,10 @@ class AsyncMemoryChannel:
             await asyncio.sleep(self.latency_s)
         return delivered
 
-    async def drain(self, node_id: str, timeout: float = 0.1) -> List[Any]:
+    async def drain(self, node_id: str, timeout: float = 0.1) -> list[Any]:
         self.register(node_id)
         q = self._inboxes[node_id]
-        out: List[Any] = []
+        out: list[Any] = []
         while True:
             try:
                 out.append(await asyncio.wait_for(q.get(), timeout=timeout))

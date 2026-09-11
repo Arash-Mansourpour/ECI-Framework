@@ -33,6 +33,10 @@ belief functors (exact round-trip) · `StateContributor` protocol +
 | 13 | EWC full cycle | batch=replace vs online=accumulate (scale finding); adoption resets share |
 | 14 | PyPhi table + glob gate | sia vs Φ ordering agrees on extremes; gate self-maintaining |
 | 15 | coverage closure + snapshots | all 8 contributors registered; snapshot JSON round-trips |
+| 16 | NaN guard (in-flight hardening) | `require_finite` on all 8 updates: silent poison + eigh crash become loud ValueError |
+| 17 | codebase honesty pass | per-package audit + validation ledger + ratchet gate; real bugs fixed (see report) |
+| 16 | NaN guard (in-flight hardening) | `require_finite` on all 8 updates: silent poison + eigh crash become loud ValueError |
+| 17 | codebase honesty pass | per-package audit + validation ledger + ratchet gate; real bugs fixed (see report) |
 
 ## PyPhi cross-check (Phase 10 — first EXTERNAL validation)
 

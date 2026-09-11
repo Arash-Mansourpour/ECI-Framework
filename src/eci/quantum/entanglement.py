@@ -10,12 +10,11 @@ References
 from __future__ import annotations
 
 import math
-from typing import Sequence, Tuple
+from collections.abc import Sequence
 
 import torch
 
 from eci.constants import EPS
-from eci.quantum.density import from_statevector
 
 __all__ = [
     "schmidt_decomposition",
@@ -37,7 +36,7 @@ def schmidt_decomposition(
     state: torch.Tensor,
     n_qubits: int,
     qubits_a: Sequence[int],
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Schmidt decomposition |psi> = sum_i s_i |u_i>_A |v_i>_B.
 
     Returns ``(u, s, vh)`` where ``u`` acts on subsystem A (rows = Schmidt

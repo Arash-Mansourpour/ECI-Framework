@@ -6,7 +6,7 @@ from eci.persistence.repository import MemoryTable, Repository, UnitOfWork
 __all__ = ["EventStore", "MemoryBackend", "SqliteBackend", "StoredEvent",
            "MemoryTable", "Repository", "UnitOfWork", "Persistence"]
 
-from typing import Any, Dict
+from typing import Any
 
 
 class Persistence:
@@ -19,5 +19,5 @@ class Persistence:
 
     def start(self) -> None: ...
     def stop(self) -> None: ...
-    def health(self) -> Dict[str, Any]:
+    def health(self) -> dict[str, Any]:
         return {"ok": True, "events": len(self.events.backend), "docs": len(self.docs.table)}

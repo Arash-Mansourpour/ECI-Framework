@@ -1,4 +1,6 @@
 """Digital twin: simulate policy changes before the DAO enacts them.
+Validation note: a twin verdict inherits ALL limitations of its drill
+function (see docs/VALIDATION_STATUS.md) — read the drill, then the verdict.
 
 Clone live parameters (thresholds, weights, membership) into a sandbox,
 replay recent history plus chaos drills under candidate policies, and
@@ -8,17 +10,18 @@ proposal carries its simulated consequence. Read-only w.r.t. production.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List
+from collections.abc import Callable
+from typing import Any
 
 __all__ = ["TwinReport", "what_if"]
 
 
 def what_if(
     name: str,
-    policy: Dict[str, float],
-    history: List[Dict[str, Any]],
-    drill_fn: Callable[[Dict[str, float]], Dict[str, float]],
-) -> Dict[str, Any]:
+    policy: dict[str, float],
+    history: list[dict[str, Any]],
+    drill_fn: Callable[[dict[str, float]], dict[str, float]],
+) -> dict[str, Any]:
     """Run candidate policy through history replay + drills. Returns deltas."""
     base = drill_fn({})
     cand = drill_fn(policy)
