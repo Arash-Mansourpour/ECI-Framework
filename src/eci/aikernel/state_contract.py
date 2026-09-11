@@ -74,3 +74,15 @@ class KernelLedger:
         for m in self._members.values():
             total = total + m.free_energy_contribution()
         return total
+
+    def snapshot(self) -> Dict[str, Any]:
+        """Audit artifact: shares + posteriors, JSON-safe (Phase 15).
+
+        This is a RECORD, not a resurrection: optimizer states, RNG
+        cursors and training histories are deliberately NOT captured, so
+        a snapshot can verify the past but never replay it bit-for-bit.
+        Anyone promising full state restore from this dict is overselling.
+        """
+        return {"members": {k: {"share": float(m.free_energy_contribution().detach().item()),
+                                "posterior": m.posterior().to_dict()}
+                            for k, m in self._members.items()}}

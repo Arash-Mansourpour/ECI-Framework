@@ -135,6 +135,10 @@ Every subsystem optimizes one shared objective, variational free energy
 | 9 | Default mesh completion (no new adapter) | All 8 adapters in `build_unification()` + full `describe` coverage |
 | 10 | Hardening + PyPhi bridge (no new adapter) | Hygiene gate; PEC table q≤0.2; repertoires agree 1e-9; see `docs/AIKERNEL_UNIFICATION.md` |
 | 11 | Operability: mesh in status + CLI (no new adapter) | `system_status()["aik"]` + `eci aik {shares,total,describe}` read the live ledger |
+| 12 | Framework ledger wiring (no new adapter) | `aik_snapshot()` provenance/audit points; moves only via driven updates |
+| 13 | EWC full cycle (no new adapter) | batch=replace vs online=accumulate (different scales); adoption resets share |
+| 14 | PyPhi table + glob gate (no new adapter) | sia vs Φ agree on extremes; hygiene gate self-maintaining |
+| 15 | Coverage closure + snapshots (no new adapter) | all 8 contributors registered; snapshot JSON round-trips |
 
 > Honesty ledger for all consciousness metrics (what each number is and
 > is not validated against): `src/eci/consciousness/LIMITATIONS.md` —

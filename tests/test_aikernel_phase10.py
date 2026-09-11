@@ -11,32 +11,38 @@
 """
 import pathlib
 
-AIK_SRC = ["src/eci/aikernel/__init__.py", "src/eci/aikernel/generative_model.py",
-           "src/eci/aikernel/free_energy.py", "src/eci/aikernel/functors.py",
-           "src/eci/aikernel/state_contract.py", "src/eci/aikernel/mcp_bridge.py",
-           "src/eci/quantum/aikernel_adapter.py", "src/eci/quantum/aikernel_likelihood.py",
-           "src/eci/quantum/mitigation.py", "src/eci/consciousness/aikernel_adapter.py",
-           "src/eci/consciousness/iit.py", "src/eci/consciousness/iit4.py",
-           "src/eci/governance/aikernel_adapter.py", "src/eci/cognition/aikernel_adapter.py",
-           "src/eci/learning/aikernel_adapter.py"]
 # NOTE: mcp/fabric.py excluded on purpose — its __import__ lazy-import style
 # predates the unification layer; this gate locks OUR files, not legacy style.
-AIK_TESTS = ["tests/test_aikernel_phase1.py", "tests/test_aikernel_phase2a.py",
-             "tests/test_aikernel_phase2b.py", "tests/test_aikernel_phase2c.py",
-             "tests/test_aikernel_phase3.py", "tests/test_aikernel_phase4.py",
-             "tests/test_aikernel_phase5.py", "tests/test_aikernel_phase6.py",
-             "tests/test_aikernel_phase7_fep.py", "tests/test_aikernel_phase7_system.py",
-             "tests/test_aikernel_phase8.py", "tests/test_aikernel_phase9.py",
-             "tests/test_aikernel_phase10.py"]
 
 
 def _root():
     return pathlib.Path(__file__).resolve().parents[1]
 
 
+def _aik_src_files():
+    """Glob-discovered AIK source files (Phase 14: no more hardcoded lists
+    that rot when new phase files land)."""
+    root = _root()
+    files = sorted(str(p.relative_to(root)).replace("\\", "/")
+                   for p in (root / "src" / "eci" / "aikernel").glob("*.py"))
+    for sub in ("quantum/aikernel_adapter.py", "quantum/aikernel_likelihood.py",
+                "quantum/mitigation.py", "consciousness/aikernel_adapter.py",
+                "consciousness/iit.py", "consciousness/iit4.py",
+                "governance/aikernel_adapter.py", "cognition/aikernel_adapter.py",
+                "learning/aikernel_adapter.py"):
+        files.append(f"src/eci/{sub}")
+    return files
+
+
+def _aik_test_files():
+    root = _root()
+    return sorted(str(p.relative_to(root)).replace("\\", "/")
+                  for p in (root / "tests").glob("test_aikernel_*.py"))
+
+
 def test_no_bare_typing_imports():
     """The 5x recurring typo: `from typing` without `import`."""
-    bad = [f for f in AIK_SRC
+    bad = [f for f in _aik_src_files()
            for ln in (_root() / f).read_text(encoding="utf-8").splitlines()
            if ln.strip().startswith("from typing ") and not ln.strip().startswith("from typing import")]
     assert bad == [], bad
@@ -46,7 +52,7 @@ def test_no_tautological_asserts_in_aik_tests():
     """The `or True` incident: asserts that cannot fail."""
     import re
     bad = []
-    for f in AIK_TESTS:
+    for f in _aik_test_files():
         for i, ln in enumerate((_root() / f).read_text(encoding="utf-8").splitlines(), 1):
             s = ln.strip()
             if s.startswith("assert ") and re.search(r"\bor True\b", s):
@@ -57,7 +63,7 @@ def test_no_tautological_asserts_in_aik_tests():
 def test_no_inline_dunder_imports_in_aik_src():
     """Inline `__import__` hacks (removed 3x); scoped to AIK files only —
     legacy style elsewhere (fabric lazy imports predate this) is untouched."""
-    bad = [f for f in AIK_SRC
+    bad = [f for f in _aik_src_files()
            if "__import__(" in (_root() / f).read_text(encoding="utf-8")]
     assert bad == [], bad
 

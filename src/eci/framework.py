@@ -536,6 +536,23 @@ class ECIFramework:
                 "total_free_energy": total_f,
                 "describe": describe_ledger(ledger)["members"]}
 
+    def aik_snapshot(self, note: str = "") -> Dict[str, Any]:
+        """Phase 12: auditable F-trajectory point. Read-only by construction:
+        it only READS shares/total (never steps/updates any contributor),
+        then records the reading in provenance + audit. Two snapshots around
+        an update prove the trajectory moved for a stated reason."""
+        st = self.aik_status()
+        if not st.get("ok"):
+            return st
+        snap = {"note": note, "total_free_energy": st["total_free_energy"],
+                "shares": {k: v["share"] for k, v in st["describe"].items()}}
+        node = self.provenance.record("aik.snapshot", "framework",
+                                      {"note": note}, snap, {})
+        self.observability.audit.append("framework", "aik.snapshot",
+                                        {"total": snap["total_free_energy"], "note": note})
+        snap["provenance_id"] = node.id
+        return {"ok": True, **snap}
+
     def system_status(self) -> Dict[str, Any]:
         """Full v6 hyper-architecture health snapshot (for `eci system`)."""
         def _safe(fn):

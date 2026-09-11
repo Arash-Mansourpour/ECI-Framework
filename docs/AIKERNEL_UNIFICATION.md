@@ -28,6 +28,11 @@ belief functors (exact round-trip) · `StateContributor` protocol +
 | 8 | EWC weights | Fisher posterior; displacement-priced share |
 | 9 | 8-member default mesh | total == sum; describe covers all |
 | 10 | hardening + PyPhi bridge | hygiene gate; PEC table q≤0.2; repertoires agree 1e-9 (see below) |
+| 11 | operability: mesh in status + CLI | `system_status()["aik"]` + `eci aik {shares,total,describe}` on the live ledger |
+| 12 | framework ledger wiring | `aik_snapshot()` provenance/audit points; trajectory moves only via driven updates |
+| 13 | EWC full cycle | batch=replace vs online=accumulate (scale finding); adoption resets share |
+| 14 | PyPhi table + glob gate | sia vs Φ ordering agrees on extremes; gate self-maintaining |
+| 15 | coverage closure + snapshots | all 8 contributors registered; snapshot JSON round-trips |
 
 ## PyPhi cross-check (Phase 10 — first EXTERNAL validation)
 
