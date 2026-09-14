@@ -270,17 +270,17 @@ Conventions: big-endian throughout, `complex64` default, CPU-first with CUDA fal
 
 ## Tests & validation
 
-Ground truth is **`docs/CODEBASE_AUDIT.md` (Phase 20, 2026-09-14)** and
+Ground truth is **`docs/CODEBASE_AUDIT.md` (Phase 21, 2026-09-14)** and
 **`docs/VALIDATION_STATUS.md` + `src/eci/consciousness/LIMITATIONS.md`**:
 
-- **241 tests green** (incl. 9 quantum smoke), **85% total statement coverage**
-  (`coverage run -m pytest` → 16687 stmts, 2556 miss; Phase 17: 209/74% → Phase 18: 229/80% → Phase 19: 232/83% → Phase 20: 241/85%)
+- **247 tests green** (incl. 6 transports/fabric smoke), **85% total statement coverage**
+  (`coverage run -m pytest` → 16735 stmts, 2548 miss; Phase 17: 209/74% → Phase 18: 229/80% → Phase 19: 232/83% → Phase 20: 241/85% → Phase 21: 247/85%)
 - **172 ruff findings** post-cleanup (down from 2267; remaining: B905×46, SIM105×19, E701/E702, E741×13, B007×11, N-rules — style debt, boy-scout rule per audit; was 168 in Phase 17)
 - **64 mypy errors** in 32 files (down from 72 via `network/manager` **kwargs fix; was 76; mostly `arg-type` 12 + `union-attr` 14)
 - **CI gate**: `F401+I001+B011` must stay **zero** repo-wide (`tests/test_repo_hygiene.py`); mypy ceiling **≤64** (was 72; Phase 20); full backlog reported non-blocking
 - **Validation ledger**: `docs/VALIDATION_STATUS.md` describes what each number is and is NOT validated against (precog/immune heuristics, twin/morph fitness, LMSR prices, redteam probes, drift PSI/KS, neuromorphic now 93%/100% but still heuristic etc. — read before quoting any metric)
 - **Consciousness ledger**: `src/eci/consciousness/LIMITATIONS.md` — none of the Phi numbers is a measurement of subjective experience; IIT 4.0 repertoires cross-validated vs PyPhi 1.2.0 to 1e-9 (Phase 10) but Φ magnitudes remain cross-version (IIT 3.0 EMD vs 4.0 composition)
-- **Phase 20 closure**: `quantum` 57%→68% (QFT/Grover/QPE/VQE/QAOA/operator/qec/statevector smoke, `network/manager` mypy 72→64); backlog item 5 + 85% milestone hit
+- **Phase 21 closure**: `mcp/transports` + `fabric` + `tcp`/`secure_channel` smoke (6 tests), held 85% (241→247); `quantum` 57%→68% + mypy 72→64 already in Phase 20
 
 Run: `PYTHONPATH=src pytest -q` and `python -m mypy src/eci` and
 `python -m ruff check src tests` (or `--select F401,I001,B011` for the gate).
