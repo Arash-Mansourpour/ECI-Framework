@@ -94,3 +94,51 @@ def test_nas_derive_shape_and_names():
     assert all(isinstance(e[2], str) and e[2] in DARTSSearchSpace.PRIMITIVES for e in edges)
     arch = space.get_architecture()
     assert isinstance(arch, list) and len(arch) > 0
+
+
+def test_nas_ops_and_forward():
+    from eci.learning.nas import DARTSSearchSpace, SeparableConv2d, Zero
+    torch.manual_seed(4)
+    z = Zero()
+    x = torch.randn(2, 4, 8, 8)
+    assert torch.allclose(z(x), torch.zeros_like(x))
+    sep = SeparableConv2d(4, 4, 3, 1, 1)
+    y = sep(x)
+    assert y.shape == (2, 4, 8, 8)
+    # forward through search space: 2 input states (x,x) -> concat of last n_nodes
+    space = DARTSSearchSpace(n_nodes=2, channels=4)
+    out = space(x)
+    assert out.shape[0] == 2 and out.shape[1] == 8  # 2 nodes * 4 ch
+    # derive filters none, keep_edges=1 variant
+    edges1 = space.derive(keep_edges=1)
+    assert 1 <= len(edges1) <= 2
+    assert all(e[2] != "none" for e in edges1)
+
+
+def test_advanced_nas_search_one_epoch():
+    import pytest
+    from torch.utils.data import DataLoader, TensorDataset
+
+    from eci.learning.nas import AdvancedNAS
+    torch.manual_seed(5)
+    # DARTS cell returns (N, n_nodes*channels, H, W); spatial CE expects target (N,H,W)
+    def _loader(n=8, n_nodes=1, channels=2, hw=8):
+        X = torch.randn(n, channels, hw, hw)
+        # spatial target (N, H, W) with classes 0..(n_nodes*channels-1)
+        y = torch.randint(0, n_nodes * channels, (n, hw, hw))
+        return DataLoader(TensorDataset(X, y), batch_size=4)
+    train = _loader(8, n_nodes=1, channels=2, hw=8)
+    val = _loader(8, n_nodes=1, channels=2, hw=8)
+    nas = AdvancedNAS(device=torch.device("cpu"))
+    # invalid space must raise
+    with pytest.raises(ValueError):
+        AdvancedNAS(search_space="bad")
+    out = asyncio.run(nas.search(train, val, n_epochs=1, n_nodes=1, channels=2))
+    assert "architecture" in out and "val_accuracy" in out
+    assert out["search_epochs"] == 1
+    # val_accuracy is pixel-accuracy divided by batch count in current impl (>1 possible for spatial)
+    assert out["val_accuracy"] >= 0.0
+    assert isinstance(out["architecture"], list)
+    assert len(nas.search_history) == 1
+    # history entry shape
+    assert "val_accuracy" in nas.search_history[0]

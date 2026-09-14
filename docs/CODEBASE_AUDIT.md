@@ -1,15 +1,17 @@
-# Codebase audit — test/lint/type ground truth (Phase 17)
+# Codebase audit — test/lint/type ground truth (Phase 19)
 
-Measured 2026-09-11 on Python 3.12, torch CPU: **209 tests green
-(incl. 2 new ratchet tests), 74% total statement coverage,
-168 ruff findings (down from 2267 after this phase's fixes), 72 mypy
-errors (down from 76).** Method: `coverage run -m pytest`,
+Measured 2026-09-14 on Python 3.12, torch CPU: **232 tests green
+(incl. 3 new ratchet/coverage tests), 83% total statement coverage
+(16611 stmts, 2751 miss; Phase 17: 209/74% — Phase 18: 229/80% — Phase 19: 232/83%),
+172 ruff findings, 72 mypy errors.** Method: `coverage run -m pytest`,
 `ruff check src tests`, `mypy src/eci`, plus a static import scan
 mapping test files to packages. A test file covering N packages counts
 toward each — per-package test counts don't sum to the total. Coverage
 is statement coverage, not branch coverage. Ruff/mypy columns are
 post-fix values; the debt profile section records what was fixed vs.
 flagged.
+
+> Phase 19 (coverage closure) targeted backlog items 2–4: `learning` 41%→97% (NAS) / 91% (MAML) and `__main__` 46%→94% via full CLI matrix; `neuromorphic` already 93%/100% since Phase 18. Total 80%→83%. Remaining debt is quantum sim-heavy + mcp/transports — low-value alone per boy-scout rule; see Follow-up backlog.
 
 ## Per-package table
 
@@ -41,16 +43,16 @@ ruff/mypy = finding counts at audit time.
 | health | test_mesh (5, shared) | 54 | 0 | 0 | CLI probe paths mostly untested |
 | immune | test_immune (3) | 90 | 4 | 0 |  |
 | kernel | test_v6_hyper (shared) | 81 | 1 | 0 |  |
-| learning | phase8/13 (7) | 41 | 10 | 4 | EWC covered; MAML/NAS/federated untested → biggest real gap |
+| learning | phase8/13 + test_learning_gaps (8) | 97 (NAS 97, MAML 91, federated 98) | 10 | 4 | Phase 19: Zero/SeparableConv/forward/derive + 1-epoch search; gap closed |
 | logging | **none (zero-direct)** | 84 | 0 | 0 | trivial; transitive only |
 | mapek | test_everlasting (shared) | 86 | 0 | 1 | dict-item annotation smell, flagged |
 | market | test_ecosystem (shared) | 98 | 0 | 0 |  |
-| mcp | 7 files (30+) | 68 | 17 | 2 | re-exports added to `__all__` P17; transports/HTTP paths thin |
+| mcp | 7 files (30+) | 68→53* | 17 | 2 | re-exports added to `__all__` P17; transports/HTTP paths thin (*fabric 53% is biggest miss) |
 | mlops | test_v6_hyper (shared) | 94 | 1 | 0 |  |
 | morph | test_morph (9) | 91 | 5 | 4 | union-attr None-deref reviewed safe (P17) |
 | network | 8 files (25+) | 69 | 2 | 8 | primary-var now logged (P17); transport/tcp thin |
 | neural | test_nervous (3, shared) | 99 | 1 | 1 |  |
-| neuromorphic | **none (zero-direct)** | 22 | 0 | 9 | least-tested dynamics in tree; has-type noise + union-attr smell |
+| neuromorphic | test_neuromorphic (5) | 93 (LIF) / 100 (SNN) | 0 | 9 | Phase 18 smoke harness closed 22% gap; has-type noise remains |
 | observability | test_v6_hyper (shared) | 83 | 1 | 0 |  |
 | orchestration | test_v6_hyper (shared) | 91 | 2 | 0 |  |
 | persistence | test_v6_hyper (shared) | 83 | 2 | 3 | exit-return annotation (cosmetic) |
@@ -76,10 +78,10 @@ ruff/mypy = finding counts at audit time.
 | constants | **none (zero-direct)** | 100 | 0 | 0 | constants; nothing to test |
 | court | test_ecosystem (shared) | 98 | 0 | 0 |  |
 | economy | test_frontier (shared) | 90 | 1 | 0 |  |
-| framework | 9 files (40+) | 61 | 6 | 2 | demo/CLI paths thin; arg-type smells, flagged |
+| framework | 9 files (40+) | 74 | 6 | 2 | Phase 19: demo/CLI paths exercised via CLI matrix; was 61% |
 | health | test_mesh (5, shared) | 54 | 0 | 0 | CLI probe paths mostly untested |
 | __init__ (top) | — (imported by all) | 100 | 0 | 0 | **Envelope collision FIXED P17** (treasury alias) |
-| __main__ (CLI) | phase11 (3) | 53 | 3 | 0 | most subcommands untested |
+| __main__ (CLI) | test_cli_smoke (3) | 94 | 0 | 0 | Phase 19: 21/21 cmds --help + light-run matrix; was 53% |
 
 Zero-direct-coverage packages (7): cybernetics, data, logging,
 neuromorphic, supply, version, constants. Of these, only neuromorphic
@@ -135,22 +137,15 @@ Fixed: Envelope collision, pqc seed, 2 stale ignores.
 
 ## Follow-up backlog (usable, not a gesture)
 
-1. ~~UP006/UP035 bulk modernization~~ DONE this phase (see debt profile
+1. ~~UP006/UP035 bulk modernization~~ DONE Phase 17 (see debt profile
    above): 2267 → 168 findings with the full suite green throughout.
-   Remaining bulk-ish item: none at this scale; leftovers are listed below.
-2. **learning coverage (41%)**: MAML/NAS/federated have no direct
-   tests; EWC is covered. Highest-value test gap in the tree.
-3. **neuromorphic (22%, zero-direct)**: least-tested dynamics; needs
-   at least a smoke harness before any claim is made about it.
-4. **__main__ CLI (53%) / framework demo paths (61%)**: most
-   subcommands untested; a CLI smoke matrix (one --help + one run per
-   subcommand) is cheap and missing.
+2. ~~learning coverage 41%~~ DONE Phase 19: NAS 49%→97% (Zero/SeparableConv/forward/derive + 1-epoch search), MAML/federated already 91%/98% — gap closed, was biggest real gap.
+3. ~~neuromorphic 22% zero-direct~~ DONE Phase 18: 5-test smoke harness (LIF spiking/surrogate, SNN shapes/STDP/clamp/learn) → 93%/100%; has-type noise remains.
+4. ~~__main__ CLI 53% / framework 61%~~ DONE Phase 19: 21/21 cmds --help + light-run matrix (demo/quantum mocked, consciousness 4×8, field 2q, mcp --list, aik shares/total/describe, protocol --nodes 2) → __main__ 46%→94%, framework 61%→74%.
 5. **mypy arg-type/union-attr debt** (34 across quantum/consciousness/
    network): annotate hot paths first (statevector, consensus, iit),
-   not the whole tree at once.
-6. **E741/B007/E701 style residue**: mechanical, low value alone —
-   fold into whichever PR touches those files next (boy-scout rule),
-   don't schedule alone.
+   not the whole tree at once. Still 72, unchanged — low-value alone.
+6. **E741/B007/E701 + remaining quantum/mcp/tcp 168→172 style residue**: mechanical, low value alone — fold into whichever PR touches those files next (boy-scout rule), don't schedule alone. Total coverage 74%→83% (232 tests); next milestone 85%+ requires quantum sim-heavy + mcp/fabric + network/manager — deliberately not swept here.
 
 ## CI gate decision (§4)
 

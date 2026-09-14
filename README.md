@@ -270,16 +270,17 @@ Conventions: big-endian throughout, `complex64` default, CPU-first with CUDA fal
 
 ## Tests & validation
 
-Ground truth is **`docs/CODEBASE_AUDIT.md` (Phase 17, 2026-09-11)** and
+Ground truth is **`docs/CODEBASE_AUDIT.md` (Phase 19, 2026-09-14)** and
 **`docs/VALIDATION_STATUS.md` + `src/eci/consciousness/LIMITATIONS.md`**:
 
-- **209 tests green** (incl. 2 ratchet tests), **74% total statement coverage**
-  (`coverage run -m pytest` → 16520 stmts, 3243 miss on 2026-09-14 re-run = 80% on this machine; audit 74% is the published baseline until re-audited)
-- **168 ruff findings** post-cleanup (down from 2267; remaining: B905×46, SIM105×19, E701/E702, E741×13, B007×11, N-rules — style debt, boy-scout rule per audit)
+- **232 tests green** (incl. 3 ratchet/coverage tests), **83% total statement coverage**
+  (`coverage run -m pytest` → 16611 stmts, 2751 miss; Phase 17: 209/74% → Phase 18: 229/80% → Phase 19: 232/83%)
+- **172 ruff findings** post-cleanup (down from 2267; remaining: B905×46, SIM105×19, E701/E702, E741×13, B007×11, N-rules — style debt, boy-scout rule per audit; was 168)
 - **72 mypy errors** in 33 files (down from 76; mostly `arg-type` 20 + `union-attr` 14; see audit for per-package table)
-- **CI gate**: `F401+I001+B011` must stay **zero** repo-wide (`tests/test_repo_hygiene.py`); mypy ceiling **≤72**; full backlog reported non-blocking
-- **Validation ledger**: `docs/VALIDATION_STATUS.md` describes what each number is and is NOT validated against (precog/immune heuristics, twin/morph fitness, LMSR prices, redteam probes, drift PSI/KS, neuromorphic 22% etc. — read before quoting any metric)
+- **CI gate**: `F401+I001+B011` must stay **zero** repo-wide (`tests/test_repo_hygiene.py`); mypy ceiling **≤72**; full backlog reported non-blocking (Phase 18)
+- **Validation ledger**: `docs/VALIDATION_STATUS.md` describes what each number is and is NOT validated against (precog/immune heuristics, twin/morph fitness, LMSR prices, redteam probes, drift PSI/KS, neuromorphic now 93%/100% but still heuristic etc. — read before quoting any metric)
 - **Consciousness ledger**: `src/eci/consciousness/LIMITATIONS.md` — none of the Phi numbers is a measurement of subjective experience; IIT 4.0 repertoires cross-validated vs PyPhi 1.2.0 to 1e-9 (Phase 10) but Φ magnitudes remain cross-version (IIT 3.0 EMD vs 4.0 composition)
+- **Phase 19 closure**: `learning` 41%→97% (NAS forward/derive/search, `__main__` 46%→94% via 21/21 CLI matrix); backlog items 2–4 closed
 
 Run: `PYTHONPATH=src pytest -q` and `python -m mypy src/eci` and
 `python -m ruff check src tests` (or `--select F401,I001,B011` for the gate).

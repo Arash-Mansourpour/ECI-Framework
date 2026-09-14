@@ -22,7 +22,7 @@ is `src/eci/version.py`.
 | 6.0.0 – 7.0.0 | ECI Non-Commercial v1.0 | `LICENSE` file already ECI NC, `pyproject.toml` still said MIT (drift, fixed Phase 18) |
 | 7.1.0 (current) | ECI Non-Commercial v1.0 | All metadata (pyproject, classifiers, README badge, CITATION.cff) now consistent |
 
-## [7.1.0] — 2026-09-14 — PROTOCOL-vNext
+## [7.1.0] — 2026-09-14 — PROTOCOL-vNext + Phase 19 coverage closure
 
 - Evolving Collective Intelligence Protocol (`src/eci/protocol_vnext/`):
   genesis + genome, identity lifecycle, capability vectors + `T(n,c,x)` +
@@ -33,6 +33,7 @@ is `src/eci/version.py`.
   evolution + Skill Compiler, resilience lab.
 - `eci protocol --nodes 3` demo; `FRAMEWORK_VERSION = 7.1.0-PROTOCOL-vNext`.
 - Version source is `src/eci/version.py` (`__version__ = 7.1.0`).
+- **Phase 19 (2026-09-14, coverage closure)**: `learning` 41%→97% (NAS forward/derive/search), `__main__` 46%→94% (21/21 CLI light-run matrix), total 74%→83% (232 tests, 172 ruff, 72 mypy). Backlog items 2–4 closed; see `docs/CODEBASE_AUDIT.md` Phase 19.
 
 ## [7.0.0] — 2026-09 — EVERLASTING Continuance
 
