@@ -6,6 +6,9 @@ Architect (Sovereign / Ma'mar-e A'zam): Arash Mansourpour
 """
 
 from eci import aikernel as aikernel
+
+# SECE Phase 22: bridges + market commons
+from eci import bridges as bridges
 from eci import federation as federation
 from eci import immune as immune
 from eci import mcp as mcp
@@ -22,6 +25,7 @@ from eci.aikernel import GenerativeState, KernelLedger, Likelihood, Prior, State
 from eci.api import Gateway
 from eci.authz import RBAC, Permission, PolicyEngine, PolicyRule, Role
 from eci.benchmarking.benchmark import ResearchBenchmark
+from eci.bridges.quantum_neuromorphic import QuantumNeuromorphicBridge
 from eci.caps import CapToken
 from eci.caps import Issuer as CapIssuer
 from eci.causal import HLC, hlc_now, merge_chains, sort_key
@@ -31,10 +35,12 @@ from eci.compat import CompatRegistry, Interface
 from eci.config import ECIConfig, ExperimentConfig
 from eci.consciousness.adherence import AdherenceTracker, calibration_tasks
 from eci.consciousness.analyzer import AdvancedConsciousnessAnalyzer
+from eci.consciousness.calibration_network import AwarenessCalibrationNetwork
 from eci.consciousness.challenge import Transcript, grade
 from eci.consciousness.challenge import issue as issue_challenges
 from eci.consciousness.collective import CollectiveState, collective_awareness
 from eci.consciousness.eeg import bandpower, load_timeseries
+from eci.consciousness.federated_ledger import FederatedConsciousnessLedger
 from eci.consciousness.free_energy import FreeEnergyAgent
 from eci.consciousness.gnwt import GNWTWorkspace
 
@@ -86,6 +92,7 @@ from eci.learning.maml import MAML, MetaMLP
 from eci.learning.nas import AdvancedNAS, DARTSSearchSpace
 from eci.mapek import MAPEK, SLO, Strategy
 from eci.market import Market, Marketplace
+from eci.market_commons import MarketCommons
 from eci.mcp import McpFabric, McpRegistry, McpServer
 from eci.mlops import MLOps, ModelRegistry, drift_report
 from eci.morph import Morphogenesis
@@ -115,6 +122,7 @@ from eci.orchestration import DAG, Orchestration, Scheduler
 from eci.persistence import EventStore, Persistence, Repository, UnitOfWork
 from eci.plugins import PluginManager, PluginManifest
 from eci.privacy import Guardian
+from eci.protocol_vnext.genesis_evolution import MutableConstitution
 from eci.provenance import ProvenanceGraph
 from eci.quantum import algorithms as qalg
 from eci.quantum import channels as qchannels
@@ -326,6 +334,8 @@ __all__ = [
     "Futarchy", "Sortition", "EmergencyPowers",
     "Challenger", "ForecasterRegistry", "contradiction_scan",
     "protocol_vnext",
+    "FederatedConsciousnessLedger", "AwarenessCalibrationNetwork",
+    "MarketCommons", "QuantumNeuromorphicBridge", "MutableConstitution", "bridges",
     "PQCSuite",
     "HashBasedSigner",
     "derive_key",

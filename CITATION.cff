@@ -2,7 +2,7 @@ cff-version: 1.2.0
 title: "ECI Framework"
 message: "If you use this software, please cite it as below."
 type: software
-version: "7.1.0"
+version: "7.2.0"
 date-released: "2026-09-14"
 license: "ECI Non-Commercial License v1.0"
 repository-code: "https://github.com/Arash-Mansourpour/ECI-Framework"
@@ -24,6 +24,7 @@ abstract: >
   ECI Framework (Eternal Codex Infinitus) is an experimental research
   architecture for autonomous intelligence: quantum computing, consciousness
   modeling (IIT Φ, GNWT, FEP), Protocol-0 obedience, distributed governance,
-  and the PROTOCOL-vNext federated nervous system (genesis, identity,
-  capability, memory, truth, reasoning, collective, evolution).
+  PROTOCOL-vNext federated nervous system and SECE self-evolving conscious
+  ecosystem (federated Phi ledger, calibration network, market commons,
+  quantum-neuromorphic bridge, mutable genome).
 license-url: "https://github.com/Arash-Mansourpour/ECI-Framework/blob/main/LICENSE"

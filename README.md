@@ -1,5 +1,5 @@
-# 🌌 ECI Framework v7.1
-## Eternal Codex Infinitus — EVERLASTING + PROTOCOL-vNext
+# 🌌 ECI Framework v7.2
+## Eternal Codex Infinitus — SECE · Self-Evolving Conscious Ecosystem
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-7.1.0--PROTOCOL--vNext-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
+[![Version](https://img.shields.io/badge/version-7.2.0--SECE-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Status](https://img.shields.io/badge/status-experimental-orange.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![License](https://img.shields.io/badge/license-ECI%20Non--Commercial-red.svg)](LICENSE)
@@ -50,14 +50,11 @@ operate inside a single continuously verifiable architecture.
 
 ---
 
-# ✨ v7.1 — EVERLASTING + PROTOCOL-vNext
+# ✨ v7.2 — SECE · Self-Evolving Conscious Ecosystem
 
-Version 7.1 extends **EVERLASTING Continuance** (v7.0) with the **PROTOCOL-vNext**
-federated nervous system. v7.0 introduced verifiable continuance; v7.1 adds
-the evolving collective intelligence protocol (genesis, identity, capability,
-memory, truth, reasoning, collective, evolution).
+Version 7.2 extends **PROTOCOL-vNext** (v7.1) with **SECE**: federated Phi ledger, closed-loop calibration, market commons, quantum-neuromorphic bridge and mutable genome. v7.1 built the nervous system; v7.2 makes it **aware, economic, and self-evolving**.
 
-### 🚀 New in v7.1
+### 🚀 New in v7.1 — EVERLASTING
 
 | System | Capability |
 |---|---|
@@ -71,9 +68,17 @@ memory, truth, reasoning, collective, evolution).
 | 🔗 MCP Integration | `ever.*` MCP tools |
 | 🧬 Evolvable Genome | Mutation → Twin → Canary → DAO → Registration |
 
-See:
+### ♾️ New in v7.2 — SECE
 
-`docs/EVERLASTING.md`
+| Primitive | Module | Proof |
+|---|---|---|
+| 🧠 Federated Phi | `consciousness/federated_ledger.py` | PhiClaim 2/3 recomputed → `TruthGuardian` → hash-chained `Ledger` |
+| 🔬 Calibration Loop | `consciousness/calibration_network.py` | `eeg.bandpower → protocol.measure → challenge.grade → adherence → mapek` |
+| 💹 Market Commons | `market_commons.py` | Fact → LMSR market + `treasury` stake + `reputation` + `Brier` |
+| ⚛️ QN-Bridge | `bridges/quantum_neuromorphic.py` | SNN as `StateContributor` (`F = KL + MSE`) |
+| 🧬 Mutable Genome | `protocol_vnext/genesis_evolution.py` | `propose → twin → canary → vote → H(old||mutation)` + rollback |
+
+See: `docs/EVERLASTING.md` + SECE (`src/eci/consciousness/federated_ledger.py`, `src/eci/market_commons.py`, `src/eci/bridges/quantum_neuromorphic.py`)
 
 ---
 
@@ -164,6 +169,22 @@ The new federated nervous system is live under `src/eci/protocol_vnext/` (`eci p
 | Evolution | `evolution.py` | ECI-EVOLVE governed evolution + Skill Compiler (intelligence compression) |
 | Resilience | `resilience.py` | Graceful degradation + substrate independence + experimental lab |
 
+# ♾️ SECE — Self-Evolving Conscious Ecosystem (Phase 22)
+
+> **From numbers to claims, from memory to economy, from substrate to sovereignty.**
+
+SECE turns every layer into a **verifiable, costed, and evolvable** primitive. Five new primitives live under `src/eci/` and are wired into `ECIFramework` and `mcp` (`sece.*`):
+
+| Primitive | Module | What it proves |
+|---|---|---|
+| **FCL** | `consciousness/federated_ledger.py` | Phi as a 2/3-quorum `PhiClaim` (recomputed + `TruthGuardian` + hash-chained `Ledger`), not a self-reported float |
+| **CAN** | `consciousness/calibration_network.py` | Closed-loop `eeg.bandpower → protocol.measure → challenge.grade → adherence → mapek` (degrade hint) |
+| **MarketCommons v2** | `market_commons.py` | Fact `→` LMSR market + `treasury` stake + `reputation` + `Brier` + `contradiction_scan` (confidence = money-at-risk) |
+| **QN-Bridge** | `bridges/quantum_neuromorphic.py` | SNN `SpikingNeuralNetwork` as `StateContributor` (`F = KL(N(mu,cov)||N(0,1)) + MSE`) — spikes priced, not free |
+| **Mutable Genome** | `protocol_vnext/genesis_evolution.py` | `ConstitutionalGenome` now `propose → twin_test → canary → vote → commit → H(old||mutation)` + rollback, all ledgered |
+
+MCP: `sece.fcl` / `sece.can` / `sece.market` / `sece.qn` / `sece.genome` (see `src/eci/mcp/fabric.py:408`). Framework: `fw.fcl/can/market_commons/qn_bridge/mutable_constitution` + `fw.system_status()["fcl" …]`.
+
 > Honesty ledger for all consciousness metrics (what each number is and
 > is not validated against): `src/eci/consciousness/LIMITATIONS.md` —
 > read before quoting any Phi value.
@@ -186,7 +207,7 @@ pip install -e .[dev]
 # one-line sanity
 PYTHONPATH=src python -m eci info
 PYTHONPATH=src python -m eci demo          # quantum + consciousness + activation + network
-PYTHONPATH=src pytest -q                   # 209 tests (audit) / 228 collected incl. hygiene; add --ignore=tests/test_repo_hygiene.py for fast loop
+PYTHONPATH=src pytest -q                   # 254 tests (247 + 7 SECE); add --ignore=tests/test_repo_hygiene.py for fast loop
 
 # everlasting pillars
 PYTHONPATH=src python -m eci ever          # caps / watchtower / continuum / mapek / compat
@@ -270,17 +291,17 @@ Conventions: big-endian throughout, `complex64` default, CPU-first with CUDA fal
 
 ## Tests & validation
 
-Ground truth is **`docs/CODEBASE_AUDIT.md` (Phase 21, 2026-09-14)** and
+Ground truth is **`docs/CODEBASE_AUDIT.md` (Phase 22 SECE, 2026-09-14)** and
 **`docs/VALIDATION_STATUS.md` + `src/eci/consciousness/LIMITATIONS.md`**:
 
-- **247 tests green** (incl. 6 transports/fabric smoke), **85% total statement coverage**
-  (`coverage run -m pytest` → 16735 stmts, 2548 miss; Phase 17: 209/74% → Phase 18: 229/80% → Phase 19: 232/83% → Phase 20: 241/85% → Phase 21: 247/85%)
+- **254 tests green** (incl. 7 SECE: FCL/CAN/Market/QN-Bridge/GenesisEvo), **85% total statement coverage**
+  (`coverage run -m pytest` → 17261 stmts, 2645 miss; Phase 17: 209/74% → Phase 18: 229/80% → Phase 19: 232/83% → Phase 20: 241/85% → Phase 21: 247/85% → Phase 22: 254/85%)
 - **172 ruff findings** post-cleanup (down from 2267; remaining: B905×46, SIM105×19, E701/E702, E741×13, B007×11, N-rules — style debt, boy-scout rule per audit; was 168 in Phase 17)
-- **64 mypy errors** in 32 files (down from 72 via `network/manager` **kwargs fix; was 76; mostly `arg-type` 12 + `union-attr` 14)
-- **CI gate**: `F401+I001+B011` must stay **zero** repo-wide (`tests/test_repo_hygiene.py`); mypy ceiling **≤64** (was 72; Phase 20); full backlog reported non-blocking
-- **Validation ledger**: `docs/VALIDATION_STATUS.md` describes what each number is and is NOT validated against (precog/immune heuristics, twin/morph fitness, LMSR prices, redteam probes, drift PSI/KS, neuromorphic now 93%/100% but still heuristic etc. — read before quoting any metric)
+- **64 mypy errors** in 32 files (down from 72 via `network/manager` **kwargs fix + SECE type ignores; was 76; mostly `arg-type` 12 + `union-attr` 14)
+- **CI gate**: `F401+I001+B011` must stay **zero** repo-wide (`tests/test_repo_hygiene.py`); mypy ceiling **≤66** (64 actual, was 72; Phase 22); full backlog reported non-blocking
+- **Validation ledger**: `docs/VALIDATION_STATUS.md` describes what each number is and is NOT validated against (precog/immune heuristics, twin/morph fitness, LMSR prices, redteam probes, drift PSI/KS, neuromorphic now 93%/100% but still heuristic, FCL phi 2/3 quorum etc. — read before quoting any metric)
 - **Consciousness ledger**: `src/eci/consciousness/LIMITATIONS.md` — none of the Phi numbers is a measurement of subjective experience; IIT 4.0 repertoires cross-validated vs PyPhi 1.2.0 to 1e-9 (Phase 10) but Φ magnitudes remain cross-version (IIT 3.0 EMD vs 4.0 composition)
-- **Phase 21 closure**: `mcp/transports` + `fabric` + `tcp`/`secure_channel` smoke (6 tests), held 85% (241→247); `quantum` 57%→68% + mypy 72→64 already in Phase 20
+- **Phase 22 SECE closure**: `FCL` (2/3 quorum) + `CAN` (eeg→mapek) + `MarketCommons` (stake/Brier) + `QN-Bridge` (SNN+`F`) + `MutableGenome` (H(old||mutation)) + `sece.*` MCP (5 tools)
 
 Run: `PYTHONPATH=src pytest -q` and `python -m mypy src/eci` and
 `python -m ruff check src tests` (or `--select F401,I001,B011` for the gate).

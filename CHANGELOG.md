@@ -20,9 +20,16 @@ is `src/eci/version.py`.
 |---|---|---|
 | ≤ 5.9.0 | MIT | Last MIT release, archived on Zenodo |
 | 6.0.0 – 7.0.0 | ECI Non-Commercial v1.0 | `LICENSE` file already ECI NC, `pyproject.toml` still said MIT (drift, fixed Phase 18) |
-| 7.1.0 (current) | ECI Non-Commercial v1.0 | All metadata (pyproject, classifiers, README badge, CITATION.cff) now consistent |
+| 7.1.0 | ECI Non-Commercial v1.0 | All metadata (pyproject, classifiers, README badge, CITATION.cff) now consistent |
+| 7.2.0 (current) | ECI Non-Commercial v1.0 | SECE: FCL/CAN/MarketCommons/QN-Bridge/MutableGenome + MCP `sece.*` + framework wiring |
 
-## [7.1.0] — 2026-09-14 — PROTOCOL-vNext + Phase 19 coverage closure
+## [7.2.0] — 2026-09-14 — SECE · Self-Evolving Conscious Ecosystem
+
+- **SECE (Phase 22)**: 5 primitives — `FederatedConsciousnessLedger` (PhiClaim 2/3 quorum → `Ledger`), `AwarenessCalibrationNetwork` (`eeg.bandpower → protocol.measure → challenge.grade → adherence → mapek`), `MarketCommons` (Fact → LMSR + `treasury` + `reputation` + `Brier`), `QuantumNeuromorphicBridge` (SNN as `StateContributor`, `F = KL + MSE`), `MutableConstitution` (`propose → twin → canary → vote → H(old||mutation)` + rollback) — all wired into `ECIFramework` (`fw.fcl`… ) and `mcp` (`sece.*` 5 tools) with 7 new tests.
+- `framework.system_status()` now exposes `fcl/can/market_commons/qn_bridge/mutable_constitution` + `mcp` `sece.*` (7.2.0).
+- Version source is `src/eci/version.py` (`__version__ = 7.2.0`, `FRAMEWORK_VERSION = 7.2.0-SECE`, `PAPER_VERSION = infinity.21.0`).
+
+## [7.1.0] — 2026-09-14 — PROTOCOL-vNext + Phase 19–21 coverage
 
 - Evolving Collective Intelligence Protocol (`src/eci/protocol_vnext/`):
   genesis + genome, identity lifecycle, capability vectors + `T(n,c,x)` +
@@ -32,10 +39,10 @@ is `src/eci/version.py`.
   reasoning (Pareto frontier), collective learning (CIG/EG/TS), governed
   evolution + Skill Compiler, resilience lab.
 - `eci protocol --nodes 3` demo; `FRAMEWORK_VERSION = 7.1.0-PROTOCOL-vNext`.
-- Version source is `src/eci/version.py` (`__version__ = 7.1.0`).
-- **Phase 19 (2026-09-14, coverage closure)**: `learning` 41%→97% (NAS forward/derive/search), `__main__` 46%→94% (21/21 CLI light-run matrix), total 74%→83% (232 tests, 172 ruff, 72 mypy). Backlog items 2–4 closed; see `docs/CODEBASE_AUDIT.md` Phase 19.
-- **Phase 20 (2026-09-14, hot-path mypy + quantum smoke)**: `network/manager` **kwargs→explicit (mypy 72→64), `quantum` 57%→68% (QFT/Grover/QPE/VQE/QAOA/operator/qec/statevector smoke), total 83%→85% (241 tests). Backlog item 5 (mypy) and 85% milestone hit; 172 ruff remains boy-scout.
-- **Phase 21 (2026-09-14, transports/fabric smoke)**: `mcp/transports` InProcess/Stdio/Http + `mcp/fabric` build + `network/tcp`/`security/secure_channel` smoke (6 tests), total 241→247 held at 85% (16735 stmts). Remaining low pockets (fabric 40%, transports 32% etc.) stay boy-scout.
+- Version source was `src/eci/version.py` (`__version__ = 7.1.0`).
+- **Phase 19 (coverage closure)**: `learning` 41%→97% (NAS forward/derive/search), `__main__` 46%→94% (21/21 CLI light-run matrix), total 74%→83% (232 tests).
+- **Phase 20 (hot-path mypy + quantum smoke)**: `network/manager` **kwargs→explicit (mypy 72→64), `quantum` 57%→68% (QFT/Grover/QPE/VQE/QAOA/operator/qec/statevector smoke), total 83%→85% (241 tests).
+- **Phase 21 (transports/fabric smoke)**: `mcp/transports` InProcess/Stdio/Http + `mcp/fabric` build + `network/tcp`/`security/secure_channel` smoke (6 tests), total 241→247 held at 85% (16735 stmts).
 
 ## [7.0.0] — 2026-09 — EVERLASTING Continuance
 

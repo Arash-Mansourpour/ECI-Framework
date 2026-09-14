@@ -62,9 +62,9 @@ def test_fabric_build_and_tools():
     # must contain core namespaces
     for prefix in ["p0.attest", "system.info", "quantum.suite", "consciousness.profile"]:
         assert any(n.startswith(prefix) for n in names), prefix
-    # ever.* tools version should be 7.1.0 (Phase 18)
+    # ever.* tools version should be 7.2.0 (Phase 22)
     tool = reg.get("ever.mapek")
-    assert tool.version == "7.1.0"
+    assert tool.version == "7.2.0"
 
 
 def test_network_tcp_smoke():

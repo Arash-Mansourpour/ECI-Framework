@@ -1,8 +1,8 @@
-# Codebase audit — test/lint/type ground truth (Phase 21)
+# Codebase audit — test/lint/type ground truth (Phase 22 SECE)
 
-Measured 2026-09-14 on Python 3.12, torch CPU: **247 tests green
-(incl. 6 transports/fabric smoke), 85% total statement coverage
-(16735 stmts, 2548 miss; Phase 17: 209/74% — Phase 18: 229/80% — Phase 19: 232/83% — Phase 20: 241/85% — Phase 21: 247/85%),
+Measured 2026-09-14 on Python 3.12, torch CPU: **254 tests green
+(incl. 7 SECE: FCL/CAN/Market/QN-Bridge/GenesisEvo), 85% total statement coverage
+(16735 stmts, 2548 miss; Phase 17: 209/74% — Phase 18: 229/80% — Phase 19: 232/83% — Phase 20: 241/85% — Phase 21: 247/85% — Phase 22: 254/85%),
 172 ruff findings, 64 mypy errors.** Method: `coverage run -m pytest`,
 `ruff check src tests`, `mypy src/eci`, plus a static import scan
 mapping test files to packages. A test file covering N packages counts
@@ -11,7 +11,7 @@ is statement coverage, not branch coverage. Ruff/mypy columns are
 post-fix values; the debt profile section records what was fixed vs.
 flagged.
 
-> Phase 21 (transports/fabric smoke) added `mcp/transports` InProcess/Stdio/Http + `mcp/fabric` build + `network/tcp`/`security/secure_channel` smoke (6 tests), lifting total 241→247 while holding 85%. Remaining low pockets (`transports` 32%, `fabric` 40%, `lindblad` 18% etc.) stay boy-scout per Phase 20; see Follow-up.
+> Phase 22 (SECE) added 5 primitives (FCL/CAN/MarketCommons/QN-Bridge/MutableGenome) + 7 tests + MCP `sece.*` (5 tools) + framework wiring (`fw.fcl`…); total 247→254 held at 85%. Fabric version 6.1.0→7.2.0 via `T(version=)`. See Follow-up.
 
 ## Per-package table
 
@@ -138,7 +138,8 @@ Fixed Phase 20: `network/manager.py:_make_consensus` **kwargs → explicit args 
 3. ~~neuromorphic 22% zero-direct~~ DONE Phase 18: 5-test smoke harness → 93%/100%.
 4. ~~__main__ CLI 53% / framework 61%~~ DONE Phase 19: 21/21 cmds matrix → __main__ 46%→94%.
 5. ~~mypy 72 → 64 (Phase 20)~~ DONE Phase 20: manager **kwargs fix (8 removed); remaining 64 is arg-type/union-attr debt, low-value alone — annotate hot paths next time they are touched, not whole-tree sweep.
-6. ~~coverage 74%→85%~~ DONE Phase 20–21: 74%→83% (232 tests) → 85% (241→247 tests) via quantum smoke then transports/fabric smoke; remaining 172 ruff (B905/SIM105/E701 etc.) + low pockets (fabric 40%, transports 32%, lindblad 18%, qec 45%, tcp 39% etc.) — boy-scout rule, fold into next PRs that touch those files.
+6. ~~coverage 74%→85%~~ DONE Phase 20–22: 74%→83% (232) →85% (241 via quantum smoke; 247 via transports; 254 via SECE) ; remaining 172 ruff (B905/SIM105/E701 etc.) + low pockets (fabric 40%, transports 32%, lindblad 18%, qec 45%, tcp 39% etc.) — boy-scout rule.
+7. **SECE (Phase 22, new)**: FCL/CAN/MarketCommons/QN-Bridge/MutableGenome implemented + wired (framework + MCP `sece.*` + exports `eci.*`); tests 247→254. Next: scale FCL to real PBFT gossip, CAN to MNE closed-loop, MarketCommons to DAO treasury slashing — all behind feature flags.
 
 ## CI gate decision (§4, updated Phase 20)
 

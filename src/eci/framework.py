@@ -188,6 +188,22 @@ class ECIFramework:
         self.emergency = EmergencyPowers(epoch_fn=lambda: self.continuum.epoch)
         self.challenger = Challenger(seed=self.config.experiment.random_seed)
         self.forecasters = ForecasterRegistry()
+        # SECE Phase 22: federated consciousness + calibration + market commons + qn-bridge + mutable genome
+        try:
+            from eci.bridges.quantum_neuromorphic import QuantumNeuromorphicBridge
+            from eci.consciousness.calibration_network import AwarenessCalibrationNetwork
+            from eci.consciousness.federated_ledger import FederatedConsciousnessLedger
+            from eci.market_commons import MarketCommons
+            from eci.protocol_vnext.genesis_evolution import MutableConstitution
+
+            self.fcl = FederatedConsciousnessLedger()
+            self.can = AwarenessCalibrationNetwork(agent_id=f"framework-can-{self.config.experiment.random_seed}")
+            self.market_commons = MarketCommons()
+            self.qn_bridge = QuantumNeuromorphicBridge()
+            self.mutable_constitution = MutableConstitution()
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("SECE wiring skipped: %s", exc)
+            self.fcl = self.can = self.market_commons = self.qn_bridge = self.mutable_constitution = None  # type: ignore
         # agent role needs mcp-relevant grants for pipeline auth
         try:
             self.authz.rbac.grant("agent-0", "agent")
@@ -593,6 +609,11 @@ class ECIFramework:
             "futarchy": _safe(self.futarchy.health),
             "mcp": _safe(self.mcp.health),
             "aik": _safe(self.aik_status),
+            "fcl": lambda: {"ok": True, **self.fcl.to_dict()} if getattr(self, "fcl", None) else {"ok": False},
+            "can": lambda: {"ok": True, **self.can.to_dict()} if getattr(self, "can", None) else {"ok": False},
+            "market_commons": lambda: {"ok": True, **self.market_commons.to_dict()} if getattr(self, "market_commons", None) else {"ok": False},
+            "qn_bridge": lambda: {"ok": True, "F": float(self.qn_bridge.free_energy_contribution().item())} if getattr(self, "qn_bridge", None) else {"ok": False},
+            "mutable_constitution": lambda: {"ok": True, **self.mutable_constitution.to_dict()} if getattr(self, "mutable_constitution", None) else {"ok": False},
         }
 
     async def workflow_demo(self) -> dict[str, Any]:

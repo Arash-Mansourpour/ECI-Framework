@@ -1,4 +1,4 @@
-"""ECI Framework v7.1 command-line interface.
+"""ECI Framework v7.2 command-line interface.
 
 Subcommands
 -----------

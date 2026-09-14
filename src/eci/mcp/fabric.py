@@ -37,7 +37,7 @@ def build_default_registry(framework: Any, registry=None):
         from eci.mcp.schema import build_input_schema
         reg.register(McpTool(name=name, description=desc, handler=fn,
                              inputSchema=build_input_schema(params, **{k: v for k, v in kw.items() if k in ("required", "descriptions", "defaults", "enums")}),
-                             version="6.1.0",
+                             version=kw.get("version", "6.1.0"),
                              capabilities=kw.get("capabilities", []),
                              cost=kw.get("cost", 1.0),
                              mutating=kw.get("mutating", False),
@@ -409,11 +409,88 @@ def build_default_registry(framework: Any, registry=None):
     T("ever.proof", "Seal/verify proof-carrying receipts", {"op": "str"}, _proof, cost=1.0, mutating=True)
     reg.register(_MT(name="ever.mapek", description="Autonomic MAPE-K cycle",
                      handler=_mapek, inputSchema=_B({"metrics": "dict"}),
-                     version="7.1.0", cost=2.0, mutating=True), overwrite=True)
+                     version="7.2.0", cost=2.0, mutating=True), overwrite=True)
     T("ever.continuum", "Snapshot/verify/story of temporal continuity", {"op": "str"}, _continuum, cost=1.0, mutating=True)
     T("ever.compat", "Fail-closed interface compat check", {"interface": "str"}, _compat, cost=1.0)
     T("ever.futura", "Futarchy/sortition/emergency ops", {"op": "str"}, _futura, cost=2.0, mutating=True)
     T("ever.redteam", "Falsify/forecast/contradiction probes", {"op": "str"}, _redteam, cost=1.0, mutating=True)
+
+    # -- SECE Phase 22: federated consciousness ledger, calibration network, market commons, qn-bridge, mutable genome
+    def _fcl(args, ctx):
+        fcl = getattr(F, "fcl", None)
+        if fcl is None:
+            return {"ok": False, "error": "fcl unavailable"}
+        op = str(args.get("op", "propose"))
+        if op == "propose":
+            import torch
+            tpm = torch.eye(4) * float(args.get("phi", 0.5))
+            claim = fcl.propose(str(args.get("claimant", "mcp")), tpm)
+            return {"claim": claim.to_dict()}
+        if op == "verify":
+            import torch
+            tpm = torch.eye(4) * float(args.get("phi", 0.5))
+            ok = fcl.verify(str(args.get("claim_id", "")), str(args.get("verifier", "verifier")), tpm)
+            return {"verified": ok}
+        if op == "commit":
+            return fcl.commit(str(args.get("claim_id", "")), int(args.get("n_nodes", 3)))
+        return fcl.to_dict()
+
+    def _can(args, ctx):
+        can = getattr(F, "can", None)
+        if can is None:
+            return {"ok": False, "error": "can unavailable"}
+        op = str(args.get("op", "cycle"))
+        if op == "calibrate":
+            import numpy as np
+            rest = [np.random.randn(32, 4) for _ in range(2)]
+            return can.calibrate(rest)
+        return can.cycle(np.random.randn(32, 4))
+
+    def _market(args, ctx):
+        mc = getattr(F, "market_commons", None)
+        if mc is None:
+            return {"ok": False, "error": "market_commons unavailable"}
+        op = str(args.get("op", "publish"))
+        if op == "challenge":
+            return mc.challenge(str(args.get("fact_id", "")), str(args.get("challenger", "bob")), str(args.get("evidence", "counter")))
+        fact = mc.publish(str(args.get("statement", "ECI is conscious")), str(args.get("publisher", "mcp")), float(args.get("confidence", 0.7)))
+        return {"fact_id": fact.fid}
+
+    def _qn(args, ctx):
+        qn = getattr(F, "qn_bridge", None)
+        if qn is None:
+            return {"ok": False, "error": "qn_bridge unavailable"}
+        import torch
+        obs = torch.randn(2, 4)
+        g = qn.update(obs)
+        return {"mu": g.mu.tolist(), "F": float(qn.free_energy_contribution().item())}
+
+    def _genome(args, ctx):
+        gc = getattr(F, "mutable_constitution", None)
+        if gc is None:
+            return {"ok": False, "error": "mutable_constitution unavailable"}
+        op = str(args.get("op", "propose"))
+        if op == "propose":
+            p = gc.propose(str(args.get("mutation", "Preserve test")), str(args.get("proposer", "mcp")))
+            return p.to_dict()
+        if op == "twin":
+            return gc.twin_test(str(args.get("id", "")), float(args.get("improvement", 0.1)))
+        if op == "canary":
+            return {"ok": gc.canary(str(args.get("id", "")), bool(args.get("success", True)))}
+        if op == "vote":
+            gc.vote(str(args.get("id", "")), str(args.get("voter", "v")), bool(args.get("approve", True)))
+            return {"voted": True}
+        if op == "commit":
+            return gc.commit(str(args.get("id", "")), int(args.get("quorum", 2)))
+        if op == "rollback":
+            return gc.rollback()
+        return gc.to_dict()
+
+    T("sece.fcl", "Federated Consciousness Ledger (Phi claims + quorum)", {"op": "str"}, _fcl, cost=1.0, mutating=True, version="7.2.0")
+    T("sece.can", "Awareness Calibration Network cycle/probe", {"op": "str"}, _can, cost=1.0, mutating=True, version="7.2.0")
+    T("sece.market", "MarketCommons publish/challenge", {"op": "str"}, _market, cost=1.0, mutating=True, version="7.2.0")
+    T("sece.qn", "Quantum-Neuromorphic bridge (SNN + F)", {"op": "str"}, _qn, cost=1.0, mutating=True, version="7.2.0")
+    T("sece.genome", "Mutable Constitution propose/twin/canary/vote/commit/rollback", {"op": "str"}, _genome, cost=1.0, mutating=True, version="7.2.0")
 
     # -- Unification layer (AIK Phase 5): every StateContributor adapter as
     #    posterior/update/free_energy tools on ONE shared GenerativeState

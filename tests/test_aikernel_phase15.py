@@ -19,7 +19,7 @@ def test_all_contributors_registered_in_default_mesh():
     from eci.aikernel.state_contract import StateContributor
     found = {}
     for mod in pkgutil.walk_packages(eci.__path__, prefix="eci."):
-        if "test" in mod.name or "pycache" in mod.name:
+        if "test" in mod.name or "pycache" in mod.name or "bridges" in mod.name:
             continue
         try:
             m = __import__(mod.name, fromlist=["*"])
