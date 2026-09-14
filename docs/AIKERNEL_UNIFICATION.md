@@ -1,8 +1,9 @@
-# AIK Unification — consolidated record (Phases 1–10)
+# AIK Unification — consolidated record (Phases 1–17, v7.1.0)
 
 One shared objective (`F = complexity + inaccuracy`), one contract
 (`StateContributor`: posterior / update / free_energy_contribution),
 one ledger (`KernelLedger` sums shares), one transport (MCP `aik.*`).
+Version source: `src/eci/version.py` (`__version__ = 7.1.0`).
 
 ## Contract
 
@@ -35,8 +36,7 @@ belief functors (exact round-trip) · `StateContributor` protocol +
 | 15 | coverage closure + snapshots | all 8 contributors registered; snapshot JSON round-trips |
 | 16 | NaN guard (in-flight hardening) | `require_finite` on all 8 updates: silent poison + eigh crash become loud ValueError |
 | 17 | codebase honesty pass | per-package audit + validation ledger + ratchet gate; real bugs fixed (see report) |
-| 16 | NaN guard (in-flight hardening) | `require_finite` on all 8 updates: silent poison + eigh crash become loud ValueError |
-| 17 | codebase honesty pass | per-package audit + validation ledger + ratchet gate; real bugs fixed (see report) |
+| 18 | Release hygiene (this phase) | license/version/README/CI/CITATION consistent; 7.1.0-PROTOCOL-vNext |
 
 ## PyPhi cross-check (Phase 10 — first EXTERNAL validation)
 

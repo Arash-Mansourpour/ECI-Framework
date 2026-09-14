@@ -1,6 +1,14 @@
 # Validation status beyond consciousness (Phase 17 companion to
 # `src/eci/consciousness/LIMITATIONS.md`)
 
+> **License change note (Phase 18, 2026-09-14):** The ECI Framework was
+> archived at **v5.9.0** on Zenodo under the **MIT License**. From
+> **v6.0.0 onward** (current: `src/eci/version.py` **7.1.0**) all releases
+> are governed by the **ECI Non-Commercial License v1.0** (`LICENSE` at
+> repo root). MIT terms apply only to the v5.9.0 Zenodo artifact; later
+> versions require written permission for commercial use. See `CHANGELOG.md`
+> for the full version/term table.
+
 Same rule: numbers below are properties of models and procedures, not
 measurements of the world, unless stated otherwise. Each section says
 what would change its status.

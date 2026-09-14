@@ -409,7 +409,7 @@ def build_default_registry(framework: Any, registry=None):
     T("ever.proof", "Seal/verify proof-carrying receipts", {"op": "str"}, _proof, cost=1.0, mutating=True)
     reg.register(_MT(name="ever.mapek", description="Autonomic MAPE-K cycle",
                      handler=_mapek, inputSchema=_B({"metrics": "dict"}),
-                     version="7.0.0", cost=2.0, mutating=True), overwrite=True)
+                     version="7.1.0", cost=2.0, mutating=True), overwrite=True)
     T("ever.continuum", "Snapshot/verify/story of temporal continuity", {"op": "str"}, _continuum, cost=1.0, mutating=True)
     T("ever.compat", "Fail-closed interface compat check", {"interface": "str"}, _compat, cost=1.0)
     T("ever.futura", "Futarchy/sortition/emergency ops", {"op": "str"}, _futura, cost=2.0, mutating=True)

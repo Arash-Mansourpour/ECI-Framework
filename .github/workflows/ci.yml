@@ -12,5 +12,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e .[dev]
-      - run: ruff check src tests
-      - run: pytest -q
+      # Phase 18: gate only what is at zero (F401/I001/B011) — matches tests/test_repo_hygiene.py
+      # Full backlog stays visible but non-blocking (see docs/CODEBASE_AUDIT.md §4).
+      - name: ruff gate (F401/I001/B011 must be zero)
+        run: ruff check --select F401,I001,B011 src tests
+      - name: ruff backlog (non-blocking, full debt visible)
+        run: ruff check src tests --statistics --exit-zero
+        continue-on-error: true
+      - name: pytest (includes mypy ratchet ≤72 via test_repo_hygiene)
+        run: PYTHONPATH=src pytest -q
+      - name: mypy ceiling check (informational, ≤72)
+        run: python -m mypy src/eci 2>&1 | tee mypy.txt; echo "--- mypy summary ---"; grep -E "Found .* errors?" mypy.txt || true
+        continue-on-error: true

@@ -84,7 +84,7 @@ def _filter_options(contributor: Any, options: dict[str, Any]) -> dict[str, Any]
 
 
 def register_contributor(registry: Any, namespace: str, contributor: Any,
-                         version: str = "7.0.0") -> list[str]:
+                         version: str = "7.1.0") -> list[str]:
     """Expose posterior/update/free_energy with the shared schema."""
     from eci.mcp.registry import McpTool
     base = f"aik.{namespace}"

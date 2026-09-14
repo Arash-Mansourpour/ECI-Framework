@@ -14,6 +14,7 @@ from eci import precog as precog
 
 # Protocol-0 + immune + frontier systems
 from eci import protocol0 as protocol0
+from eci import protocol_vnext as protocol_vnext
 
 # v6.1 deep systems (agents / data-plane / treasury / eval / supply / mcp)
 from eci.agents import AgentLoop, Agents, EpisodicMemory, ToolRegistry, VectorMemory
@@ -324,6 +325,7 @@ __all__ = [
     "CompatRegistry", "Interface",
     "Futarchy", "Sortition", "EmergencyPowers",
     "Challenger", "ForecasterRegistry", "contradiction_scan",
+    "protocol_vnext",
     "PQCSuite",
     "HashBasedSigner",
     "derive_key",

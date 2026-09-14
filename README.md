@@ -1,5 +1,5 @@
-# 🌌 ECI Framework v7.0
-## Eternal Codex Infinitus — EVERLASTING Continuance
+# 🌌 ECI Framework v7.1
+## Eternal Codex Infinitus — EVERLASTING + PROTOCOL-vNext
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-7.0.0--EVERLASTING-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
+[![Version](https://img.shields.io/badge/version-7.1.0--PROTOCOL--vNext-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Status](https://img.shields.io/badge/status-experimental-orange.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![License](https://img.shields.io/badge/license-ECI%20Non--Commercial-red.svg)](LICENSE)
@@ -50,13 +50,14 @@ operate inside a single continuously verifiable architecture.
 
 ---
 
-# ✨ v7.0 — EVERLASTING Continuance
+# ✨ v7.1 — EVERLASTING + PROTOCOL-vNext
 
-Version 7.0 introduces the **EVERLASTING Continuance** layer: a collection of
-mechanisms designed around verification, continuity, controlled evolution,
-resilience, and long-horizon autonomous operation.
+Version 7.1 extends **EVERLASTING Continuance** (v7.0) with the **PROTOCOL-vNext**
+federated nervous system. v7.0 introduced verifiable continuance; v7.1 adds
+the evolving collective intelligence protocol (genesis, identity, capability,
+memory, truth, reasoning, collective, evolution).
 
-### 🚀 New in v7.0
+### 🚀 New in v7.1
 
 | System | Capability |
 |---|---|
@@ -141,8 +142,31 @@ Every subsystem optimizes one shared objective, variational free energy
 | 15 | Coverage closure + snapshots (no new adapter) | all 8 contributors registered; snapshot JSON round-trips |
 | 16 | Hardening + operability (no new adapter) | NaN guard on all updates; mesh in status + CLI (`eci aik`) |
 | 17 | Codebase honesty pass (this phase) | Per-package audit: `docs/CODEBASE_AUDIT.md` · validation ledger: `docs/VALIDATION_STATUS.md` · full record: `docs/AIKERNEL_UNIFICATION.md` |
-| 16 | Hardening + operability (no new adapter) | NaN guard on all updates; mesh in status + CLI (`eci aik`) |
-| 17 | Codebase honesty pass (this phase) | Per-package audit: `docs/CODEBASE_AUDIT.md` · validation ledger: `docs/VALIDATION_STATUS.md` · full record: `docs/AIKERNEL_UNIFICATION.md` |
+
+# 🧬 ECI Protocol vNext — Evolving Collective Intelligence
+
+> **Build the nervous system for independent intelligences: let them remember, reason, verify, learn and evolve together; preserve truth and provenance; preserve the Genesis; and enable the federation itself to become more capable than any intelligence within it.**
+
+The new federated nervous system is live under `src/eci/protocol_vnext/` (`eci protocol --nodes 3`):
+
+| Layer | Module | Spec |
+|---|---|---|
+| Genesis | `genesis.py` + `genome.py` | ECI-GENESIS + ECI-GENOME (H(G0…Gn), beacon `eci://genesis/architect`) |
+| Identity | `identity.py` | ECI-ID lifecycle DISCOVER→EVOLVE, Architect-stamped |
+| Capability | `capability.py` + `model_fabric.py` | ECI-CAP dynamic vectors (declared→observed→verified) + `T(n,c,x)` + adaptive router |
+| Messaging | `messaging.py` | ECI-MSG 13 types, signed envelopes, swappable transports |
+| Cognitive | `cognitive.py` | ECI-COG PERCEIVE→ENCODE loop + 9 faculties + gating (graceful degradation) |
+| Memory | `memory.py` | ECI-MEM 5 layers + salience/forgetting + Dream Engine |
+| Ontology | `ontology.py` | ECI-KNOW propose-only evolution + KnowledgeState ΔK |
+| Epistemic | `epistemic.py` | ECI-TRUTH Evidence Keeper + Truth Guardian (veto-grade) + 6 confidence levels |
+| Reasoning | `reasoning.py` | Multi-dimensional landscape + Pareto frontier + predictive world model |
+| Collective | `collective.py` | ECI-LEARN OutcomeReceipt + Team Intelligence (CIG/EG/TS) + learning loop |
+| Evolution | `evolution.py` | ECI-EVOLVE governed evolution + Skill Compiler (intelligence compression) |
+| Resilience | `resilience.py` | Graceful degradation + substrate independence + experimental lab |
+
+> Honesty ledger for all consciousness metrics (what each number is and
+> is not validated against): `src/eci/consciousness/LIMITATIONS.md` —
+> read before quoting any Phi value.
 
 > Start here, in order: [audit](docs/AIKERNEL_AUDIT.md) (what conforms
 > and what deliberately doesn't) → [unification record](docs/AIKERNEL_UNIFICATION.md)
@@ -151,6 +175,118 @@ Every subsystem optimizes one shared objective, variational free energy
 > + [consciousness ledger](src/eci/consciousness/LIMITATIONS.md) (what each
 > number is and is not validated against — read before quoting any metric).
 
-> Honesty ledger for all consciousness metrics (what each number is and
-> is not validated against): `src/eci/consciousness/LIMITATIONS.md` —
-> read before quoting any Phi value.
+---
+
+## Install & run
+
+```bash
+# Python ≥3.10, torch CPU recommended for smoke
+pip install -e .[dev]
+
+# one-line sanity
+PYTHONPATH=src python -m eci info
+PYTHONPATH=src python -m eci demo          # quantum + consciousness + activation + network
+PYTHONPATH=src pytest -q                   # 209 tests (audit) / 228 collected incl. hygiene; add --ignore=tests/test_repo_hygiene.py for fast loop
+
+# everlasting pillars
+PYTHONPATH=src python -m eci ever          # caps / watchtower / continuum / mapek / compat
+PYTHONPATH=src python -m eci health        # JSON status; --serve for :8777
+PYTHONPATH=src python -m eci workflow      # DAG slice (bus + stream + provenance)
+
+# federated nervous system (v7.1)
+PYTHONPATH=src python -m eci protocol --nodes 3
+PYTHONPATH=src python -m eci aik describe  # unification mesh observability
+
+# optional extras
+pip install -e .[viz]      # matplotlib for plots
+pip install -e .[qec]      # stim + pymatching for topological QEC trials
+pip install -e .[pqc]      # liboqs for ML-KEM/ML-DSA
+```
+
+Requires `torch>=2.5`, `numpy>=1.26`, `scipy>=1.14`, `pyyaml>=6.0`,
+`cryptography>=41`. See `pyproject.toml` for full extras (`paper`, `eeg`,
+`validation`).
+
+---
+
+## CLI reference
+
+Every subcommand is defined in `src/eci/__main__.py:341` and verified here:
+
+| Command | Purpose | Key args |
+|---|---|---|
+| `eci info` | static framework info (JSON) | — |
+| `eci demo` | end-to-end smoke (quantum + consciousness + activation + network) | — |
+| `eci quantum` | quantum-supremacy capability suite | — |
+| `eci consciousness` | IIT + GNWT + FEP consciousness analysis | `--steps 256 --neurons 32 --seed 0` |
+| `eci network` | autonomous network + DAO + consensus simulation | `--joins 3 --proposals 2` |
+| `eci field` | unified H_ECI field energies | `--qubits 4` |
+| `eci mind` | Orch-OR decoherence audit | — |
+| `eci activate` | Sovereign Architect activation protocol | — |
+| `eci benchmark` | timing benchmark report | — |
+| `eci health` | health JSON / HTTP probe | `--serve --port 8777 --once` |
+| `eci system` | v6 hyper-architecture health snapshot | — |
+| `eci workflow` | v6 DAG slice (bus + stream + provenance + audit) | — |
+| `eci mcp` | Omniverse MCP fabric (stdio \| http) | `--transport stdio --host 127.0.0.1 --port 8899 --list` |
+| `eci agent` | ReAct agent run with guardrails | `--goal "demo goal" --budget 50 --steps 4` |
+| `eci eval` | golden regression gates | — |
+| `eci think` | AGI cognitive beat (charter+imagine+plan) | `--goal act --stakes 0.5 --action actuate --precog none --obs "" --seed 0` |
+| `eci dream` | sleep consolidation cycle | `--episodes 8 --seed 0` |
+| `eci morph` | living-graph evolve steps | `--steps 3` |
+| `eci ever` | everlasting continuance report (caps/proofs/continuum/mapek/compat) | — |
+| `eci aik` | unification mesh observability (read-only) | `shares \| total \| describe` |
+| `eci protocol` | ECI Protocol vNext demo (federated nervous system) | `--nodes 3` |
+
+Run `eci <cmd> --help` for full flags; `eci --version` prints `src/eci/version.py`.
+
+---
+
+## Quantum modules
+
+| Module | Physics / capability | Key API |
+|---|---|---|
+| `operator` | HS inner, spectral `U=exp(-iHt)`, Heisenberg, Pauli basis | `matrix_exponential_hermitian`, `is_unitary` |
+| `gates` | I/X/Y/Z/H/S/T, RX/RY/RZ, CNOT/CZ/SWAP/CRZ/CRX, `controlled` (big-endian q0=MSB) | `H`, `CNOT`, `controlled` |
+| `statevector` | `einsum` simulator, autograd-safe, shots | `StatevectorSimulator`, `expectation_pauli` |
+| `density` | fidelity, trace distance, `partial_trace`, CPTP | `von_neumann_entropy`, `apply_kraus` |
+| `entanglement` | Schmidt, Wootters concurrence, negativity | `concurrence`, `entanglement_of_formation` |
+| `channels` | depolarizing, bit/phase-flip, amplitude/phase damping | `NoiseModel`, `phase_damping` |
+| `lindblad` | RK4 + projection | `lindblad_evolve` |
+| `hamiltonian` | `PauliSum` + Trotter via CNOT ladder + RZ | `PauliSum`, `from_maxcut_edges` |
+| `algorithms` | QFT/Grover/QPE/VQE/QAOA | `grover_search`, `vqe`, `qaoa_maxcut` |
+| `information` | Holevo, coherent info, CHSH≈2.828, teleport | `chsh_value`, `teleportation_fidelity` |
+| `qec` | BitFlip/Shor (inverses), syndromes | `BitFlipCode.run_trial`, `ShorCode` |
+| `topological` | Surface/Bivariate-Bicycle, MWPM (Hungarian), shot trials | `SurfaceCode`, `BivariateBicycleCode`, `run_trials` |
+| `tensor_network` | canonical MPS, TEBD, `bond_benchmark` | `mps_truncate`, `tebd_step` |
+| `metrology` | SQL/HL, QFI, Ramsey | `ghz_phase_qfi`, `ramsey_sensitivity` |
+| `unified_field` | `H_ECI = H_Q+H_C+H_int+H_Φ+H_G` | `eci_unified_hamiltonian`, `eci_hamiltonian_expectation` |
+| `qnn` | `RY(tanh)` + CNOT ring, `<Z>` readout | `QuantumLayer`, `QuantumNeuralNetwork` |
+| `backend` | abstraction + transpiler + ZNE | `SimBackend`, `transpile`, `zne_extrapolate` |
+| `mitigation` | ZNE + PEC + noisy scheduler | `zne_means`, `pec_mitigate`, `NoisyVQEContributor` |
+
+Conventions: big-endian throughout, `complex64` default, CPU-first with CUDA fallback via `core/device.py`.
+
+---
+
+## Tests & validation
+
+Ground truth is **`docs/CODEBASE_AUDIT.md` (Phase 17, 2026-09-11)** and
+**`docs/VALIDATION_STATUS.md` + `src/eci/consciousness/LIMITATIONS.md`**:
+
+- **209 tests green** (incl. 2 ratchet tests), **74% total statement coverage**
+  (`coverage run -m pytest` → 16520 stmts, 3243 miss on 2026-09-14 re-run = 80% on this machine; audit 74% is the published baseline until re-audited)
+- **168 ruff findings** post-cleanup (down from 2267; remaining: B905×46, SIM105×19, E701/E702, E741×13, B007×11, N-rules — style debt, boy-scout rule per audit)
+- **72 mypy errors** in 33 files (down from 76; mostly `arg-type` 20 + `union-attr` 14; see audit for per-package table)
+- **CI gate**: `F401+I001+B011` must stay **zero** repo-wide (`tests/test_repo_hygiene.py`); mypy ceiling **≤72**; full backlog reported non-blocking
+- **Validation ledger**: `docs/VALIDATION_STATUS.md` describes what each number is and is NOT validated against (precog/immune heuristics, twin/morph fitness, LMSR prices, redteam probes, drift PSI/KS, neuromorphic 22% etc. — read before quoting any metric)
+- **Consciousness ledger**: `src/eci/consciousness/LIMITATIONS.md` — none of the Phi numbers is a measurement of subjective experience; IIT 4.0 repertoires cross-validated vs PyPhi 1.2.0 to 1e-9 (Phase 10) but Φ magnitudes remain cross-version (IIT 3.0 EMD vs 4.0 composition)
+
+Run: `PYTHONPATH=src pytest -q` and `python -m mypy src/eci` and
+`python -m ruff check src tests` (or `--select F401,I001,B011` for the gate).
+
+> Full per-package table: [`docs/CODEBASE_AUDIT.md`](docs/CODEBASE_AUDIT.md) ·
+> unification record: [`docs/AIKERNEL_UNIFICATION.md`](docs/AIKERNEL_UNIFICATION.md) ·
+> audit: [`docs/AIKERNEL_AUDIT.md`](docs/AIKERNEL_AUDIT.md) ·
+> validation: [`docs/VALIDATION_STATUS.md`](docs/VALIDATION_STATUS.md) ·
+> consciousness limits: [`src/eci/consciousness/LIMITATIONS.md`](src/eci/consciousness/LIMITATIONS.md) ·
+> everlasting: [`docs/EVERLASTING.md`](docs/EVERLASTING.md)

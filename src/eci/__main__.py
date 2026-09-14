@@ -1,4 +1,4 @@
-"""ECI Framework v6 command-line interface.
+"""ECI Framework v7.1 command-line interface.
 
 Subcommands
 -----------
@@ -248,6 +248,96 @@ def cmd_aik(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_protocol(args: argparse.Namespace) -> int:
+    from eci.protocol_vnext.capability import CapabilityManifest, CapabilityVector
+    from eci.protocol_vnext.cognitive import CognitiveRuntime
+    from eci.protocol_vnext.collective import CollectiveLearningLoop, OutcomeReceipt
+    from eci.protocol_vnext.epistemic import EvidenceKeeper, TruthGuardian
+    from eci.protocol_vnext.evolution import GovernedEvolution
+    from eci.protocol_vnext.genesis import ArchitectBeacon, ConstitutionalGenome
+    from eci.protocol_vnext.identity import ECIIdentity, NodeLifecycle
+    from eci.protocol_vnext.memory import DreamEngine, LivingMemory
+    from eci.protocol_vnext.messaging import ECIMessage, MessageFabric
+    from eci.protocol_vnext.ontology import FederatedOntology
+    from eci.protocol_vnext.reasoning import ReasoningLandscape
+
+    beacon = ArchitectBeacon()
+    genome = ConstitutionalGenome()
+    nodes = [ECIIdentity.create() for _ in range(args.nodes)]
+    lifecycles = [NodeLifecycle(n) for n in nodes]
+    for lc in lifecycles:
+        # demo: auto-pass genesis (real verify would compare GENESIS_ROOT)
+        lc.verify_genesis(beacon.presence()["genesis_root"])
+        lc.genesis_ok = True
+        lc.genome_ok = genome.verify(genome.root)
+        lc.advance(check=False)
+        lc.advance(check=False)
+
+    fabric = MessageFabric()
+    for n in nodes:
+        fabric.subscribe(n.node_id, ["TASK", "RESULT"])
+
+    manifests = [CapabilityManifest(node_id=n.node_id, capabilities=CapabilityVector(python=0.7 + 0.2 * (i % 2))) for i, n in enumerate(nodes)]
+    mem = LivingMemory()
+    mem.store({"task": "federated research", "result": "preliminary"}, kind="episodic", salience=0.8)
+    for _ in range(2):
+        msg = ECIMessage(type="TASK", sender=nodes[0].node_id, recipient=nodes[1].node_id if len(nodes) > 1 else nodes[0].node_id, payload={"task": "research", "q": "ECI nervous system"})
+        msg.sign()
+        fabric.publish(msg)
+
+    cog = CognitiveRuntime()
+    cog.cycle({"perception": "federated task", "nodes": len(nodes)}, task="research", complexity=0.6)
+
+    onto = FederatedOntology()
+    prop = onto.propose("FederatedNervousSystem", "Mesh of capability-routed agents", proposer=nodes[0].node_id)
+    if len(nodes) > 2:
+        onto.verify(prop.id, nodes[1].node_id, "verify")
+        onto.verify(prop.id, nodes[2].node_id, "verify")
+
+    ek = EvidenceKeeper()
+    claim = ek.assert_claim("Federated nervous system improves CIG", source=nodes[0].node_id, evidence=["Smith Federated Agents paper", "ECI benchmark"])
+    ek.add_evidence(claim.id, "Observed CIG 1.4 in twin replay", supporting=True)
+    guardian = TruthGuardian()
+    verdict = guardian.evaluate(claim)
+
+    landscape = ReasoningLandscape(problem="task assignment", dimensions=["cost", "quality", "latency"])
+    landscape.propose({"cost": 0.3, "quality": 0.9, "latency": 0.4})
+    landscape.propose({"cost": 0.1, "quality": 0.7, "latency": 0.2})
+    landscape.propose({"cost": 0.5, "quality": 0.95, "latency": 0.6})
+
+    loop = CollectiveLearningLoop()
+    receipt = OutcomeReceipt(task="federated task", agents=[n.node_id for n in nodes[:2]], predicted_success=0.7, actual_quality=0.85, cost=0.05, agreement=0.9, verifiers=[nodes[-1].node_id] if len(nodes) > 2 else [])
+    loop.ingest(receipt)
+
+    evo = GovernedEvolution()
+    cand = evo.reflect({"task": "routing", "error": "slow path"})
+    evo.twin_test(cand.id, simulated_improvement=0.15)
+    evo.canary(cand.id, success=True)
+    evo.govern(cand.id, approved=True)
+
+    dream = DreamEngine()
+    dream_result = dream.consolidate(mem)
+
+    _print_json({
+        "beacon": beacon.presence(),
+        "genome_root": genome.root[:16],
+        "nodes": [n.node_id[:16] for n in nodes],
+        "lifecycle": lifecycles[0].to_dict(),
+        "manifests": [m.to_dict() for m in manifests[:2]],
+        "fabric": fabric.stats(),
+        "cognitive": cog.health(),
+        "memory": mem.stats(),
+        "dream": dream_result,
+        "ontology": onto.to_dict(),
+        "epistemic": ek.to_dict(),
+        "truth_verdict": verdict,
+        "pareto": landscape.pareto(),
+        "collective": loop.to_dict(),
+        "evolution": evo.to_dict(),
+    })
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="eci",
@@ -317,6 +407,10 @@ def build_parser() -> argparse.ArgumentParser:
     aik_p = sub.add_parser("aik", help="unification mesh observability (read-only)")
     aik_p.add_argument("what", choices=["shares", "total", "describe"], default="total", nargs="?")
 
+    # ECI Protocol vNext
+    pv = sub.add_parser("protocol", help="ECI Protocol vNext demo (federated nervous system)")
+    pv.add_argument("--nodes", type=int, default=3, help="nodes in demo federation")
+
     return parser
 
 
@@ -346,6 +440,7 @@ def main(argv: list[str] | None = None) -> int:
         "morph": cmd_morph,
         "ever": cmd_ever,
         "aik": cmd_aik,
+        "protocol": cmd_protocol,
     }
     handler = handlers.get(args.command)
     if handler is None:
