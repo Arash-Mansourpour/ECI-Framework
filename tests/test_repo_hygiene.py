@@ -1,11 +1,11 @@
-"""Repo hygiene ratchet (Phase 17 §4, Phase 18 version pin): lock today's wins.
+"""Repo hygiene ratchet (Phase 17 §4, Phase 18 version pin, Phase 20 mypy 64): lock today's wins.
 
 What this gates: F401 (unused imports), I001 (import sorting), B011
 (assert-False) are ZERO repo-wide — this test fails if any come back.
-Everything else (UP006/UP035 modernization ~1700 sites, mypy 72 errors,
-E741/B007 style) is RECORDED in docs/CODEBASE_AUDIT.md as backlog,
-deliberately NOT gated: retroactive full-tree gating would force a
-disruptive clean sweep for zero behavior gain.
+Everything else (UP006/UP035 modernization ~1700 sites, mypy 64 errors
+(down from 72 via manager **kwargs fix), E741/B007 style) is RECORDED in
+docs/CODEBASE_AUDIT.md as backlog, deliberately NOT gated: retroactive
+full-tree gating would force a disruptive clean sweep for zero behavior gain.
 
 Phase 18 addition: README version must match src/eci/version.py
 (single source of truth, 7.1.0-PROTOCOL-vNext). The gate tracks
@@ -41,10 +41,8 @@ def test_no_new_f401_i001_b011():
 
 
 def test_mypy_total_does_not_grow():
-    """Ratchet on the mypy total (72 at Phase 17 audit, down from 76 after
-    fixing the Envelope collision, pqc seed annotation, and 2 stale
-    type-ignores): new errors fail, fixes just work. Slow (~1-2 min) —
-    runs the real checker, no mocks."""
+    """Ratchet on the mypy total (64 at Phase 20, down from 72 via manager fix and 76 originally
+    after Envelope collision): new errors fail, fixes just work. Slow (~1-2 min) — runs the real checker."""
     try:
         out = subprocess.run([sys.executable, "-m", "mypy", "src/eci"],
                              capture_output=True, text=True, timeout=590)
@@ -54,7 +52,7 @@ def test_mypy_total_does_not_grow():
         return
     m = re.search(r"Found (\d+) errors?", out.stdout + out.stderr)
     assert m, "could not parse mypy output"
-    assert int(m.group(1)) <= 72, out.stdout[-2000:]
+    assert int(m.group(1)) <= 64, out.stdout[-2000:]
 
 
 def test_readme_version_matches_code():

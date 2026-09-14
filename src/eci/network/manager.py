@@ -80,15 +80,13 @@ class AutonomousNetworkManager:
         }
 
     def _make_consensus(self, n_nodes: int) -> PBFTConsensus:
-        kwargs = {
-            "n_nodes": max(1, n_nodes),
-            "f_tolerance": 0 if n_nodes == 1 else None,
-            "byzantine_rate": self.config.byzantine_rate,
-            "consensus_seed": self.config.consensus_seed,
-        }
+        n = max(1, n_nodes)
+        f_tol = 0 if n_nodes == 1 else None
+        byz = self.config.byzantine_rate
+        seed = self.config.consensus_seed
         if self.consensus_mode == "wbft":
-            return WBFTConsensus(**kwargs)
-        return PBFTConsensus(**kwargs)
+            return WBFTConsensus(n_nodes=n, f_tolerance=f_tol, byzantine_rate=byz, consensus_seed=seed)
+        return PBFTConsensus(n_nodes=n, f_tolerance=f_tol, byzantine_rate=byz, consensus_seed=seed)
 
     # ------------------------------------------------------------------
     async def _measure_consciousness(self, seed: int = 0, n_neurons: int = 64):

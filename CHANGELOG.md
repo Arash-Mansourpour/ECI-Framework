@@ -34,6 +34,7 @@ is `src/eci/version.py`.
 - `eci protocol --nodes 3` demo; `FRAMEWORK_VERSION = 7.1.0-PROTOCOL-vNext`.
 - Version source is `src/eci/version.py` (`__version__ = 7.1.0`).
 - **Phase 19 (2026-09-14, coverage closure)**: `learning` 41%→97% (NAS forward/derive/search), `__main__` 46%→94% (21/21 CLI light-run matrix), total 74%→83% (232 tests, 172 ruff, 72 mypy). Backlog items 2–4 closed; see `docs/CODEBASE_AUDIT.md` Phase 19.
+- **Phase 20 (2026-09-14, hot-path mypy + quantum smoke)**: `network/manager` **kwargs→explicit (mypy 72→64), `quantum` 57%→68% (QFT/Grover/QPE/VQE/QAOA/operator/qec/statevector smoke), total 83%→85% (241 tests). Backlog item 5 (mypy) and 85% milestone hit; 172 ruff remains boy-scout.
 
 ## [7.0.0] — 2026-09 — EVERLASTING Continuance
 
