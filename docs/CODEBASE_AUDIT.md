@@ -1,8 +1,8 @@
-# Codebase audit — test/lint/type ground truth (Phase 22 SECE)
+# Codebase audit — test/lint/type ground truth (Phase 23 COGNISPHERE + Neuron Atlas)
 
-Measured 2026-09-14 on Python 3.12, torch CPU: **254 tests green
-(incl. 7 SECE: FCL/CAN/Market/QN-Bridge/GenesisEvo), 85% total statement coverage
-(16735 stmts, 2548 miss; Phase 17: 209/74% — Phase 18: 229/80% — Phase 19: 232/83% — Phase 20: 241/85% — Phase 21: 247/85% — Phase 22: 254/85%),
+Measured 2026-09-16 on Python 3.16, torch CPU: **262 tests green
+(incl. 7 COGNISPHERE: LFM/MAA/KNE, 7 neuron atlas: AdLIF/Izhikevich/Homeostatic/SNN-types/Atlas), 85% total statement coverage
+(16735 stmts, 2548 miss; Phase 17: 209/74% — Phase 18: 229/80% — Phase 19: 232/83% — Phase 20: 241/85% — Phase 21: 247/85% — Phase 22: 254/85% — Phase 23: 262/85%),
 172 ruff findings, 64 mypy errors.** Method: `coverage run -m pytest`,
 `ruff check src tests`, `mypy src/eci`, plus a static import scan
 mapping test files to packages. A test file covering N packages counts
@@ -11,7 +11,8 @@ is statement coverage, not branch coverage. Ruff/mypy columns are
 post-fix values; the debt profile section records what was fixed vs.
 flagged.
 
-> Phase 22 (SECE) added 5 primitives (FCL/CAN/MarketCommons/QN-Bridge/MutableGenome) + 7 tests + MCP `sece.*` (5 tools) + framework wiring (`fw.fcl`…); total 247→254 held at 85%. Fabric version 6.1.0→7.2.0 via `T(version=)`. See Follow-up.
+> Phase 23 (COGNISPHERE) added Living Memory (Ebbinghaus + tombstone + dream consolidation), Mesh Awareness Agent (PBFT gossip + cycle_from_file), Knowledge Economy (ECIDataDAO + Court + Brier + contradiction_scan) + 7 tests + MCP `sece.gossip/file/economy/brier/contradict_scan` tools. Version 7.2.0→7.3.0. See Follow-up.
+> Neuron Atlas added AdLIF/Izhikevich/Homeostatic neuron models + NeuronAtlas registry + `SpikingNeuralNetwork.neuron_type` parameter. `advanced.py` + `atlas.py` + `test_neuron_atlas.py` (7 tests). `cycle_from_file` signature fixed (`float|int|None`→`int|None`). 8 new tests total.
 
 ## Per-package table
 

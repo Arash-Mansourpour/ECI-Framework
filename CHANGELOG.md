@@ -21,7 +21,15 @@ is `src/eci/version.py`.
 | ≤ 5.9.0 | MIT | Last MIT release, archived on Zenodo |
 | 6.0.0 – 7.0.0 | ECI Non-Commercial v1.0 | `LICENSE` file already ECI NC, `pyproject.toml` still said MIT (drift, fixed Phase 18) |
 | 7.1.0 | ECI Non-Commercial v1.0 | All metadata (pyproject, classifiers, README badge, CITATION.cff) now consistent |
-| 7.2.0 (current) | ECI Non-Commercial v1.0 | SECE: FCL/CAN/MarketCommons/QN-Bridge/MutableGenome + MCP `sece.*` + framework wiring |
+| 7.2.0 | ECI Non-Commercial v1.0 | SECE: FCL/CAN/MarketCommons/QN-Bridge/MutableGenome + MCP `sece.*` + framework wiring |
+| 7.3.0 (current) | ECI Non-Commercial v1.0 | COGNISPHERE: LFM + MAA + KNE + neuron atlas (AdLIF/Izhikevich/Homeostatic) + `sece.gossip/file/economy` MCP tools |
+
+## [7.3.0] — 2026-09-16 — COGNISPHERE · Living Memory, Consensus Awareness, Knowledge Economy
+
+- **COGNISPHERE (Phase 23)**: Three subsystems — (A) Living Memory (`MemoryItem` tombstone + importance + Ebbinghaus retention, `DreamEngine.consolidate()` importance pricing), (B) Mesh Awareness Agent (`gossip_round()` PBFT with rotating primary/view/sequence, `cycle_from_file()` for .npy/.fif), (C) Knowledge Economy (`ECIDataDAO` propose/vote/tally, `Court` 2/3 panel verdict, `ForecasterRegistry` Brier scoring, rival-object `contradiction_scan`) — 7 new tests.
+- **Neuron Atlas**: `NeuronAtlas` registry maps every spiking population (substrate/region/layer/model/node); `summarize()` aggregates by model and region; `to_dict()` exports JSON-safe provenance. `AdvancedNeuron` models — `AdaptiveLIFNeuron` (LIF + adaptation current w), `IzhikevichNeuron` (canonical a/b/c/d dynamics), `HomeostaticLIFNeuron` (slow threshold adaptation toward target rate). `SpikingNeuralNetwork` gains `neuron_type` parameter (`lif`/`adlif`/`izhikevich`/`homeostatic`); default `lif` preserves backward compatibility.
+- MCP tools: `sece.gossip`, `sece.file`, `sece.economy`, `sece.brier`, `sece.contradict_scan` added to `sece.*` tool set.
+- Version source: `src/eci/version.py` (`__version__ = 7.3.0`, `FRAMEWORK_VERSION = 7.3.0-COGNISPHERE`, `PAPER_VERSION = infinity.22.0`).
 
 ## [7.2.0] — 2026-09-14 — SECE · Self-Evolving Conscious Ecosystem
 

@@ -108,5 +108,53 @@ class AwarenessCalibrationNetwork:
         self.history.append(rec)
         return rec
 
+    def mne_status(self) -> dict[str, Any]:
+        """Report MNE availability without hard dependency (eeg extra)."""
+        try:
+            import mne  # type: ignore[import-not-found]
+
+            return {"mne_available": True, "version": getattr(mne, "__version__", "unknown")}
+        except Exception:
+            return {"mne_available": False}
+
+    def cycle_from_file(
+        self,
+        path: str,
+        *,
+        zscore: bool = True,
+        max_seconds: int | None = None,
+        challenges_n: int = 4,
+    ) -> dict[str, Any]:
+        """MAA Phase 23: real-file closed loop (.npy/.npz/.csv, or MNE .fif).
+
+        Loads [time, ch] via `load_timeseries` (or `read_mne_raw` for .fif),
+        then runs the standard `cycle()`. Missing MNE returns an explicit
+        error dict — never invented numbers.
+        """
+        from pathlib import Path
+
+        from eci.consciousness.eeg import load_timeseries
+
+        p = Path(path)
+        if p.suffix in (".fif", ".fif.gz"):
+            try:
+                from eci.consciousness.eeg import read_mne_raw
+
+                active_t, sfreq = read_mne_raw(p)
+            except ImportError as exc:
+                return {"ok": False, "error": str(exc)}
+        else:
+            try:
+                active_t = load_timeseries(p, zscore=zscore,
+                                           max_seconds=max_seconds)
+            except FileNotFoundError as exc:
+                return {"ok": False, "error": str(exc)}
+            sfreq = 128.0
+        rec = self.cycle(active_t, challenges_n=challenges_n, srate=sfreq)
+        rec["source"] = str(p)
+        rec["sfreq"] = sfreq
+        return {"ok": True, **rec}
+
     def to_dict(self) -> dict[str, Any]:
-        return {"agent": self.agent_id, "history": self.history[-10:]}
+        return {"agent": self.agent_id, "history": self.history[-10:],
+                "mne": self.mne_status()}

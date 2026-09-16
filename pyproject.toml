@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "7.2.0"
-description = "ECI Framework v7.2 SECE - Self-Evolving Conscious Ecosystem (federated Phi ledger, calibration network, market commons, quantum-neuromorphic bridge, mutable genome)"
+version = "7.3.0"
+description = "ECI Framework v7.3 COGNISPHERE - living memory, consensus awareness, knowledge economy (Ebbinghaus archive, PBFT Phi gossip, MNE loop, DAO treasury slash)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "ECI Non-Commercial License v1.0" }

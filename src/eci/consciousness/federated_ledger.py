@@ -55,13 +55,21 @@ class PhiClaim:
 
 
 class FederatedConsciousnessLedger:
-    """Collects PhiClaims, verifies via recomputation, commits with 2/3 quorum."""
+    """Collects PhiClaims, verifies via recomputation, commits with 2/3 quorum.
+
+    MAA Phase 23: claims also flow through PBFT/WBFT gossip — each claim is a
+    consensus proposal with rotating primary (view/sequence), so awareness
+    agreement is auditable Byzantine agreement, not in-memory voting.
+    """
 
     def __init__(self, ledger_path: str | None = None, tolerance: float = 1e-6) -> None:
         self.tolerance = tolerance
         self.claims: dict[str, PhiClaim] = {}
         self.chain = ProtocolLedger(ledger_path)
         self.iit = IntegratedInformationTheory()
+        self.view = 0
+        self.sequence = 0
+        self.gossip_log: list[dict[str, Any]] = []
 
     def _tpm_hash(self, tpm: torch.Tensor) -> str:
         return hashlib.sha256(tpm.detach().cpu().numpy().tobytes()).hexdigest()[:16]
@@ -123,6 +131,40 @@ class FederatedConsciousnessLedger:
         rec = self.chain.append("fcl_phi", {"claim": claim.to_dict(), "n_nodes": n_nodes})
         return {"ok": True, "claim": claim.to_dict(), "chain_head": rec["hash"]}
 
+    def gossip_round(
+        self,
+        claim_id: str,
+        nodes: dict[str, Any],
+        consensus: Any | None = None,
+    ) -> dict[str, Any]:
+        """Run one PBFT/WBFT round over a PhiClaim proposal.
+
+        Honest commit-voters auto-sign the claim (recomputation already gates
+        `verify()`; gossip gates *agreement*). View rotates on rejection,
+        sequence advances on achievement — mirroring consensus.py.
+        """
+        from eci.network.consensus import PBFTConsensus
+
+        claim = self.claims.get(claim_id)
+        if claim is None:
+            return {"ok": False, "error": "unknown claim"}
+        if consensus is None:
+            consensus = PBFTConsensus(n_nodes=max(1, len(nodes)), byzantine_rate=0.0)
+        proposal = {"kind": "phi_claim", "claim_id": claim_id,
+                    "phi": claim.phi, "tpm_hash": claim.tpm_hash}
+        result = consensus.achieve_consensus(nodes, proposal)
+        for voter in result.votes:
+            if voter != claim.claimant and voter not in claim.signatures:
+                sig = hashlib.sha256(f"{voter}|{claim_id}|{claim.phi:.6f}".encode()).hexdigest()[:16]
+                claim.signatures[voter] = sig
+        self.view = result.view
+        self.sequence = result.sequence
+        rec = {"claim_id": claim_id, "achieved": result.achieved,
+               "votes": list(result.votes), "view": result.view,
+               "sequence": result.sequence}
+        self.gossip_log.append(rec)
+        return {"ok": True, **rec, "quorum": self.quorum_reached(claim_id, len(nodes))}
+
     def verify_chain(self) -> dict[str, Any]:
         try:
             return self.chain.verify()
@@ -130,4 +172,7 @@ class FederatedConsciousnessLedger:
             return {"ok": False, "error": str(exc)}
 
     def to_dict(self) -> dict[str, Any]:
-        return {"claims": [c.to_dict() for c in self.claims.values()], "chain_ok": self.verify_chain().get("ok", False)}
+        return {"claims": [c.to_dict() for c in self.claims.values()],
+                "chain_ok": self.verify_chain().get("ok", False),
+                "view": self.view, "sequence": self.sequence,
+                "gossip_rounds": len(self.gossip_log)}

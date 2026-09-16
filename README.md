@@ -1,5 +1,5 @@
-# 🌌 ECI Framework v7.2
-## Eternal Codex Infinitus — SECE · Self-Evolving Conscious Ecosystem
+# 🌌 ECI Framework v7.3
+## Eternal Codex Infinitus — COGNISPHERE · Living Memory × Consensus Awareness × Knowledge Economy
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-7.2.0--SECE-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
+[![Version](https://img.shields.io/badge/version-7.3.0--COGNISPHERE-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Status](https://img.shields.io/badge/status-experimental-orange.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![License](https://img.shields.io/badge/license-ECI%20Non--Commercial-red.svg)](LICENSE)
@@ -50,9 +50,9 @@ operate inside a single continuously verifiable architecture.
 
 ---
 
-# ✨ v7.2 — SECE · Self-Evolving Conscious Ecosystem
+# ✨ v7.3 — COGNISPHERE · Living Memory × Consensus Awareness × Knowledge Economy
 
-Version 7.2 extends **PROTOCOL-vNext** (v7.1) with **SECE**: federated Phi ledger, closed-loop calibration, market commons, quantum-neuromorphic bridge and mutable genome. v7.1 built the nervous system; v7.2 makes it **aware, economic, and self-evolving**.
+Version 7.3 extends **SECE** (v7.2) with **COGNISPHERE**: Ebbinghaus forgetting with tombstone archive, PBFT Phi gossip, MNE file closed-loop, and executable knowledge economy (treasury slash + DAO tally + Court verdict + Brier). v7.2 made it aware; v7.3 makes it **remember honestly, agree byzantinely, and pay for truth**.
 
 ### 🚀 New in v7.1 — EVERLASTING
 
@@ -77,6 +77,16 @@ Version 7.2 extends **PROTOCOL-vNext** (v7.1) with **SECE**: federated Phi ledge
 | 💹 Market Commons | `market_commons.py` | Fact → LMSR market + `treasury` stake + `reputation` + `Brier` |
 | ⚛️ QN-Bridge | `bridges/quantum_neuromorphic.py` | SNN as `StateContributor` (`F = KL + MSE`) |
 | 🧬 Mutable Genome | `protocol_vnext/genesis_evolution.py` | `propose → twin → canary → vote → H(old||mutation)` + rollback |
+
+### 🌐 New in v7.3 — COGNISPHERE
+
+| Track | Module | Proof |
+|---|---|---|
+| 🧬 Living Memory (LFM) | `protocol_vnext/memory.py` | Ebbinghaus `R=exp(-age/(S/decay))` + tombstone `archive` + dream `importance` |
+| 🗳️ Consensus Awareness (MAA) | `consciousness/federated_ledger.py` | `gossip_round` PBFT (rotating primary, view/sequence) + `calibration_network.cycle_from_file` (MNE) |
+| 💰 Knowledge Economy (KNE) | `market_commons.py` | Fact → envelope + DAO `propose/vote/tally` + `economy.slash/fund` + `Court` 2/3 + `Brier` |
+
+MCP: `sece.fcl/gossip`, `sece.can/file|mne`, `sece.market` (executable). Tests: `tests/test_cognisphere.py` (7).
 
 See: `docs/EVERLASTING.md` + SECE (`src/eci/consciousness/federated_ledger.py`, `src/eci/market_commons.py`, `src/eci/bridges/quantum_neuromorphic.py`)
 

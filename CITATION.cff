@@ -2,8 +2,8 @@ cff-version: 1.2.0
 title: "ECI Framework"
 message: "If you use this software, please cite it as below."
 type: software
-version: "7.2.0"
-date-released: "2026-09-14"
+version: "7.3.0"
+date-released: "2026-09-16"
 license: "ECI Non-Commercial License v1.0"
 repository-code: "https://github.com/Arash-Mansourpour/ECI-Framework"
 url: "https://github.com/Arash-Mansourpour/ECI-Framework"

@@ -433,6 +433,19 @@ def build_default_registry(framework: Any, registry=None):
             return {"verified": ok}
         if op == "commit":
             return fcl.commit(str(args.get("claim_id", "")), int(args.get("n_nodes", 3)))
+        if op == "gossip":
+            from eci.core.types import NetworkNode, NetworkRole
+            from eci.network.consensus import PBFTConsensus
+
+            n = int(args.get("n_nodes", 4))
+            nodes = {f"n{i}": NetworkNode(node_id=f"n{i}", role=NetworkRole.VALIDATOR,
+                                          trust_score=1.0, reputation_score=1.0, stake=1.0)
+                     for i in range(n)}
+            claim_id = str(args.get("claim_id", ""))
+            if claim_id and claim_id in fcl.claims:
+                nodes[claim_id] = nodes.get(claim_id, list(nodes.values())[0])
+            cons = PBFTConsensus(n_nodes=max(1, len(nodes)), byzantine_rate=0.0)
+            return fcl.gossip_round(claim_id, nodes, cons)
         return fcl.to_dict()
 
     def _can(args, ctx):
@@ -444,6 +457,10 @@ def build_default_registry(framework: Any, registry=None):
             import numpy as np
             rest = [np.random.randn(32, 4) for _ in range(2)]
             return can.calibrate(rest)
+        if op == "file":
+            return can.cycle_from_file(str(args.get("path", "")))
+        if op == "mne":
+            return can.mne_status()
         return can.cycle(np.random.randn(32, 4))
 
     def _market(args, ctx):

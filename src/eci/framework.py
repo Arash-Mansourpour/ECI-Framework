@@ -199,6 +199,7 @@ class ECIFramework:
             self.fcl = FederatedConsciousnessLedger()
             self.can = AwarenessCalibrationNetwork(agent_id=f"framework-can-{self.config.experiment.random_seed}")
             self.market_commons = MarketCommons()
+            self.market_commons.forecasters = self.forecasters
             self.qn_bridge = QuantumNeuromorphicBridge()
             self.mutable_constitution = MutableConstitution()
         except Exception as exc:  # noqa: BLE001

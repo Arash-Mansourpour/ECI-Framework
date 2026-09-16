@@ -11,9 +11,26 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
+from eci.neuromorphic.advanced import AdaptiveLIFNeuron, HomeostaticLIFNeuron, IzhikevichNeuron
 from eci.neuromorphic.neurons import LIFNeuron
 
-__all__ = ["SpikingNeuralNetwork"]
+__all__ = ["SpikingNeuralNetwork", "NEURON_TYPES"]
+
+
+def _make_neuron(model: str, n_neurons: int) -> torch.nn.Module:
+    """Backward-compatible neuron factory (``lif`` preserves legacy behavior)."""
+    if model == "lif":
+        return LIFNeuron(n_neurons)
+    if model == "adlif":
+        return AdaptiveLIFNeuron(n_neurons)
+    if model == "izhikevich":
+        return IzhikevichNeuron(n_neurons)
+    if model == "homeostatic":
+        return HomeostaticLIFNeuron(n_neurons)
+    raise ValueError(f"unknown neuron_type {model!r}")
+
+
+NEURON_TYPES = ("lif", "adlif", "izhikevich", "homeostatic")
 
 
 class SpikingNeuralNetwork(nn.Module):
@@ -30,16 +47,20 @@ class SpikingNeuralNetwork(nn.Module):
         a_minus: float = 0.012,
         w_min: float = 0.0,
         w_max: float = 2.0,
+        neuron_type: str = "lif",
     ) -> None:
         super().__init__()
         if min(n_input, n_hidden, n_output) < 1:
             raise ValueError("layer sizes must be >= 1")
+        if neuron_type not in NEURON_TYPES:
+            raise ValueError(f"unknown neuron_type {neuron_type!r}")
         self.n_input = n_input
         self.n_hidden = n_hidden
         self.n_output = n_output
+        self.neuron_type = neuron_type
 
-        self.hidden_layer = LIFNeuron(n_hidden)
-        self.output_layer = LIFNeuron(n_output)
+        self.hidden_layer = _make_neuron(neuron_type, n_hidden)
+        self.output_layer = _make_neuron(neuron_type, n_output)
         self.input_weights = nn.Parameter(torch.randn(n_input, n_hidden) * 0.1)
         self.output_weights = nn.Parameter(torch.randn(n_hidden, n_output) * 0.1)
         # Hidden->output projection (Phase 18 fix: forward() previously reused
