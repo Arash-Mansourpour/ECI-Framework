@@ -186,6 +186,7 @@ class HomeostaticLIFNeuron(nn.Module):
         self.target_rate = target_rate
         self.eta = eta
         self.surrogate = surrogate
+        self.initial_threshold = float(v_threshold_init)
         self.weight = nn.Parameter(torch.randn(n_neurons, n_neurons) * (1.0 / math.sqrt(n_neurons)))
         self.register_buffer("membrane_potential", torch.zeros(batch_size, n_neurons))
         self.register_buffer("threshold", torch.full((batch_size, n_neurons), v_threshold_init))
@@ -194,11 +195,9 @@ class HomeostaticLIFNeuron(nn.Module):
     def reset_state(self, batch_size: int | None = None) -> None:
         if batch_size is None:
             batch_size = self.membrane_potential.shape[0]  # type: ignore[has-type]
-        device = self.membrane_potential.device  # type: ignore[has-type]
-        init = float(self.threshold.mean().item()) if self.threshold.numel() else 1.0  # type: ignore[has-type]
-        self.membrane_potential = torch.zeros(batch_size, self.n_neurons, device=device)
-        self.threshold = torch.full((batch_size, self.n_neurons), init, device=device)
-        self.spike_history = torch.zeros(batch_size, self.n_neurons, 100, device=device)
+        self.membrane_potential = self.weight.new_zeros(batch_size, self.n_neurons)
+        self.threshold = self.weight.new_full((batch_size, self.n_neurons), self.initial_threshold)
+        self.spike_history = self.weight.new_zeros(batch_size, self.n_neurons, 100)
 
     def forward(self, input_current: torch.Tensor, dt: float = 1.0) -> torch.Tensor:
         if input_current.shape != self.membrane_potential.shape:

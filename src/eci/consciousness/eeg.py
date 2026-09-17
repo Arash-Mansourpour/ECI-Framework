@@ -58,6 +58,8 @@ def load_timeseries(path: str | Path, zscore: bool = True, max_seconds: int | No
 def bandpower(x: torch.Tensor, sfreq: float = 256.0) -> dict[str, float]:
     """Welch-free FFT bandpower (delta/theta/alpha/beta/gamma) mean over channels."""
     xd = x.double()
+    if xd.dim() == 1:
+        xd = xd.unsqueeze(1)  # [time] -> [time, ch=1]
     fft = torch.fft.rfft(xd, dim=0)
     freqs = torch.fft.rfftfreq(xd.shape[0], d=1.0 / sfreq)
     power = (fft.abs() ** 2).mean(dim=1)

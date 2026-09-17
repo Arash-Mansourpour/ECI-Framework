@@ -54,12 +54,13 @@ def pyphi_crosscheck(cov=None) -> dict[str, Any]:
 
 def eeg_closed_loop(resting: Sequence[float], active: Sequence[float]) -> dict[str, Any]:
     import numpy as np
+    import torch
 
     from eci.consciousness.eeg import bandpower
-    r = np.asarray(list(resting), dtype=float)
-    a = np.asarray(list(active), dtype=float)
-    pr = float(bandpower(r).mean()) if r.size else 0.0
-    pa = float(bandpower(a).mean()) if a.size else 0.0
+    r = torch.as_tensor(np.asarray(list(resting), dtype=float))
+    a = torch.as_tensor(np.asarray(list(active), dtype=float))
+    pr = float(np.mean(list(bandpower(r).values()))) if r.numel() > 1 else 0.0
+    pa = float(np.mean(list(bandpower(a).values()))) if a.numel() > 1 else 0.0
     lift = pa / (pr + 1e-9)
     bits_proxy = max(0.0, math.log2(lift + 1e-9) + 1.0) if lift > 0 else 0.0
     tier = "none" if bits_proxy < 1 else ("watch" if bits_proxy < 5 else ("elevate" if bits_proxy < 10 else "intervene"))
