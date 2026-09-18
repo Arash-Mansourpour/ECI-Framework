@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>ECI | آزمایشگاه شبکهٔ اسپایکی</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/dist/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">رفتن به محیط آزمایش</a>
+  <header class="site-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">ECI</span><div><h1>آزمایشگاه شبکهٔ اسپایکی</h1><p>محیط پژوهشی شبیه‌سازی و مشاهدهٔ نورون‌ها</p></div></div>
+    <span class="badge">آزمایش مستقل · دادهٔ اندازه‌گیری‌شده</span>
+  </header>
+  <main class="layout">
+    <aside class="panel settings" aria-labelledby="settingsTitle">
+      <div class="section-heading"><span class="eyebrow" lang="en">EXPERIMENT CONFIGURATION</span><h2 id="settingsTitle">تنظیمات آزمایش</h2></div>
+      <form id="settingsForm">
+        <fieldset id="settingsFields">
+          <legend class="sr-only">پارامترهای شبیه‌سازی</legend>
+          <div class="field-grid">
+            <label for="nInput">نورون ورودی<input id="nInput" type="number" min="1" max="32" step="1" value="4" required><small>۱ تا ۳۲</small></label>
+            <label for="nHidden">نورون پنهان<input id="nHidden" type="number" min="1" max="128" step="1" value="6" required><small>۱ تا ۱۲۸</small></label>
+            <label for="nOutput">نورون خروجی<input id="nOutput" type="number" min="1" max="32" step="1" value="2" required><small>۱ تا ۳۲</small></label>
+            <label for="nSteps">تعداد گام‌ها<input id="nSteps" type="number" min="10" max="2000" step="1" value="200" required><small>۱۰ تا ۲۰۰۰</small></label>
+          </div>
+          <label for="neuronType">مدل نورون<select id="neuronType"><option value="lif">LIF</option><option value="adlif">Adaptive LIF</option><option value="izhikevich">Izhikevich</option><option value="homeostatic">Homeostatic</option></select></label>
+          <label for="seed">بذر تصادفی (Seed)<input id="seed" type="number" min="0" max="2147483647" step="1" value="42" required></label>
+          <label for="pattern">الگوی ورودی<input id="pattern" value="0.1,0.4,0.7,1.0" dir="ltr" required aria-describedby="patternHint"></label>
+          <p id="patternHint" class="hint">۴ مقدار متناهی بین ۰ و ۱، جداشده با کامای انگلیسی. با تغییر تعداد ورودی، الگو دوباره ساخته می‌شود.</p>
+          <label class="check" for="learn"><input id="learn" type="checkbox"><span>یادگیری STDP<small>به‌روزرسانی وزن‌ها در همین آزمایش</small></span></label>
+        </fieldset>
+        <p id="formError" class="error" role="alert" hidden></p>
+        <button id="runBtn" class="primary full" type="submit">اجرای آزمایش جدید <span aria-hidden="true">←</span></button>
+      </form>
+      <div class="secondary-actions"><button id="resetBtn" type="button">بازنشانی همه</button><button id="exportBtn" type="button" disabled>دریافت JSON</button></div>
+      <p class="trial-note">هر اجرا شبکه‌ای تازه می‌سازد؛ وزن‌ها و حالت نورون‌ها از اجرای قبلی منتقل نمی‌شوند. بازنشانی، داده‌های محلی این صفحه را پاک می‌کند.</p>
+    </aside>
+    <div id="workspace" class="workspace" tabindex="-1">
+      <div class="workspace-heading"><div><span class="eyebrow" lang="en">NEURAL OBSERVATORY</span><h2>از اتصال تا فعالیت</h2></div><p id="status" class="status" role="status" aria-live="polite">آمادهٔ نخستین آزمایش</p></div>
+      <div id="stats" class="stats" aria-label="آمار آخرین آزمایش"></div>
+      <div class="tab-bar" role="tablist" aria-label="نمای آزمایش">
+        <button id="networkTab" role="tab" aria-selected="true" aria-controls="networkPanel" tabindex="0">شبکه و بازپخش</button>
+        <button id="analysisTab" role="tab" aria-selected="false" aria-controls="analysisPanel" tabindex="-1">تحلیل و وزن‌ها</button>
+      </div>
+      <section id="networkPanel" role="tabpanel" aria-labelledby="networkTab" tabindex="0">
+        <div class="panel topology-panel">
+          <div class="panel-heading"><div><h3>توپولوژی شبکه</h3><p id="networkSummary">برای مشاهدهٔ شبکه، یک آزمایش اجرا کنید.</p></div><span class="badge" id="modelBadge">بدون داده</span></div>
+          <div class="legend"><span><i class="dot input"></i>ورودی · I</span><span><i class="dot hidden-layer"></i>پنهان · H</span><span><i class="dot output"></i>خروجی · O</span><span class="muted">حلقهٔ روشن = اسپایک در گام جاری</span></div>
+          <canvas id="topology" class="topology" role="img" aria-label="توپولوژی شبکه؛ انتخاب نورون از کنترل‌های بازرسی نیز ممکن است"></canvas>
+          <p class="hint">اتصال‌ها وزن نهایی آزمایش را نشان می‌دهند، نه تاریخچهٔ وزن‌ها. با انتخاب نورون، اتصال‌های همان نورون نمایش داده می‌شوند.</p>
+          <div class="playback">
+            <button id="playBtn" type="button" disabled aria-label="پخش گام‌های ثبت‌شده">پخش</button>
+            <div class="timeline"><label for="stepSlider">گام ثبت‌شده <output id="stepLabel" for="stepSlider">—</output></label><input id="stepSlider" type="range" min="0" max="0" value="0" disabled></div>
+            <label class="speed" for="speed">سرعت بازپخش<select id="speed"><option value="5">۵ گام/ثانیه</option><option value="15" selected>۱۵ گام/ثانیه</option><option value="30">۳۰ گام/ثانیه</option><option value="60">۶۰ گام/ثانیه</option></select></label>
+          </div>
+          <p class="hint">سرعت بازپخش فقط نمایشی است و زمان فیزیکی شبیه‌سازی نیست. شمارهٔ گام و نورون از صفر شروع می‌شود.</p>
+        </div>
+        <section class="panel inspector" aria-labelledby="inspectorTitle">
+          <div class="panel-heading"><div><h3 id="inspectorTitle">بازرسی نورون</h3><p>یک نورون را روی شبکه یا از فهرست انتخاب کنید.</p></div><div class="inline-controls"><label for="inspectLayer">لایه<select id="inspectLayer" disabled><option value="input">ورودی</option><option value="hidden" selected>پنهان</option><option value="output">خروجی</option></select></label><label for="inspectNeuron">نورون<select id="inspectNeuron" disabled></select></label></div></div>
+          <dl id="inspection" class="inspection"><div><dt>وضعیت</dt><dd>هنوز داده‌ای ثبت نشده است.</dd></div></dl>
+        </section>
+      </section>
+      <section id="analysisPanel" role="tabpanel" aria-labelledby="analysisTab" tabindex="0" hidden>
+        <section class="panel"><div class="panel-heading"><div><h3>رستر اسپایک‌ها</h3><p>تمام نورون‌ها؛ هر نقطه یک رویداد ثبت‌شده است.</p></div></div><div class="legend"><span><i class="dot input"></i>ورودی · I</span><span><i class="dot hidden-layer"></i>پنهان · H</span><span><i class="dot output"></i>خروجی · O</span></div><canvas id="raster" class="chart raster" role="img" aria-label="رستر اسپایک‌های سه لایه، محور افقی گام و محور عمودی نورون"></canvas><p id="rasterSummary" class="hint">بدون داده</p></section>
+        <section class="panel"><div class="panel-heading"><div><h3>پتانسیل نورون</h3><p>مقادیر گزارش‌شدهٔ مدل؛ واحد فیزیکی فرض نشده است.</p></div><div class="inline-controls"><label for="voltageLayer">لایه<select id="voltageLayer" disabled><option value="hidden">پنهان</option><option value="output">خروجی</option></select></label><label for="voltageNeuron">نورون<select id="voltageNeuron" disabled></select></label></div></div><canvas id="voltage" class="chart" role="img" aria-label="پتانسیل نورون انتخاب‌شده بر حسب گام"></canvas><p id="voltageSummary" class="hint">بدون داده</p></section>
+        <div class="heatmaps">
+          <section class="panel"><div class="panel-heading"><div><h3>وزن‌های ورودی ← پنهان</h3><p>سطر: ورودی · ستون: پنهان</p></div></div><label for="weightMode">نمای وزن<select id="weightMode" disabled><option value="final">نهایی</option><option value="initial">ابتدایی</option><option value="delta">تغییر نسبت به ابتدا</option></select></label><canvas id="wIn" class="heatmap" role="img" aria-label="ماتریس وزن بین ورودی و پنهان"></canvas><div class="weight-legend"><span>منفی</span><span class="gradient" aria-hidden="true"></span><span>مثبت</span></div><p id="wInLegend" class="numeric hint">بدون داده</p></section>
+          <section class="panel"><div class="panel-heading"><div><h3>وزن‌های پنهان ← خروجی</h3><p>سطر: پنهان · ستون: خروجی</p></div></div><p class="weight-note">وزن‌های نهایی گزارش‌شدهٔ آزمایش</p><canvas id="wOut" class="heatmap" role="img" aria-label="ماتریس وزن بین پنهان و خروجی"></canvas><div class="weight-legend"><span>منفی</span><span class="gradient" aria-hidden="true"></span><span>مثبت</span></div><p id="wOutLegend" class="numeric hint">بدون داده</p></section>
+        </div>
+      </section>
+      <div class="honesty"><strong>مرز تفسیر</strong><p>این خروجی‌ها دینامیک یک نمونهٔ پژوهشی‌اند؛ نه ادعای دقت زیستی، هوش یا آگاهی.</p><p id="honesty" dir="auto" hidden></p></div>
+    </div>
+  </main>
+  <footer><span dir="ltr">ECI FRAMEWORK / SIMULATION LAB</span><span>مشاهده، اندازه‌گیری، بازتولید</span></footer>
+  <noscript>برای اجرای محیط آزمایش، جاوااسکریپت مرورگر را فعال کنید.</noscript>
+</body>
+</html>

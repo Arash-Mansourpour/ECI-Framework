@@ -3,6 +3,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+!web/dist/
 .eggs/
 .venv/
 venv/
@@ -21,3 +22,4 @@ runs/
 *.pth
 *.pt
 !paper/imgs/*.png
+web/node_modules/
