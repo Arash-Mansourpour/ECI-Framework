@@ -18,6 +18,8 @@ import shutil
 import subprocess
 import sys
 
+import pytest
+
 
 def _ruff():
     exe = shutil.which("ruff")
@@ -40,16 +42,21 @@ def test_no_new_f401_i001_b011():
     assert errors == [], "\n".join(errors[:20])
 
 
-def test_mypy_total_does_not_grow():
-    """Ratchet on the mypy total (66 at Phase 22 SECE, 64 at Phase 20 via manager fix, 72 originally
-    after Envelope collision): new errors fail, fixes just work. Slow (~1-2 min) — runs the real checker."""
+@pytest.fixture(scope="session")
+def _mypy_result():
+    """Run mypy once per session (was per-test, 6.77s each time)."""
     try:
         out = subprocess.run([sys.executable, "-m", "mypy", "src/eci"],
                              capture_output=True, text=True, timeout=590)
     except (FileNotFoundError, OSError):
-        import pytest
         pytest.skip("mypy not installed")
-        return
+    return out
+
+
+def test_mypy_total_does_not_grow(_mypy_result):
+    """Ratchet on the mypy total (66 at Phase 22 SECE, 64 at Phase 20 via manager fix, 72 originally
+    after Envelope collision): new errors fail, fixes just work. Slow (~1-2 min) — runs the real checker."""
+    out = _mypy_result
     m = re.search(r"Found (\d+) errors?", out.stdout + out.stderr)
     assert m, "could not parse mypy output"
     assert int(m.group(1)) <= 66, out.stdout[-2000:]

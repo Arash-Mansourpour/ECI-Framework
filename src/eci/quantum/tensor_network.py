@@ -69,7 +69,7 @@ def mps_from_statevector(state: torch.Tensor, n_qubits: int, chi_max: int = 16) 
         Vh = Vh[:chi, :]
         A = U.reshape(left_dim, 2, chi)
         mps.append(A)
-        rest = (torch.diag(S.to(Vh.dtype)) @ Vh).reshape(chi, *([2] * (n_qubits - k - 1)))
+        rest = (S.to(Vh.dtype).unsqueeze(-1) * Vh).reshape(chi, *([2] * (n_qubits - k - 1)))
         left_dim = chi
     mps.append(rest.reshape(left_dim, 2, 1))
     return mps

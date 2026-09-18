@@ -365,6 +365,12 @@ def phi_structure(sub: DiscreteSubstrate) -> dict[str, Any]:
     Disconnected systems score EXACTLY 0 (severing changes nothing) while
     keeping their singleton distinctions visible in the report.
     """
+    if sub.n > 8:
+        raise ValueError(
+            f"phi_structure capped at n=8 (got n={sub.n}): combinatorial wall "
+            f"(mechanisms 2^n, system MIP 2^(n-1)); see "
+            f"src/eci/consciousness/LIMITATIONS.md and iit4.py header"
+        )
     phi, distinctions, relations = _composition_sum(sub)
     sys_phi, sys_mip = _system_mip(sub, phi)
     return {"phi": sys_phi, "composition": phi, "system_mip": sys_mip,

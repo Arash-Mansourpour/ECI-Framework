@@ -81,6 +81,10 @@ class IntegratedInformationTheory:
         connectivity = connectivity.to(self.device).double()
         connectivity = torch.nan_to_num(connectivity, nan=0.0, posinf=1.0, neginf=-1.0)
 
+        heuristic_fallback = False
+        if method == "gaussian" and exhaustive and neural_state.shape[1] > 8:
+            heuristic_fallback = True
+
         if method == "gaussian":
             phi = self._phi_gaussian(neural_state, exhaustive=exhaustive)
         elif method == "quantum":
@@ -96,6 +100,7 @@ class IntegratedInformationTheory:
             "phi_cause": components["cause"],
             "phi_effect": components["effect"],
             "phi_intrinsic": components["intrinsic"],
+            "heuristic_fallback": heuristic_fallback,
         }
 
     # ------------------------------------------------------------------
@@ -112,6 +117,7 @@ class IntegratedInformationTheory:
         cov = 0.5 * (cov + cov.T)
         n = cov.shape[0]
         cov = cov + torch.eye(n, device=cov.device, dtype=cov.dtype) * COVARIANCE_REGULARIZER
+        heuristic_fallback = bool(method == "gaussian" and exhaustive and n > 8)
         if method == "gaussian":
             phi = self._phi_gaussian_from_cov(cov, exhaustive=exhaustive)
         elif method == "quantum":
@@ -135,6 +141,7 @@ class IntegratedInformationTheory:
             "phi_cause": components["cause"],
             "phi_effect": components["effect"],
             "phi_intrinsic": components["intrinsic"],
+            "heuristic_fallback": heuristic_fallback,
         }
 
     def _covariance(self, neural_state: torch.Tensor) -> torch.Tensor:
@@ -167,6 +174,14 @@ class IntegratedInformationTheory:
         n = cov.shape[0]
         if n < 2:
             return 0.0
+        if exhaustive and n > 8:
+            self.logger.warning(
+                "exhaustive MIP requested for n=%d >8: combinatorial wall — "
+                "falling back to O(n) contiguous heuristic; exhaustive is "
+                "capped at n=8 (see src/eci/consciousness/LIMITATIONS.md and "
+                "iit.py header). Flag heuristic_fallback=True in result.",
+                n,
+            )
 
         sign_w, logdet_w = torch.linalg.slogdet(cov)
         if sign_w <= 0:
