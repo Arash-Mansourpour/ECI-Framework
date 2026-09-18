@@ -1,9 +1,16 @@
-"""Gossip dissemination + anti-entropy repair (O(n log n) scaling).
+"""Gossip dissemination + anti-entropy repair (measured scaling).
 
 Each node keeps a ledger digest (head hash + seq). Rounds: pick k random
 peers, exchange digests, pull missing records. Converges exponentially;
 partitions heal automatically on reconnect. Transport-agnostic: works over
 AsyncMemoryChannel today, sockets tomorrow.
+
+Measured (Phase 4, 12 repeats median, warm-up discarded, 10 records/node +1
+extra, 8 rounds max, fanout=2, torch CPU i7-12700): n=10 0.34 ms IQR 0.08 ms
+(4 rounds), n=50 4.54 ms IQR 0.47 ms (5 rounds), n=200 60.12 ms IQR 10.34 ms
+(7 rounds) — ~13× per 4–5× nodes, worse than O(n log n) (predicted 8.5× and
+5.4×); growth is O(n·fanout·records) with fanout=2. See
+benchmarks/gossip_scale.json. Previous O(n log n) header was unverified.
 """
 
 from __future__ import annotations

@@ -1,0 +1,45 @@
+{
+  "phase2a": {
+    "n12_chi8_median_ms": 8.76,
+    "n12_chi64_median_ms": 10.64,
+    "n20_chi8_median_ms": 833.02,
+    "n20_chi64_median_ms": 1275.01,
+    "n20_chi8_before_median_ms": 835.79,
+    "n20_chi64_before_median_ms": 1243.57,
+    "note": "12 repeats +1 warm-up, median/IQR, diag->broadcast kept for alloc not perf (negative perf result)"
+  },
+  "phase3": {
+    "gaussian_n3_exh_ms": 0.808,
+    "gaussian_n8_exh_ms": 16.167,
+    "gaussian_n8_heur_ms": 1.316,
+    "gaussian_ratio_n8": 12.28,
+    "iit4_n3_ms": 18.3,
+    "iit4_n4_ms": 523.81,
+    "iit4_n5_ms": 15168.72,
+    "note": "12 repeats median, warm-up discarded, n=6+ timeout >20s wall"
+  },
+  "phase4": {
+    "gossip_n10_ms": 0.34,
+    "gossip_n50_ms": 4.54,
+    "gossip_n200_ms": 60.12,
+    "gossip_fanout4_n50_ms": 3.02,
+    "envelope_sign_ms": 0.45,
+    "note": "anti_entropy 8 rounds fanout2, 12 repeats median"
+  },
+  "phase5": {
+    "ledger_10k_ms": 42.3,
+    "continuum_10k_ms": 210.5,
+    "transparency_10k_ms": 38.7,
+    "density_guard_n13_raise_ms": 0.8,
+    "cli_info_ms": 342.1,
+    "cli_lazy_info_ms": 68.4,
+    "note": "10k soak linear, cli lazy -80% not landed"
+  },
+  "phase2b": {
+    "lempel_ziv_ms": 2.616,
+    "sample_entropy_ms": 8.661,
+    "spectral_entropy_ms": 0.167,
+    "mutual_information_ms": 0.369,
+    "analyzer_composite_ms": 19.527
+  }
+}

@@ -30,10 +30,31 @@ __all__ = [
 ]
 
 
+def _check_qubit_cap(n_qubits: int, op: str) -> None:
+    if n_qubits > 12:
+        D = 2**n_qubits
+        gb = D * D * 16 / 1e9
+        raise MemoryError(
+            f"density.py {op} O(4^n) density matrix D=2^{n_qubits}={D} → "
+            f"{D}²×16B≈{gb:.1f}GB >12-qubit cap (see src/eci/quantum/density.py header and "
+            f"LIMITATIONS.md#density — use StatevectorSimulator or MPS)"
+        )
+
+
 def from_statevector(psi: torch.Tensor) -> torch.Tensor:
     """rho = |psi><psi| for a batch of statevectors."""
     if psi.dim() == 1:
         psi = psi.unsqueeze(0)
+    n = psi.shape[-1].bit_length() - 1 if psi.shape[-1] & (psi.shape[-1] - 1) == 0 else 0
+    # exact n when D is power of two; fallback uses log2
+    if psi.shape[-1] > 4096:  # 2^12
+        import math as _math
+
+        n_est = int(round(_math.log2(psi.shape[-1])))
+        if 2**n_est == psi.shape[-1]:
+            n = n_est
+        if n > 12:
+            _check_qubit_cap(n, "from_statevector")
     return torch.einsum("bi,bj->bij", psi, psi.conj())
 
 
@@ -105,6 +126,7 @@ def partial_trace(
     ``(batch, D, D)``. Output axes follow the sorted ``keep`` order
     (big-endian, qubit 0 most significant).
     """
+    _check_qubit_cap(n_qubits, "partial_trace")
     keep = sorted(set(keep))
     if rho.dim() == 2:  # statevector -> density matrix
         rho = from_statevector(rho)
