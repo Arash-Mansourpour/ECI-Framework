@@ -8,6 +8,7 @@ Architect (Sovereign / Ma'mar-e A'zam): Arash Mansourpour
 from eci import aikernel as aikernel
 
 # SECE Phase 22: bridges + market commons
+from eci import brain as brain
 from eci import bridges as bridges
 from eci import federation as federation
 from eci import immune as immune
@@ -23,8 +24,10 @@ from eci import protocol_vnext as protocol_vnext
 from eci.agents import AgentLoop, Agents, EpisodicMemory, ToolRegistry, VectorMemory
 from eci.aikernel import GenerativeState, KernelLedger, Likelihood, Prior, StateContributor
 from eci.api import Gateway
+from eci.arch import ADR_REGISTRY, list_adrs, run_fitness
 from eci.authz import RBAC, Permission, PolicyEngine, PolicyRule, Role
 from eci.benchmarking.benchmark import ResearchBenchmark
+from eci.brain import BrainMesh, build_default_mesh
 from eci.bridges.quantum_neuromorphic import QuantumNeuromorphicBridge
 from eci.caps import CapToken
 from eci.caps import Issuer as CapIssuer
@@ -64,7 +67,15 @@ from eci.court import Case, Court, Verdict
 from eci.cybernetics.autopoiesis import AutopoieticNetwork
 from eci.data import BlobStore, Cache, DataPlane
 from eci.economy import ACTION_COSTS, Economy
+from eci.economy_attack import (
+    brier_score,
+    evaluate_slash,
+    simulate_collusion,
+    simulate_whale_attack,
+)
 from eci.eval import EvalReport, run_gates
+from eci.federation.p2p import build_mesh as build_p2p_mesh
+from eci.federation.p2p import run_partition_test
 
 # Facade (completes and supersedes legacy ECIFrameworkResearch)
 from eci.framework import ECIFramework, ECIFrameworkResearch
@@ -118,6 +129,7 @@ from eci.network.transport import AsyncMemoryChannel
 from eci.neuromorphic.neurons import LIFNeuron
 from eci.neuromorphic.snn import SpikingNeuralNetwork
 from eci.observability import AuditLogger, MetricsRegistry, Observability, Tracer
+from eci.observability.otel import OtelBridge
 from eci.orchestration import DAG, Orchestration, Scheduler
 from eci.persistence import EventStore, Persistence, Repository, UnitOfWork
 from eci.plugins import PluginManager, PluginManifest
@@ -159,6 +171,7 @@ from eci.quantum.gates import (
     pauli_string_matrix,
 )
 from eci.quantum.hamiltonian import PauliSum, PauliTerm
+from eci.quantum.hardware import BackendRouter, BraketBackend, QiskitBackend, SimBackendAdapter
 from eci.quantum.qnn import QuantumLayer, QuantumNeuralNetwork
 from eci.quantum.statevector import StatevectorSimulator
 from eci.quantum.topological import BivariateBicycleCode, SurfaceCode
@@ -167,6 +180,7 @@ from eci.recovery import RecoveryRequest
 from eci.recovery import combine as shamir_combine
 from eci.recovery import split as shamir_split
 from eci.redteam import Challenger, ForecasterRegistry, contradiction_scan
+from eci.research.loop import ResearchLoop
 from eci.resilience import CircuitBreaker, Resilience, RetryPolicy, Saga, TokenBucket
 from eci.rollout import RolloutPlan, staged_rollout
 
@@ -342,4 +356,10 @@ __all__ = [
     "ResearchBenchmark",
     "ECIFramework",
     "ECIFrameworkResearch",
+    "brain", "BrainMesh", "build_default_mesh",
+    "run_fitness", "ADR_REGISTRY", "list_adrs",
+    "BackendRouter", "SimBackendAdapter", "QiskitBackend", "BraketBackend",
+    "build_p2p_mesh", "run_partition_test",
+    "simulate_whale_attack", "simulate_collusion", "evaluate_slash", "brier_score",
+    "OtelBridge", "ResearchLoop",
 ]

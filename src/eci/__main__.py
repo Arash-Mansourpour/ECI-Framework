@@ -248,6 +248,55 @@ def cmd_aik(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_v8(args: argparse.Namespace) -> int:
+    """v8 OMNISCIENCE report: fitness + quantum routing + p2p probe + economy + research."""
+    fw = ECIFramework()
+    out: dict[str, Any] = {"version": fw.version, "v8": fw.v8_status()}
+    # deterministic demos (no network, no hardware)
+    try:
+        from eci.economy_attack import evaluate_slash, simulate_collusion, simulate_whale_attack
+
+        whale = simulate_whale_attack(whale_stake=500.0)
+        votes = {f"voter-{i}": ("yes" if i < 3 else "no") for i in range(5)}
+        col = simulate_collusion(votes, ring={"voter-3", "voter-4"}, ring_target="yes")
+        slash = evaluate_slash(whale.price_shift, col.detection_score, 0.0)
+        out["economy_attack"] = {
+            "whale": {"shift": whale.price_shift, "cost": whale.cost,
+                      "flagged": whale.flagged, "profitable": whale.profitable},
+            "collusion": {"flipped": col.flipped, "score": col.detection_score},
+            "slash": {"slash": slash.slash, "amount": slash.amount, "reason": slash.reason},
+        }
+    except Exception as exc:  # noqa: BLE001
+        out["economy_attack"] = {"ok": False, "error": repr(exc)}
+    try:
+        hyp = fw.research_loop.propose("v8 loop is ledgered", 0.8, {"probe": 1.0})
+        cyc = fw.research_loop.run_cycle(hyp, drill=lambda p: float(p.get("probe", 0.0)),
+                                         voters=["voter-0", "voter-1", "voter-2"], outcome=1)
+        out["research_demo"] = cyc.to_dict()
+    except Exception as exc:  # noqa: BLE001
+        out["research_demo"] = {"ok": False, "error": repr(exc)}
+    try:
+        out["prometheus_lines"] = len(fw.observability.metrics.to_prometheus().splitlines())
+    except Exception:  # noqa: BLE001
+        out["prometheus_lines"] = 0
+    _print_json(out)
+    return 0
+
+
+def cmd_brain(args: argparse.Namespace) -> int:
+    """One brain cycle: all subsystems fire as neurons, GNW ignites, broadcast returns."""
+    fw = ECIFramework()
+    ticks = int(getattr(args, "ticks", 32))
+    cycles = int(getattr(args, "cycles", 3))
+    if getattr(fw, "brain", None) is not None and ticks != fw.brain.ticks:
+        fw.brain.ticks = max(4, min(128, ticks))
+    outs = [fw.brain_tick() for _ in range(cycles)]
+    struct = fw.brain.adapt_structure()
+    _print_json({"version": fw.version, "cycles": outs,
+                 "structure": struct, "health": fw.brain.health()})
+    return 0
+
+
 def cmd_protocol(args: argparse.Namespace) -> int:
     from eci.protocol_vnext.capability import CapabilityManifest, CapabilityVector
     from eci.protocol_vnext.cognitive import CognitiveRuntime
@@ -411,6 +460,12 @@ def build_parser() -> argparse.ArgumentParser:
     pv = sub.add_parser("protocol", help="ECI Protocol vNext demo (federated nervous system)")
     pv.add_argument("--nodes", type=int, default=3, help="nodes in demo federation")
 
+    sub.add_parser("v8", help="v8 OMNISCIENCE report (fitness + router + p2p + economy + research)")
+
+    b = sub.add_parser("brain", help="brain-mesh cycle: subsystems as neurons + GNW ignition")
+    b.add_argument("--ticks", type=int, default=32, help="spiking ticks per cycle")
+    b.add_argument("--cycles", type=int, default=3, help="brain cycles to run")
+
     return parser
 
 
@@ -441,6 +496,8 @@ def main(argv: list[str] | None = None) -> int:
         "ever": cmd_ever,
         "aik": cmd_aik,
         "protocol": cmd_protocol,
+        "v8": cmd_v8,
+        "brain": cmd_brain,
     }
     handler = handlers.get(args.command)
     if handler is None:

@@ -205,6 +205,39 @@ class ECIFramework:
         except Exception as exc:  # noqa: BLE001
             self.logger.warning("SECE wiring skipped: %s", exc)
             self.fcl = self.can = self.market_commons = self.qn_bridge = self.mutable_constitution = None  # type: ignore
+        # v8 OMNISCIENCE composables (ADR-001): fail-closed lazy wiring
+        try:
+            from eci.arch import run_fitness as _run_fitness
+            from eci.economy_attack import evaluate_slash as _eval_slash
+            from eci.federation.p2p import build_mesh as _build_mesh
+            from eci.observability.otel import OtelBridge as _Otel
+            from eci.quantum.hardware import BackendRouter as _Router
+            from eci.research.loop import ResearchLoop as _RLoop
+
+            self._v8_fitness_fn = _run_fitness
+            self.quantum_router = _Router()
+            self._v8_mesh_fn = _build_mesh
+            self._v8_slash_fn = _eval_slash
+            self.otel = _Otel(service=self.config.observability.service_name)
+            self.research_loop = _RLoop()
+            from eci.brain import build_default_mesh as _build_brain
+
+            self.brain = _build_brain(seed=self.config.experiment.random_seed)
+            # brain surprise joins the unification ledger when mesh exists
+            try:
+                aik = getattr(self, "_aik", None)
+                if aik is not None and "ledger" in aik:
+                    aik["ledger"].register(self.brain)
+            except Exception:  # noqa: BLE001
+                pass
+            self._v8_wired = True
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("v8 wiring skipped: %s", exc)
+            self._v8_wired = False
+            self.quantum_router = None  # type: ignore
+            self.otel = None  # type: ignore
+            self.research_loop = None  # type: ignore
+            self.brain = None  # type: ignore
         # agent role needs mcp-relevant grants for pipeline auth
         try:
             self.authz.rbac.grant("agent-0", "agent")
@@ -615,7 +648,64 @@ class ECIFramework:
             "market_commons": lambda: {"ok": True, **self.market_commons.to_dict()} if getattr(self, "market_commons", None) else {"ok": False},
             "qn_bridge": lambda: {"ok": True, "F": float(self.qn_bridge.free_energy_contribution().item())} if getattr(self, "qn_bridge", None) else {"ok": False},
             "mutable_constitution": lambda: {"ok": True, **self.mutable_constitution.to_dict()} if getattr(self, "mutable_constitution", None) else {"ok": False},
+            "brain": lambda: {"ok": True, **self.brain.health()} if getattr(self, "brain", None) else {"ok": False},
+            "v8": _safe(self.v8_status),
         }
+
+    def v8_status(self) -> dict[str, Any]:
+        """v8 OMNISCIENCE composables health (for `eci v8` + system_status)."""
+        out: dict[str, Any] = {"wired": bool(getattr(self, "_v8_wired", False))}
+        try:
+            from eci.arch import run_fitness as _rf
+
+            out["fitness"] = _rf()
+        except Exception as exc:  # noqa: BLE001
+            out["fitness"] = {"ok": False, "error": repr(exc)}
+        try:
+            out["quantum_router"] = self.quantum_router.health() if getattr(self, "quantum_router", None) else {"ok": False}
+        except Exception as exc:  # noqa: BLE001
+            out["quantum_router"] = {"ok": False, "error": repr(exc)}
+        try:
+            out["otel"] = self.otel.health() if getattr(self, "otel", None) else {"ok": False}
+        except Exception as exc:  # noqa: BLE001
+            out["otel"] = {"ok": False, "error": repr(exc)}
+        try:
+            out["research"] = self.research_loop.to_dict() if getattr(self, "research_loop", None) else {"ok": False}
+        except Exception as exc:  # noqa: BLE001
+            out["research"] = {"ok": False, "error": repr(exc)}
+        try:
+            from eci.federation.p2p import run_partition_test as _rpt
+
+            out["partition_probe"] = _rpt(n=4, proposals=1)
+        except Exception as exc:  # noqa: BLE001
+            out["partition_probe"] = {"ok": False, "error": repr(exc)}
+        try:
+            out["brain"] = self.brain.health() if getattr(self, "brain", None) else {"ok": False}
+        except Exception as exc:  # noqa: BLE001
+            out["brain"] = {"ok": False, "error": repr(exc)}
+        return out
+
+    def brain_tick(self, snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
+        """One brain cycle over live subsystem state (defaults to healthy probe)."""
+        if getattr(self, "brain", None) is None:
+            return {"ok": False, "error": "brain unwired"}
+        snap = snapshot or {
+            "quantum": {"entanglement": 0.6, "coherence": 0.5},
+            "consciousness": {"phi": 0.4, "awareness": 0.5},
+            "governance": {"risk": 0.2, "participation": 0.7},
+            "memory": {"recall": 0.6, "novelty": 0.4},
+            "market": {"confidence": 0.6, "liquidity": 0.5},
+            "immune": {"threat": 0.2},
+            "federation": {"peers": 0.7, "quorum": 0.66},
+            "cognition": {"coherence": 0.6, "forecast": 0.5},
+        }
+        out = self.brain.sense(snap)
+        try:
+            self.observability.metrics.counter("eci_brain_ticks_total").inc()
+            self.observability.metrics.gauge("eci_brain_broadcast").set(float(out.get("broadcast", 0.0)))
+        except Exception:  # noqa: BLE001
+            pass
+        return {"ok": True, **out}
 
     async def workflow_demo(self) -> dict[str, Any]:
         """End-to-end v6 slice: DAG + event-bus + stream + provenance + audit."""

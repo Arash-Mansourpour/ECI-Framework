@@ -1,5 +1,5 @@
-# 🌌 ECI Framework v7.3
-## Eternal Codex Infinitus — COGNISPHERE · Living Memory × Consensus Awareness × Knowledge Economy
+# 🌌 ECI Framework v8.0
+## Eternal Codex Infinitus — OMNISCIENCE · Architecture Fitness × Hardware-Routed Quantum × P2P Federation × Economic Security × Autonomous Research (8.0.0)
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-7.3.0--COGNISPHERE-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
+[![Version](https://img.shields.io/badge/version-8.0.0--OMNISCIENCE-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Status](https://img.shields.io/badge/status-experimental-orange.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![License](https://img.shields.io/badge/license-ECI%20Non--Commercial-red.svg)](LICENSE)
@@ -89,6 +89,19 @@ Version 7.3 extends **SECE** (v7.2) with **COGNISPHERE**: Ebbinghaus forgetting 
 MCP: `sece.fcl/gossip`, `sece.can/file|mne`, `sece.market` (executable). Tests: `tests/test_cognisphere.py` (7).
 
 See: `docs/EVERLASTING.md` + SECE (`src/eci/consciousness/federated_ledger.py`, `src/eci/market_commons.py`, `src/eci/bridges/quantum_neuromorphic.py`)
+
+### 🌌 New in v8.0 — OMNISCIENCE
+
+| Track | Module | Proof |
+|---|---|---|
+| 🏛️ Architecture Fitness | `arch/fitness.py` + `arch/adr.py` | 5 fitness checks green via `eci v8`; 6 ADRs in-code |
+| ⚛️ Hardware-Routed Quantum | `quantum/hardware.py` | `SimBackendAdapter` default + fail-closed `QiskitBackend`/`BraketBackend` + `BackendRouter.route` |
+| 🌐 P2P Federation | `federation/p2p.py` | `InMemoryTransport`/`TCPTransport` + `GossipNode` 2/3 quorum + `run_partition_test` stalls on split |
+| 💰 Economic Security | `economy_attack.py` | Whale LMSR push flagged + unprofitable; collusion flip detected; `evaluate_slash` capped at stake |
+| 📡 Observability | `observability/otel.py` | NoOp-unless-installed `OtelBridge` + native Prometheus from `MetricsRegistry.to_prometheus` |
+| 🔬 Autonomous Research | `research/loop.py` | `propose → twin → canary → vote → Brier` ledgered with `ARCHITECT.stamp` |
+
+Run: `PYTHONPATH=src python -m eci v8`. Tests: `tests/test_v8_advance.py` (12). See: `docs/V8_OMNISCIENCE.md`.
 
 ---
 
@@ -267,6 +280,8 @@ Every subcommand is defined in `src/eci/__main__.py:341` and verified here:
 | `eci ever` | everlasting continuance report (caps/proofs/continuum/mapek/compat) | — |
 | `eci aik` | unification mesh observability (read-only) | `shares \| total \| describe` |
 | `eci protocol` | ECI Protocol vNext demo (federated nervous system) | `--nodes 3` |
+| `eci v8` | v8 OMNISCIENCE report (fitness + router + p2p + economy + research) | — |
+| `eci brain` | brain-mesh cycle: subsystems as neurons + GNW ignition | `--ticks 32 --cycles 3` |
 
 Run `eci <cmd> --help` for full flags; `eci --version` prints `src/eci/version.py`.
 

@@ -8,5 +8,13 @@ deployments become one global network without centralization.
 """
 
 from eci.federation.bridge import Bridge, TranslationMap, anchor, translate_vote
+from eci.federation.p2p import (
+           GossipNode,
+           InMemoryTransport,
+           TCPTransport,
+           build_mesh,
+           run_partition_test,
+)
 
-__all__ = ["Bridge", "TranslationMap", "anchor", "translate_vote"]
+__all__ = ["Bridge", "TranslationMap", "anchor", "translate_vote",
+           "GossipNode", "InMemoryTransport", "TCPTransport", "build_mesh", "run_partition_test"]

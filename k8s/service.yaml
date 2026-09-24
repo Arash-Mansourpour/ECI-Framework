@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eci-framework
+  labels:
+    app: eci-framework
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8777"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: eci-framework
+  ports:
+    - name: health
+      port: 8777
+      targetPort: 8777
+  type: ClusterIP

@@ -19,7 +19,11 @@ def test_all_contributors_registered_in_default_mesh():
     from eci.aikernel.state_contract import StateContributor
     found = {}
     for mod in pkgutil.walk_packages(eci.__path__, prefix="eci."):
-        if "test" in mod.name or "pycache" in mod.name or "bridges" in mod.name:
+        # bridges + brain are framework-level composables wired into the live
+        # ECIFramework ledger (v8), not members of the locked Phase-9 default
+        # 8-member mesh — excluded here, covered by tests/test_brain_mesh.py.
+        if ("test" in mod.name or "pycache" in mod.name or "bridges" in mod.name
+                or "eci.brain" in mod.name):
             continue
         try:
             m = __import__(mod.name, fromlist=["*"])

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eci-framework
+  labels:
+    app: eci-framework
+    version: "8.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eci-framework
+  template:
+    metadata:
+      labels:
+        app: eci-framework
+        version: "8.0.0"
+      annotations:
+        eci.architect: "Arash Mansourpour"
+        eci.channel: "8.0.0-OMNISCIENCE"
+    spec:
+      containers:
+        - name: eci
+          image: eci-framework:8.0.0
+          ports:
+            - containerPort: 8777
+              name: health
+          env:
+            - name: ECI_PROFILE
+              value: server
+            - name: PYTHONPATH
+              value: src
+          command: ["python", "-m", "eci", "health", "--serve", "--port", "8777"]
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8777
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8777
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi

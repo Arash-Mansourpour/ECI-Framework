@@ -2,10 +2,11 @@
 
 from eci.observability.audit import AuditLogger, AuditRecord
 from eci.observability.metrics import Counter, Gauge, Histogram, MetricsRegistry
+from eci.observability.otel import OtelBridge
 from eci.observability.tracing import Span, Tracer
 
 __all__ = ["Tracer", "Span", "MetricsRegistry", "Counter", "Gauge", "Histogram",
-           "AuditLogger", "AuditRecord", "Observability"]
+           "AuditLogger", "AuditRecord", "Observability", "OtelBridge"]
 
 
 class Observability:
