@@ -9,7 +9,10 @@
    (incl. asymmetric cross-constraint probes); sia reported side by side
    with the version caveat, never equated.
 """
+import importlib.util
 import pathlib
+
+import pytest
 
 # NOTE: mcp/fabric.py excluded on purpose — its __import__ lazy-import style
 # predates the unification layer; this gate locks OUR files, not legacy style.
@@ -101,15 +104,22 @@ def test_pyphi_crosscheck_agreement():
         assert "caveat" in out and "3.0" in out["caveat"] and "4.0" in out["caveat"]
 
 
-def test_pyphi_skip_paths_without_pyphi(monkeypatch):
-    """Absent PyPhi and oversized systems refuse with reasons, not crashes."""
+def test_pyphi_skip_path_without_pyphi_mocked(monkeypatch):
+    """Absent PyPhi refuses with a reason, not a crash (mocked; always runs)."""
     import importlib.util
 
-    from eci.consciousness.iit4 import DiscreteSubstrate, crosscheck_pyphi, disconnected_system
+    from eci.consciousness.iit4 import crosscheck_pyphi, disconnected_system
     monkeypatch.setattr(importlib.util, "find_spec", lambda *a, **k: None)
     out = crosscheck_pyphi(disconnected_system())
     assert out == {"ok": True, "skipped": True, "reason": "pyphi not installed"}
-    monkeypatch.undo()
+
+
+@pytest.mark.skipif(importlib.util.find_spec("pyphi") is None,
+                    reason="needs the optional `validation` extra (pyphi)")
+def test_pyphi_size_guard_with_pyphi_installed():
+    """n>3 refuses on sia cost — reachable only when pyphi is installed,
+    because the absence check runs first (see iit4.crosscheck_pyphi)."""
+    from eci.consciousness.iit4 import DiscreteSubstrate, crosscheck_pyphi
     big4 = DiscreteSubstrate(4, {j: [0.5] * 16 for j in range(4)}, (0, 0, 0, 0))
     out2 = crosscheck_pyphi(big4)
     assert out2["skipped"] is True and "n=3" in out2["reason"], out2
