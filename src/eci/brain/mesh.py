@@ -107,9 +107,10 @@ class BrainMesh:
         drive = torch.zeros(self.connectome.n)
         for i, r in enumerate(REGIONS):
             sub = snapshot.get(r, {}) if isinstance(snapshot.get(r, {}), dict) else {}
-            if not sub and isinstance(snapshot, dict) and r not in snapshot:
+            if not sub and r not in snapshot:
                 # flat snapshot fallback: same value everywhere
-                val = float(snapshot.get("drive", 0.6)) if isinstance(snapshot, dict) else 0.6
+                drive_raw = snapshot.get("drive", 0.6)
+                val = float(drive_raw) if isinstance(drive_raw, (int, float)) else 0.6
             else:
                 val = _encode_subsystem(r, sub if isinstance(sub, dict) else {})
             drive[i * self.per_region:(i + 1) * self.per_region] = val

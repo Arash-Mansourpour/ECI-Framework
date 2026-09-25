@@ -11,6 +11,7 @@ Implements Dehaene GNW + Whyte predictive extension:
 from __future__ import annotations
 
 import math
+from typing import Any
 
 import torch
 
@@ -26,9 +27,9 @@ class BrainWorkspace:
         self.entropy_max = entropy_max
         self.pred_lr = pred_lr
         self.prediction = torch.full((n_regions,), 0.5)
-        self.history: list[dict[str, object]] = []
+        self.history: list[dict[str, Any]] = []
 
-    def cycle(self, salience: torch.Tensor) -> dict[str, object]:
+    def cycle(self, salience: torch.Tensor) -> dict[str, Any]:
         s = salience.to(torch.float32).reshape(self.n).clamp(0.0, 1.0)
         logits = self.beta * s.double()
         p = torch.softmax(logits, dim=0)
@@ -42,7 +43,7 @@ class BrainWorkspace:
         f_region = float((err.pow(2).mean() * (0.5 + precision)).item())
         # update top-down prediction toward input (slow)
         self.prediction = self.prediction + self.pred_lr * err
-        rec: dict[str, object] = {"winner": winner, "ignited": ignited,
+        rec: dict[str, Any] = {"winner": winner, "ignited": ignited,
                                   "broadcast": broadcast, "entropy": ent,
                                   "pred_error": float(err.abs().mean().item()),
                                   "free_energy": f_region}

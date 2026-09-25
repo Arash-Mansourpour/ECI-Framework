@@ -22,6 +22,7 @@ the pipeline converts it to structured {ok:false} envelopes.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any
 
 __all__ = ["build_default_registry"]
@@ -262,7 +263,7 @@ def build_default_registry(framework: Any, registry=None):
 
     def _causal(args, ctx):
         from eci.cognition.causal import ate_backdoor, discover
-        data = {k: [float(x) for x in v] for k, v in args.get("data", {}).items()}
+        data: dict[str, Sequence[float]] = {k: [float(x) for x in v] for k, v in args.get("data", {}).items()}
         g = discover(data)
         out = {"graph": g.to_dict()}
         if args.get("cause") and args.get("effect"):

@@ -23,7 +23,7 @@ Wallet: GA4IHOJOXKIZDLNCXQT7NG65MT7Z3EQKRT4PYFYURIP7QRLY4CHMHILW
 from __future__ import annotations
 
 import asyncio
-from typing import Any
+from typing import Any, cast
 
 import torch
 
@@ -400,7 +400,8 @@ class ECIFramework:
             # awareness raises low-Phi structure without saturating high Phi.
             profile.phi_components["ipdf_bits"] = m.consciousness_bits
             profile.phi_components["awareness_index"] = m.awareness_index
-            profile.phi_components["gnwt_broadcast"] = float(gnwt_out.get("broadcast", 0.0))
+            _bcast = gnwt_out.get("broadcast", 0.0)
+            profile.phi_components["gnwt_broadcast"] = float(_bcast) if isinstance(_bcast, (int, float)) else 0.0
             profile.self_awareness_score = float(
                 min(1.0, 0.7 * profile.self_awareness_score + 0.3 * m.awareness_index)
             )
@@ -468,7 +469,7 @@ class ECIFramework:
         hamiltonian = PauliSum([PauliTerm(0.5, {0: "Z", 1: "Z"}), PauliTerm(0.3, {0: "X"})])
         vqe = qalg.vqe(hamiltonian, n_qubits=2, n_layers=2, steps=60, lr=0.1)
         results["vqe_energy"] = vqe["energy"]
-        results["vqe_initial_energy"] = vqe["history"][0]
+        results["vqe_initial_energy"] = cast("list[float]", vqe["history"])[0]
 
         # 6. Unified ECI field expectation
         fsim = StatevectorSimulator(self.field_config.n_qubits, device=self.device)

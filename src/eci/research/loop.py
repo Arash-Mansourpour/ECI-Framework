@@ -102,7 +102,8 @@ class ResearchLoop:
         votes: dict[str, int] = {}
         if self._dao is not None:
             try:
-                pid = self._dao.propose(f"research:{hyp.id}", proposer=self.agent_id) \
+                pid = self._dao.propose(f"research:{hyp.id}", {"hypothesis": hyp.id},
+                                                  self.agent_id) \
                     if hasattr(self._dao, "propose") else "local"
                 # deterministic ballots from scores (no randomness)
                 for i, v in enumerate(voters):
