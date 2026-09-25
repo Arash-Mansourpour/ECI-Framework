@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eci-framework"
-version = "8.0.0"
-description = "ECI Framework v8.0 OMNISCIENCE - architecture fitness, hardware-routed quantum, P2P federation chaos, economic attack sim, OTel, autonomous research loop"
+version = "8.1.0"
+description = "ECI Framework v8.1 CREATE - quality-diversity creativity, verification gate, exploration harness, causal engine, energy ledger, interpretability probes, recursive self-improvement"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "ECI Non-Commercial License v1.0" }

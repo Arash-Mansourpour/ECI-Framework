@@ -238,6 +238,39 @@ class ECIFramework:
             self.otel = None  # type: ignore
             self.research_loop = None  # type: ignore
             self.brain = None  # type: ignore
+        # v9 CREATE composables (P0 QD/verification/exploration + P1 causal/
+        # energy/interpret/recursion): fail-closed lazy wiring
+        try:
+            from eci.causality import StructuralCausalModel as _SCM
+            from eci.creativity import MAPElites as _QD
+            from eci.energy import EnergyLedger as _ELed
+            from eci.exploration import Harness as _Harn
+            from eci.interpret import LinearProbe as _Probe
+            from eci.recursion import OuterLoop as _Outer
+            from eci.research.loop import ResearchLoop as _RLoop
+            from eci.verification import VerificationGate as _Gate
+
+            self.qd = _QD(dims=2, bins=6, seed=self.config.experiment.random_seed)
+            self.verify_gate = _Gate()
+            self.explorer = _Harn()
+            self.causal_demo = _SCM(
+                ["X", "Z", "Y"],
+                {"X": ([], [], 1.0), "Z": (["X"], [0.5], 0.1),
+                 "Y": (["X", "Z"], [2.0, 1.0], 0.1)},
+                seed=self.config.experiment.random_seed)
+            self.energy = _ELed()
+            self.probe_dim = 8
+            self._probe_cls = _Probe
+            self._outer_cls = _Outer
+            self.meta_loop = _Outer(
+                lambda params: _RLoop(quorum=params.get("quorum", 0.66)),
+                seed=self.config.experiment.random_seed)
+            self._v9_wired = True
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("v9 wiring skipped: %s", exc)
+            self._v9_wired = False
+            self.qd = self.verify_gate = self.explorer = None  # type: ignore
+            self.causal_demo = self.energy = self.meta_loop = None  # type: ignore
         # agent role needs mcp-relevant grants for pipeline auth
         try:
             self.authz.rbac.grant("agent-0", "agent")
@@ -650,6 +683,7 @@ class ECIFramework:
             "mutable_constitution": lambda: {"ok": True, **self.mutable_constitution.to_dict()} if getattr(self, "mutable_constitution", None) else {"ok": False},
             "brain": lambda: {"ok": True, **self.brain.health()} if getattr(self, "brain", None) else {"ok": False},
             "v8": _safe(self.v8_status),
+            "v9": _safe(self.v9_status),
         }
 
     def v8_status(self) -> dict[str, Any]:
@@ -683,7 +717,25 @@ class ECIFramework:
             out["brain"] = self.brain.health() if getattr(self, "brain", None) else {"ok": False}
         except Exception as exc:  # noqa: BLE001
             out["brain"] = {"ok": False, "error": repr(exc)}
+        out["v9"] = self.v9_status()
         return out
+
+    def v9_status(self) -> dict[str, Any]:
+        """v9 CREATE composables health (QD + verification + exploration + causal + energy + meta)."""
+        def _safe(fn):
+            try:
+                return fn()
+            except Exception as exc:  # noqa: BLE001
+                return {"ok": False, "error": repr(exc)[:160]}
+        return {
+            "wired": bool(getattr(self, "_v9_wired", False)),
+            "qd": _safe(lambda: self.qd.report() if getattr(self, "qd", None) else {"ok": False}),
+            "verification": _safe(lambda: self.verify_gate.to_dict() if getattr(self, "verify_gate", None) else {"ok": False}),
+            "exploration": _safe(lambda: {"trials": len(self.explorer.trials)} if getattr(self, "explorer", None) else {"ok": False}),
+            "causal": _safe(lambda: self.causal_demo.to_dict() if getattr(self, "causal_demo", None) else {"ok": False}),
+            "energy": _safe(lambda: self.energy.to_dict() if getattr(self, "energy", None) else {"ok": False}),
+            "meta": _safe(lambda: {"rounds": len(self.meta_loop.rounds)} if getattr(self, "meta_loop", None) else {"ok": False}),
+        }
 
     def brain_tick(self, snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
         """One brain cycle over live subsystem state (defaults to healthy probe)."""

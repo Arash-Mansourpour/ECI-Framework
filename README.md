@@ -1,5 +1,5 @@
-# 🌌 ECI Framework v8.0
-## Eternal Codex Infinitus — OMNISCIENCE · Architecture Fitness × Hardware-Routed Quantum × P2P Federation × Economic Security × Autonomous Research (8.0.0)
+# 🌌 ECI Framework v8.1
+## Eternal Codex Infinitus — CREATE · Quality-Diversity × Verification Gate × Exploration × Causality × Energy × Interpretability × Recursion (8.1.0)
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-8.0.0--OMNISCIENCE-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
+[![Version](https://img.shields.io/badge/version-8.1.0--CREATE-blueviolet.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Status](https://img.shields.io/badge/status-experimental-orange.svg)](https://github.com/Arash-Mansourpour/ECI-Framework)
 [![License](https://img.shields.io/badge/license-ECI%20Non--Commercial-red.svg)](LICENSE)
@@ -102,6 +102,20 @@ See: `docs/EVERLASTING.md` + SECE (`src/eci/consciousness/federated_ledger.py`, 
 | 🔬 Autonomous Research | `research/loop.py` | `propose → twin → canary → vote → Brier` ledgered with `ARCHITECT.stamp` |
 
 Run: `PYTHONPATH=src python -m eci v8`. Tests: `tests/test_v8_advance.py` (12). See: `docs/V8_OMNISCIENCE.md`.
+
+### 🎨 New in v8.1 — CREATE
+
+| Track | Module | Proof |
+|---|---|---|
+| 🗺️ Quality-Diversity | `creativity/qd.py` | MAP-Elites archive + novelty search + morph/redteam adapters |
+| 🛡️ Verification Gate | `verification/gate.py` | Claim admitted only with green executable verifier (blocking) |
+| 🧭 Exploration | `exploration/harness.py` | Novel keydoor/bandit/seqlock envs, efficiency vs human baseline |
+| 🔗 Causality | `causality/engine.py` | SCM `do()` surgery, interventional ATE, PC-skeleton discovery |
+| ⚡ Energy | `energy/ledger.py` | Joules per decision (AC 0.9pJ / MAC 4.6pJ), priced into economy |
+| 🔬 Interpretability | `interpret/probes.py` | Linear concept probe + erase-and-measure → redteam leads |
+| 🔁 Recursion | `recursion/loop.py` | Outer loop hill-climbs inner loop params on Brier, verified transitions |
+
+Run: `PYTHONPATH=src python -m eci create`. Tests: `tests/test_v9_create.py` (9). See: `docs/V9_CREATE.md`.
 
 ---
 
@@ -282,6 +296,7 @@ Every subcommand is defined in `src/eci/__main__.py:341` and verified here:
 | `eci protocol` | ECI Protocol vNext demo (federated nervous system) | `--nodes 3` |
 | `eci v8` | v8 OMNISCIENCE report (fitness + router + p2p + economy + research) | — |
 | `eci brain` | brain-mesh cycle: subsystems as neurons + GNW ignition | `--ticks 32 --cycles 3` |
+| `eci create` | v9 CREATE demo (QD + verification + exploration + causal + energy + probe + meta) | — |
 
 Run `eci <cmd> --help` for full flags; `eci --version` prints `src/eci/version.py`.
 

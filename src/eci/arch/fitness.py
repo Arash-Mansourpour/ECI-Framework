@@ -81,7 +81,8 @@ def check_v8_composables_present() -> FitnessResult:
     missing: list[str] = []
     for mod in ("eci.arch", "eci.quantum.hardware", "eci.federation.p2p",
                 "eci.economy_attack", "eci.observability.otel", "eci.research.loop",
-                "eci.brain"):
+                "eci.brain", "eci.creativity", "eci.verification", "eci.exploration",
+                "eci.causality", "eci.energy", "eci.interpret", "eci.recursion"):
         try:
             __import__(mod)
         except Exception:  # noqa: BLE001
@@ -90,7 +91,7 @@ def check_v8_composables_present() -> FitnessResult:
         name="v8_composables_present",
         ok=not missing,
         detail="all present" if not missing else f"missing: {missing}",
-        target="7 v8 modules importable",
+        target="14 v8/v9 modules importable",
     )
 
 

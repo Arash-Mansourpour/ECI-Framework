@@ -10,7 +10,7 @@ import pytest
 COMMANDS = ["info", "demo", "quantum", "consciousness", "network", "field",
             "mind", "activate", "benchmark", "health", "system", "workflow",
             "mcp", "agent", "eval", "think", "dream", "morph", "ever", "aik",
-            "protocol", "v8", "brain"]
+            "protocol", "v8", "brain", "architect", "create"]
 
 
 def test_all_subcommands_have_help():
@@ -74,6 +74,9 @@ def test_cli_all_light_runs():
         (["protocol", "--nodes", "2"], False),
         (["v8"], False),
         (["brain", "--ticks", "8", "--cycles", "1"], False),
+        (["architect"], False),
+        (["architect", "--demo"], False),
+        (["create"], False),
     ]
 
     # patch heavy quantum/demo suites so demo test stays fast if added later

@@ -23,7 +23,8 @@ is `src/eci/version.py`.
 | 7.1.0 | ECI Non-Commercial v1.0 | All metadata (pyproject, classifiers, README badge, CITATION.cff) now consistent |
 | 7.2.0 | ECI Non-Commercial v1.0 | SECE: FCL/CAN/MarketCommons/QN-Bridge/MutableGenome + MCP `sece.*` + framework wiring |
 | 7.3.0 | ECI Non-Commercial v1.0 | COGNISPHERE: LFM + MAA + KNE + neuron atlas (AdLIF/Izhikevich/Homeostatic) + `sece.gossip/file/economy` MCP tools |
-| 8.0.0 (current) | ECI Non-Commercial v1.0 | OMNISCIENCE: arch fitness + 6 ADRs, hardware-routed quantum, P2P gossip + partition probe, economic attack sim, OTel bridge, research loop, **Brain Mesh** (8 subsystems as neurons, predictive GNW, local STDP) + `eci v8`/`eci brain` + k8s |
+| 8.0.0 | ECI Non-Commercial v1.0 | OMNISCIENCE: arch fitness + 6 ADRs, hardware-routed quantum, P2P gossip + partition probe, economic attack sim, OTel bridge, research loop, **Brain Mesh** (8 subsystems as neurons, predictive GNW, local STDP) + `eci v8`/`eci brain` + k8s |
+| 8.1.0 (current) | ECI Non-Commercial v1.0 | CREATE: MAP-Elites QD + novelty, blocking verification gate, ARC-style exploration harness, SCM do-calculus + discovery, Joules ledger priced into economy, linear probes + ablation → redteam, AREX-style outer self-improvement loop + `eci create` |
 
 ## [7.3.0] — 2026-09-16 — COGNISPHERE · Living Memory, Consensus Awareness, Knowledge Economy
 

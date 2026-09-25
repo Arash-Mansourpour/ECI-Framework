@@ -283,6 +283,20 @@ def cmd_v8(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_architect(args: argparse.Namespace) -> int:
+    """Architect presence: DID + key status + optional sign/verify demo."""
+    from eci.core.identity import ARCHITECT
+
+    out: dict[str, Any] = {"identity": ARCHITECT.to_dict(),
+                           "did": ARCHITECT.did(), "keys": ARCHITECT.key_status()}
+    if getattr(args, "demo", False):
+        env = ARCHITECT.sign({"kind": "architect_demo"}, domain="demo")
+        out["demo"] = {"envelope": env,
+                       "verify": ARCHITECT.verify_signature({"kind": "architect_demo"}, env)}
+    _print_json(out)
+    return 0
+
+
 def cmd_brain(args: argparse.Namespace) -> int:
     """One brain cycle: all subsystems fire as neurons, GNW ignites, broadcast returns."""
     fw = ECIFramework()
@@ -294,6 +308,54 @@ def cmd_brain(args: argparse.Namespace) -> int:
     struct = fw.brain.adapt_structure()
     _print_json({"version": fw.version, "cycles": outs,
                  "structure": struct, "health": fw.brain.health()})
+    return 0
+
+
+def cmd_create(args: argparse.Namespace) -> int:
+    """v9 CREATE demo: QD archive + verified claim + exploration + causal + energy + probe + meta."""
+    import torch
+
+    from eci.causality import discover_skeleton
+    from eci.creativity import diversify_morph_probes
+    from eci.exploration import Harness, KeyDoorEnv
+    from eci.interpret import ablation_report, train_probe
+    from eci.verification import Claim
+
+    fw = ECIFramework()
+    out: dict[str, Any] = {"version": fw.version}
+    out["qd"] = diversify_morph_probes([0.2, 0.7], generations=3, seed=0)
+    gate = fw.verify_gate
+    verdict = gate.evaluate(Claim(id="create-demo", statement="qd archive is non-empty",
+                                  verifier=lambda: {"ok": out["qd"]["cells"] >= 2}))
+    out["verification"] = verdict.to_dict()
+
+    class _Greedy:
+        def act(self, obs: dict[str, Any]) -> int:
+            if obs.get("key_here"):
+                return 2
+            if obs.get("door_here") and obs.get("has_key"):
+                return 2
+            return 1
+
+    out["exploration"] = Harness().run_trial(KeyDoorEnv(), _Greedy(), seed=0)
+    data = fw.causal_demo.sample(300)
+    out["causal"] = {"ate_X_Y": round(fw.causal_demo.ate("X", "Y"), 3),
+                     "skeleton": discover_skeleton(data)["edges"]}
+    tick = fw.brain_tick()
+    erec = fw.energy.record_brain_cycle("create-demo", tick.get("spikes", 0), 64, 32)
+    out["energy"] = {"joules": erec.joules, "sparsity": round(erec.sparsity, 4)}
+    g = torch.Generator().manual_seed(0)
+    x = torch.randn(40, 6, generator=g)
+    probe = train_probe(x, (x[:, 1] > 0).float())
+    out["interpret"] = {"probe_acc": probe.acc,
+                        **ablation_report(lambda t: (t @ probe.w + probe.b).unsqueeze(1), x, probe)}
+    meta = fw.meta_loop.run(
+        lambda r: [{"claim": f"m{r}", "prob": 0.8, "payload": {"x": 0.9},
+                    "drill": (lambda p: float(p["x"])), "outcome": 1}],
+        verifier=lambda s: True, rounds=2)
+    out["meta"] = meta
+    out["v9"] = fw.v9_status()
+    _print_json(out)
     return 0
 
 
@@ -466,6 +528,11 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--ticks", type=int, default=32, help="spiking ticks per cycle")
     b.add_argument("--cycles", type=int, default=3, help="brain cycles to run")
 
+    arch = sub.add_parser("architect", help="architect presence: DID + key status + sign/verify demo")
+    arch.add_argument("--demo", action="store_true", help="run a sign/verify round-trip and print it")
+
+    sub.add_parser("create", help="v9 CREATE demo (QD + verification + exploration + causal + energy + probe + meta)")
+
     return parser
 
 
@@ -498,6 +565,8 @@ def main(argv: list[str] | None = None) -> int:
         "protocol": cmd_protocol,
         "v8": cmd_v8,
         "brain": cmd_brain,
+        "architect": cmd_architect,
+        "create": cmd_create,
     }
     handler = handlers.get(args.command)
     if handler is None:

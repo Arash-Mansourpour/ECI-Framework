@@ -10,8 +10,13 @@ from eci import aikernel as aikernel
 # SECE Phase 22: bridges + market commons
 from eci import brain as brain
 from eci import bridges as bridges
+from eci import causality as causality
+from eci import creativity as creativity
+from eci import energy as energy
+from eci import exploration as exploration
 from eci import federation as federation
 from eci import immune as immune
+from eci import interpret as interpret
 from eci import mcp as mcp
 from eci import neural as neural
 from eci import precog as precog
@@ -19,6 +24,8 @@ from eci import precog as precog
 # Protocol-0 + immune + frontier systems
 from eci import protocol0 as protocol0
 from eci import protocol_vnext as protocol_vnext
+from eci import recursion as recursion
+from eci import verification as verification
 
 # v6.1 deep systems (agents / data-plane / treasury / eval / supply / mcp)
 from eci.agents import AgentLoop, Agents, EpisodicMemory, ToolRegistry, VectorMemory
@@ -32,6 +39,7 @@ from eci.bridges.quantum_neuromorphic import QuantumNeuromorphicBridge
 from eci.caps import CapToken
 from eci.caps import Issuer as CapIssuer
 from eci.causal import HLC, hlc_now, merge_chains, sort_key
+from eci.causality import StructuralCausalModel, discover_skeleton
 from eci.chaos import ChaosPlan, Fault, run_plan
 from eci.cognition import Cognition, CognitionConfig
 from eci.compat import CompatRegistry, Interface
@@ -64,6 +72,7 @@ from eci.core.types import (
     QuantumState,
 )
 from eci.court import Case, Court, Verdict
+from eci.creativity import MAPElites, diversify_morph_probes, diversify_redteam
 from eci.cybernetics.autopoiesis import AutopoieticNetwork
 from eci.data import BlobStore, Cache, DataPlane
 from eci.economy import ACTION_COSTS, Economy
@@ -73,7 +82,9 @@ from eci.economy_attack import (
     simulate_collusion,
     simulate_whale_attack,
 )
+from eci.energy import EnergyLedger
 from eci.eval import EvalReport, run_gates
+from eci.exploration import Harness
 from eci.federation.p2p import build_mesh as build_p2p_mesh
 from eci.federation.p2p import run_partition_test
 
@@ -92,6 +103,7 @@ from eci.governance.treasury import Envelope as TreasuryEnvelope
 from eci.governance.treasury import Treasury
 from eci.health import metrics_text
 from eci.health import status as health_status
+from eci.interpret import LinearProbe, ablation_report
 
 # v6 hyper-architecture (kernel / ops / control / intelligence)
 from eci.kernel import Container, Event, EventBus, Kernel, LifecycleManager
@@ -179,6 +191,7 @@ from eci.quantum.unified_field import ECIFieldConfig, eci_unified_hamiltonian
 from eci.recovery import RecoveryRequest
 from eci.recovery import combine as shamir_combine
 from eci.recovery import split as shamir_split
+from eci.recursion import OuterLoop
 from eci.redteam import Challenger, ForecasterRegistry, contradiction_scan
 from eci.research.loop import ResearchLoop
 from eci.resilience import CircuitBreaker, Resilience, RetryPolicy, Saga, TokenBucket
@@ -193,6 +206,7 @@ from eci.streaming import StreamBus
 from eci.supply import sbom
 from eci.tenancy import TenancyManager
 from eci.twin import TwinReport, what_if
+from eci.verification import Claim, VerificationGate
 from eci.verify import Monitor, Watchtower, seal_proof, verify_proof
 from eci.version import FRAMEWORK_VERSION, PAPER_VERSION, __version__
 
@@ -290,6 +304,8 @@ __all__ = [
     "immune",
     "federation",
     "precog",
+    "creativity", "verification", "exploration", "causality",
+    "energy", "interpret", "recursion",
     "neural",
     "HLC",
     "hlc_now",
@@ -357,6 +373,10 @@ __all__ = [
     "ECIFramework",
     "ECIFrameworkResearch",
     "brain", "BrainMesh", "build_default_mesh",
+    "MAPElites", "diversify_morph_probes", "diversify_redteam",
+    "Claim", "VerificationGate", "Harness",
+    "StructuralCausalModel", "discover_skeleton",
+    "EnergyLedger", "LinearProbe", "ablation_report", "OuterLoop",
     "run_fitness", "ADR_REGISTRY", "list_adrs",
     "BackendRouter", "SimBackendAdapter", "QiskitBackend", "BraketBackend",
     "build_p2p_mesh", "run_partition_test",
