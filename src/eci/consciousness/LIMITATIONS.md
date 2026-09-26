@@ -20,10 +20,14 @@ caveat is misrepresenting them.
 | iPDF awareness, `protocol.py` | Operational KL proxy with calibrated tiers | Not IIT Φ; thresholds are paper conventions |
 | Adherence / challenge-response / EEG bandpower / collective / analyzer composite | Behavioral and signal-processing proxies | No external ground truth for "awareness" |
 | Adaptive vigilance, `protocol_vigilance.py` | Statistical EWMA + linear-predictive proxy (threshold `mean+3σ`, bounded deque) | Not a security proof or consciousness measure — adaptive stats only; see `protocol_vigilance.py` header |
+| Brain mesh firing rates, `brain/mesh.py` + `brain/neuron.py` | Simulated LIF rates on encoded subsystem health, deterministic given seed | Not brain measurements; no neural ground truth |
+| Brain mesh ignition, `brain/workspace.py` | Competition math (softmax + theta/entropy gate) on simulated rates; "prediction" = EMA of salience | Not conscious experience; not a forecast of real events |
 
 ## What you may and may not say
 
 - MAY: "Gaussian Phi of this covariance is X", "IIT 4.0 Φ of this TPM is
-  Y (unbenchmarked magnitudes)", "audit shows decoherence wins by N orders".
+  Y (unbenchmarked magnitudes)", "audit shows decoherence wins by N orders",
+  "ignition math fired on simulated firing rates".
 - MAY NOT: "the system is conscious at level X", "Phi proves experience",
+  "the mesh was aware / conscious / predicted real events",
   or any sentence where removing this file's caveat changes the meaning.

@@ -15,7 +15,7 @@ exploration, AREX bi-level self-improvement, SpikingBrain sparsity economics.
 | 2 | Verification gate | `verification/` | claim admitted only if verifier green |
 | 3 | Exploration | `exploration/` | keydoor solved, efficiency 0.83 |
 | 4 | Causality | `causality/` | interventional ATE(X→Y) ≈ 2.5, skeleton |
-| 5 | Energy | `energy/` | brain cycle in nJ, sparsity 0.94, priced |
+| 5 | Energy | `energy/` | simulated brain-mesh cycle cost in nJ (Horowitz estimate), sparsity 0.94, priced |
 | 6 | Interpretability | `interpret/` | probe acc 0.95, causal dims → redteam lead |
 | 7 | Recursion | `recursion/` | outer loop adopts better quorum on Brier |
 

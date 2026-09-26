@@ -12,7 +12,7 @@ Version: `8.0.0-OMNISCIENCE` (`src/eci/version.py`), paper `infinity.23.0`.
 | Economy | `economy_attack.py` | whale flagged+unprofitable, collusion detected, slash capped |
 | Observability | `observability/otel.py` | NoOp-unless-installed + native Prometheus |
 | Research | `research/loop.py` | propose→twin→canary→vote→Brier, ARCHITECT-stamped |
-| **Brain** | `brain/` (neuron/synapse/connectome/workspace/mesh) | 8 subsystems as neurons, predictive GNW ignition, local STDP |
+| **Brain** | `brain/` (neuron/synapse/connectome/workspace/mesh) | 8 subsystems simulated as neural populations, GNW-style ignition math on simulated rates, local STDP |
 
 ## Run
 

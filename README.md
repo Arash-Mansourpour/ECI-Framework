@@ -295,7 +295,7 @@ Every subcommand is defined in `src/eci/__main__.py:341` and verified here:
 | `eci aik` | unification mesh observability (read-only) | `shares \| total \| describe` |
 | `eci protocol` | ECI Protocol vNext demo (federated nervous system) | `--nodes 3` |
 | `eci v8` | v8 OMNISCIENCE report (fitness + router + p2p + economy + research) | — |
-| `eci brain` | brain-mesh cycle: subsystems as neurons + GNW ignition | `--ticks 32 --cycles 3` |
+| `eci brain` | brain-mesh cycle: subsystems simulated as neural populations + GNW-style ignition math | `--ticks 32 --cycles 3` |
 | `eci create` | v9 CREATE demo (QD + verification + exploration + causal + energy + probe + meta) | — |
 
 Run `eci <cmd> --help` for full flags; `eci --version` prints `src/eci/version.py`.
