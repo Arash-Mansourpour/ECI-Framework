@@ -23,6 +23,7 @@ import hmac
 import json
 import os
 import time
+import warnings
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -37,16 +38,38 @@ _ENV_SEED = "ECI_ARCHITECT_SEED"
 _ENV_KEYFILE = "ECI_ARCHITECT_KEYFILE"
 
 
+def _warn_if_world_readable(path: str) -> None:
+    """Warn (never crash) if a keyfile is group/other-readable. POSIX only."""
+    try:
+        if os.name != "posix":
+            return
+        mode = os.stat(path).st_mode
+        if mode & 0o077:
+            warnings.warn(
+                f"architect keyfile has group/other permissions "
+                f"(mode {oct(mode & 0o777)}); chmod 600 recommended",
+                stacklevel=3,
+            )
+    except Exception:  # noqa: BLE001
+        return
+
+
 def _read_seed() -> bytes | None:
     """Load a 32-byte architect seed from env/file. Never logged, never raised."""
     try:
         raw = os.environ.get(_ENV_SEED, "").strip()
-        if not raw and os.environ.get(_ENV_KEYFILE, "").strip():
-            with open(os.environ[_ENV_KEYFILE.strip()], "rb") as fh:
-                raw = fh.read().decode("utf-8", errors="ignore").strip()
+        if not raw:
+            keyfile = os.environ.get(_ENV_KEYFILE, "").strip()
+            if keyfile:
+                _warn_if_world_readable(keyfile)
+                with open(keyfile, "rb") as fh:
+                    raw = fh.read().decode("utf-8", errors="ignore").strip()
         if not raw:
             return None
-        seed = bytes.fromhex(raw[:64] if len(raw) >= 64 else raw)
+        cleaned = "".join(raw.split())
+        if len(cleaned) != 64:
+            return None
+        seed = bytes.fromhex(cleaned)
         return seed if len(seed) == 32 else None
     except Exception:  # noqa: BLE001
         return None

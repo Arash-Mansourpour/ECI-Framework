@@ -20,6 +20,8 @@ _SECRET_PATTERNS = [
     re.compile(r"github_pat_[A-Za-z0-9_]+"),
     re.compile(r"sk-[A-Za-z0-9 Hafnium-]{8,}"),
     re.compile(r"(?i)(password|passwd|secret)\s*[:=]\s*\S+"),
+    re.compile(r"ECI_ARCHITECT_SEED[\"']?\s*[:=]\s*[\"']?\S+"),
+    re.compile(r"(?i)\bseed\b[\"']?\s*[:=]\s*[\"']?[0-9A-Fa-f]{64}\b"),
 ]
 
 
