@@ -4,7 +4,7 @@ metadata:
   name: eci-framework
   labels:
     app: eci-framework
-    version: "8.0.0"
+    version: "8.1.0"
 spec:
   replicas: 2
   selector:
@@ -14,14 +14,14 @@ spec:
     metadata:
       labels:
         app: eci-framework
-        version: "8.0.0"
+        version: "8.1.0"
       annotations:
         eci.architect: "Arash Mansourpour"
-        eci.channel: "8.0.0-OMNISCIENCE"
+        eci.channel: "8.1.0-CREATE"
     spec:
       containers:
         - name: eci
-          image: eci-framework:8.0.0
+          image: eci-framework:8.1.0
           ports:
             - containerPort: 8777
               name: health

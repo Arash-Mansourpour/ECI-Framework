@@ -1,28 +1,58 @@
-# ECI global mesh — 3 seeded nodes + 1 edge node, shared nothing, gossip heal.
+# ECI health mesh — 4 isolated health servers (NOT a gossip mesh yet).
+# NOTE (audit 2026-09-25): ECI_BOOTSTRAP below is aspirational, kept intentionally.
+#   src/eci/health.py (the container command) never reads ECI_BOOTSTRAP and never
+#   dials peers, so containers do not gossip; each serves standalone
+#   /health + /metrics with peers=0. See docs/DEPLOYMENT_STATUS.md.
 # Up:   docker compose up --build
-# Seed: ECI_BOOTSTRAP=eci-seed-1:8777 on joiners.
 services:
   eci-seed-1:
     build: .
     environment: { ECI_PROFILE: server, ECI_NODE_ID: seed-1 }
     ports: ["8777:8777"]
     volumes: ["seed1:/data"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8777/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   eci-seed-2:
     build: .
+    # ECI_BOOTSTRAP aspirational (not read by src/eci/health.py); kept for future wiring.
     environment: { ECI_PROFILE: server, ECI_NODE_ID: seed-2, ECI_BOOTSTRAP: eci-seed-1:8777 }
     ports: ["8778:8777"]
     volumes: ["seed2:/data"]
     depends_on: [eci-seed-1]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8777/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   eci-seed-3:
     build: .
+    # ECI_BOOTSTRAP aspirational (not read by src/eci/health.py); kept for future wiring.
     environment: { ECI_PROFILE: server, ECI_NODE_ID: seed-3, ECI_BOOTSTRAP: eci-seed-1:8777 }
     ports: ["8779:8777"]
     volumes: ["seed3:/data"]
     depends_on: [eci-seed-1]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8777/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   eci-edge-1:
     build: .
+    # ECI_BOOTSTRAP aspirational (not read by src/eci/health.py); kept for future wiring.
     environment: { ECI_PROFILE: edge, ECI_NODE_ID: edge-1, ECI_BOOTSTRAP: eci-seed-2:8777 }
     ports: ["8780:8777"]
     volumes: ["edge1:/data"]
     depends_on: [eci-seed-2]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8777/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 volumes: { seed1: {}, seed2: {}, seed3: {}, edge1: {} }
