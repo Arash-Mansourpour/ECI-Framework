@@ -16,7 +16,8 @@ from typing import Any
 __all__ = ["sbom", "tree_fingerprint"]
 
 _TRACKED = ("torch", "numpy", "scipy", "pyyaml", "cryptography", "pytest",
-            "reportlab", "matplotlib", "stim", "pymatching", "mne", "liboqs-python")
+            "reportlab", "matplotlib", "stim", "pymatching", "networkx", "mne", "liboqs-python",
+            "pyphi")
 
 
 def sbom(root: Path | str | None = None) -> dict[str, Any]:

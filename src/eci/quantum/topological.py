@@ -162,8 +162,8 @@ class SurfaceCode:
             if len(trig) < 2:
                 return []
             if decoder == "mwpm":
-                # Prefer real Blossom (pymatching) when installed — exact MWPM
-                # on the trigger graph; else Hungarian assignment; else greedy.
+                # Preferred MWPM via networkx max-weight matching when installed;
+                # else Hungarian assignment via scipy (<=8 triggers); else greedy.
                 try:
                     import numpy as _np
 
