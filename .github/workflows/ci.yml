@@ -19,8 +19,23 @@ jobs:
       - name: ruff backlog (non-blocking, full debt visible)
         run: ruff check src tests --statistics --exit-zero
         continue-on-error: true
-      - name: pytest (includes mypy ratchet ≤72 via test_repo_hygiene)
+      - name: pytest (includes mypy ratchet ≤66 via test_repo_hygiene)
         run: PYTHONPATH=src pytest -q
-      - name: mypy ceiling check (informational, ≤72)
+      - name: mypy ceiling check (informational, ≤66)
         run: python -m mypy src/eci 2>&1 | tee mypy.txt; echo "--- mypy summary ---"; grep -E "Found .* errors?" mypy.txt || true
         continue-on-error: true
+  validation:
+    # Optional-dependency path: exercises the pyphi-gated tests with the
+    # `validation` extra installed (tests skip gracefully without pyphi).
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e ".[validation]" pytest
+      - name: pytest pyphi-gated (validation extra)
+        run: PYTHONPATH=src pytest -q tests/test_aikernel_phase10.py tests/test_aikernel_phase14.py
