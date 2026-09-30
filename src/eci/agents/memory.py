@@ -22,6 +22,7 @@ __all__ = ["EpisodicMemory", "VectorMemory"]
 class _Msg:
     role: str
     content: str
+    session: str = "default"
     ts: float = field(default_factory=time.time)
 
 
@@ -29,16 +30,19 @@ class EpisodicMemory:
     def __init__(self, capacity: int = 256) -> None:
         self._buf: deque[_Msg] = deque(maxlen=capacity)
 
-    def add(self, role: str, content: str) -> None:
-        self._buf.append(_Msg(role, content))
+    def add(self, role: str, content: str, session: str = "default") -> None:
+        self._buf.append(_Msg(role, content, session))
 
-    def last(self, n: int = 8) -> list[dict[str, Any]]:
-        return [{"role": m.role, "content": m.content, "ts": m.ts} for m in list(self._buf)[-n:]]
+    def last(self, n: int = 8, session: str | None = None) -> list[dict[str, Any]]:
+        messages = [m for m in self._buf if session is None or m.session == session]
+        return [{"role": m.role, "content": m.content, "ts": m.ts} for m in messages[-n:]]
 
-    def search(self, keyword: str, limit: int = 8) -> list[dict[str, Any]]:
+    def search(self, keyword: str, limit: int = 8,
+               session: str | None = None) -> list[dict[str, Any]]:
         kw = keyword.lower()
         out = [ {"role": m.role, "content": m.content, "ts": m.ts}
-                for m in self._buf if kw in m.content.lower()]
+                for m in self._buf
+                if (session is None or m.session == session) and kw in m.content.lower()]
         return out[-limit:]
 
     def __len__(self) -> int:

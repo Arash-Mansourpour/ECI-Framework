@@ -28,13 +28,28 @@ from eci import recursion as recursion
 from eci import verification as verification
 
 # v6.1 deep systems (agents / data-plane / treasury / eval / supply / mcp)
-from eci.agents import AgentLoop, Agents, EpisodicMemory, ToolRegistry, VectorMemory
+from eci.agents import (
+    AgentLoop,
+    Agents,
+    EpisodicMemory,
+    ModelProviderError,
+    OpenAICompatiblePolicy,
+    ToolRegistry,
+    VectorMemory,
+)
 from eci.aikernel import GenerativeState, KernelLedger, Likelihood, Prior, StateContributor
 from eci.api import Gateway
 from eci.arch import ADR_REGISTRY, list_adrs, run_fitness
 from eci.authz import RBAC, Permission, PolicyEngine, PolicyRule, Role
-from eci.benchmarking.benchmark import ResearchBenchmark
-from eci.brain import BrainMesh, build_default_mesh
+from eci.benchmarking import (
+    BenchmarkCase,
+    BenchmarkComparison,
+    BenchmarkSuite,
+    ResearchBenchmark,
+    compare,
+    compare_async,
+)
+from eci.brain import BrainMesh, SubsystemNeuralFabric, build_default_mesh
 from eci.bridges.quantum_neuromorphic import QuantumNeuromorphicBridge
 from eci.caps import CapToken
 from eci.caps import Issuer as CapIssuer
@@ -350,6 +365,7 @@ __all__ = [
     "ChaosPlan", "Fault", "run_plan",
     "SecretManager", "HybridSecureChannel", "SecureChannelConfig",
     "Agents", "AgentLoop", "ToolRegistry", "EpisodicMemory", "VectorMemory",
+    "OpenAICompatiblePolicy", "ModelProviderError",
     "DataPlane", "Cache", "BlobStore",
     "Treasury", "TreasuryEnvelope",
     "run_gates", "EvalReport", "sbom",
@@ -369,10 +385,11 @@ __all__ = [
     "PQCSuite",
     "HashBasedSigner",
     "derive_key",
-    "ResearchBenchmark",
+    "ResearchBenchmark", "BenchmarkCase", "BenchmarkSuite", "BenchmarkComparison",
+    "compare", "compare_async",
     "ECIFramework",
     "ECIFrameworkResearch",
-    "brain", "BrainMesh", "build_default_mesh",
+    "brain", "BrainMesh", "SubsystemNeuralFabric", "build_default_mesh",
     "MAPElites", "diversify_morph_probes", "diversify_redteam",
     "Claim", "VerificationGate", "Harness",
     "StructuralCausalModel", "discover_skeleton",

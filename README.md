@@ -94,12 +94,13 @@ See: `docs/EVERLASTING.md` + SECE (`src/eci/consciousness/federated_ledger.py`, 
 
 | Track | Module | Proof |
 |---|---|---|
-| 🏛️ Architecture Fitness | `arch/fitness.py` + `arch/adr.py` | 5 fitness checks green via `eci v8`; 6 ADRs in-code |
+| 🏛️ Architecture Fitness | `arch/fitness.py` + `arch/adr.py` | 7 fitness checks green via `eci v8`; 6 ADRs in-code |
 | ⚛️ Hardware-Routed Quantum | `quantum/hardware.py` | `SimBackendAdapter` default + fail-closed `QiskitBackend`/`BraketBackend` + `BackendRouter.route` |
 | 🌐 P2P Federation | `federation/p2p.py` | `InMemoryTransport`/`TCPTransport` + `GossipNode` 2/3 quorum + `run_partition_test` stalls on split |
 | 💰 Economic Security | `economy_attack.py` | Whale LMSR push flagged + unprofitable; collusion flip detected; `evaluate_slash` capped at stake |
 | 📡 Observability | `observability/otel.py` | NoOp-unless-installed `OtelBridge` + native Prometheus from `MetricsRegistry.to_prometheus` |
-| 🔬 Autonomous Research | `research/loop.py` | `propose → twin → canary → vote → Brier` ledgered with `ARCHITECT.stamp` |
+| 🔬 Autonomous Research | `research/loop.py` | Explicit resolved label/source, reviewer adapter, Brier + policy loss; ledgered with `ARCHITECT.stamp` |
+| 🕸️ Neural Subsystem Fabric | `brain/fabric.py` | Live component/event nodes, sparse cross-domain connectome, bounded plasticity, attention routed through EventBus |
 
 Run: `PYTHONPATH=src python -m eci v8`. Tests: `tests/test_v8_advance.py` (12). See: `docs/V8_OMNISCIENCE.md`.
 
@@ -113,7 +114,7 @@ Run: `PYTHONPATH=src python -m eci v8`. Tests: `tests/test_v8_advance.py` (12). 
 | 🔗 Causality | `causality/engine.py` | SCM `do()` surgery, interventional ATE, PC-skeleton discovery |
 | ⚡ Energy | `energy/ledger.py` | Joules per decision (AC 0.9pJ / MAC 4.6pJ), priced into economy |
 | 🔬 Interpretability | `interpret/probes.py` | Linear concept probe + erase-and-measure → redteam leads |
-| 🔁 Recursion | `recursion/loop.py` | Outer loop hill-climbs inner loop params on Brier, verified transitions |
+| 🔁 Recursion | `recursion/loop.py` | Outer loop improves on resolved Brier + decision loss; adopts only verified, reviewed strict improvements |
 
 Run: `PYTHONPATH=src python -m eci create`. Tests: `tests/test_v9_create.py` (9). See: `docs/V9_CREATE.md`.
 
@@ -244,7 +245,7 @@ pip install -e .[dev]
 # one-line sanity
 PYTHONPATH=src python -m eci info
 PYTHONPATH=src python -m eci demo          # quantum + consciousness + activation + network
-PYTHONPATH=src pytest -q                   # 254 tests (247 + 7 SECE); add --ignore=tests/test_repo_hygiene.py for fast loop
+PYTHONPATH=src pytest -q                   # 407 tests; add --ignore=tests/test_repo_hygiene.py for fast loop
 
 # everlasting pillars
 PYTHONPATH=src python -m eci ever          # caps / watchtower / continuum / mapek / compat
@@ -297,8 +298,15 @@ Every subcommand is defined in `src/eci/__main__.py:341` and verified here:
 | `eci v8` | v8 OMNISCIENCE report (fitness + router + p2p + economy + research) | — |
 | `eci brain` | brain-mesh cycle: subsystems simulated as neural populations + GNW-style ignition math | `--ticks 32 --cycles 3` |
 | `eci create` | v9 CREATE demo (QD + verification + exploration + causal + energy + probe + meta) | — |
+| `eci compare` | paired benchmark comparison of Python candidate callables | `--suite suite.json --baseline pkg:fn --candidate pkg:fn --seeds 0,1,2` |
 
 Run `eci <cmd> --help` for full flags; `eci --version` prints `src/eci/version.py`.
+
+`eci agent --provider openai-compatible` connects the guarded agent loop to an
+OpenAI Chat Completions-compatible endpoint; credentials come from
+`ECI_LLM_API_KEY` or `OPENAI_API_KEY`. See
+[`docs/AGENT_RESEARCH_PLATFORM.md`](docs/AGENT_RESEARCH_PLATFORM.md) for model
+policies, resolved research outcomes, and repeatable baseline comparisons.
 
 ---
 
@@ -334,11 +342,11 @@ Conventions: big-endian throughout, `complex64` default, CPU-first with CUDA fal
 Ground truth is **`docs/CODEBASE_AUDIT.md` (Phase 22 SECE, 2026-09-14)** and
 **`docs/VALIDATION_STATUS.md` + `src/eci/consciousness/LIMITATIONS.md`**:
 
-- **254 tests green** (incl. 7 SECE: FCL/CAN/Market/QN-Bridge/GenesisEvo), **85% total statement coverage**
-  (`coverage run -m pytest` → 17261 stmts, 2645 miss; Phase 17: 209/74% → Phase 18: 229/80% → Phase 19: 232/83% → Phase 20: 241/85% → Phase 21: 247/85% → Phase 22: 254/85%)
+- **407 tests green**, **85% source statement coverage**
+  (`coverage run -m pytest` → `src/eci`: 17,305 statements, 2,611 missed; historical progression: Phase 17: 209/74% → Phase 18: 229/80% → Phase 19: 232/83% → Phase 20: 241/85% → Phase 21: 247/85% → Phase 22: 254/85% → current: 407/85%)
 - **172 ruff findings** post-cleanup (down from 2267; remaining: B905×46, SIM105×19, E701/E702, E741×13, B007×11, N-rules — style debt, boy-scout rule per audit; was 168 in Phase 17)
-- **64 mypy errors** in 32 files (down from 72 via `network/manager` **kwargs fix + SECE type ignores; was 76; mostly `arg-type` 12 + `union-attr` 14)
-- **CI gate**: `F401+I001+B011` must stay **zero** repo-wide (`tests/test_repo_hygiene.py`); mypy ceiling **≤66** (64 actual, was 72; Phase 22); full backlog reported non-blocking
+- **56 mypy errors** in 30 files (current local run; existing annotation/stub backlog)
+- **CI gate**: `F401+I001+B011` must stay **zero** repo-wide (`tests/test_repo_hygiene.py`); mypy ceiling **≤66** (56 current); full backlog reported non-blocking
 - **Validation ledger**: `docs/VALIDATION_STATUS.md` describes what each number is and is NOT validated against (precog/immune heuristics, twin/morph fitness, LMSR prices, redteam probes, drift PSI/KS, neuromorphic now 93%/100% but still heuristic, FCL phi 2/3 quorum etc. — read before quoting any metric)
 - **Consciousness ledger**: `src/eci/consciousness/LIMITATIONS.md` — none of the Phi numbers is a measurement of subjective experience; IIT 4.0 repertoires cross-validated vs PyPhi 1.2.0 to 1e-9 (Phase 10) but Φ magnitudes remain cross-version (IIT 3.0 EMD vs 4.0 composition)
 - **Phase 22 SECE closure**: `FCL` (2/3 quorum) + `CAN` (eeg→mapek) + `MarketCommons` (stake/Brier) + `QN-Bridge` (SNN+`F`) + `MutableGenome` (H(old||mutation)) + `sece.*` MCP (5 tools)

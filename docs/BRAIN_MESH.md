@@ -66,3 +66,13 @@ m.adapt_structure()  # prune silent + sprout new synapses
 CLI: `python -m eci brain --ticks 32 --cycles 3`
 Framework: `fw.brain_tick()` + `system_status()["brain"]` + `v8_status()["brain"]`
 Ledger: `BrainMesh` is a `StateContributor` (F = workspace surprise).
+
+## Dynamic subsystem integration
+
+`brain/fabric.py` adds an optional sparse network around the eight-region mesh.
+Framework health adapters and EventBus publishers become individual peripheral
+nodes; the fabric emits `brain.subsystem.signal` events and the guarded agent
+loop consumes their attention scores as context. This is additive: the
+existing `BrainMesh`, Kernel, and `StateContributor` contracts are unchanged.
+See [`NEURAL_SUBSYSTEM_FABRIC.md`](NEURAL_SUBSYSTEM_FABRIC.md) for topology,
+health metrics, extension APIs, and limitations.

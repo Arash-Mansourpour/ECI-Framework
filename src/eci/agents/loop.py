@@ -11,6 +11,9 @@ returning {"thought": str, "tool": str|None, "args": dict, "done": bool,
 
 from __future__ import annotations
 
+import asyncio
+import inspect
+import math
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -23,6 +26,9 @@ __all__ = ["AgentState", "AgentLoop", "demo_brain"]
 class AgentState:
     goal: str
     steps: list[dict[str, Any]] = field(default_factory=list)
+    history: list[dict[str, Any]] = field(default_factory=list)
+    available_tools: list[dict[str, Any]] = field(default_factory=list)
+    neural_attention: dict[str, float] = field(default_factory=dict)
     budget: float = 100.0
     done: bool = False
     answer: str = ""
@@ -41,7 +47,7 @@ class AgentLoop:
     name = "agent-loop"
 
     def __init__(self, tools=None, authz=None, economy=None, tenancy=None,
-                 provenance=None, audit=None, bus=None, precog=None) -> None:
+                 provenance=None, audit=None, bus=None, precog=None, memory=None) -> None:
         self.tools = tools
         self.authz = authz
         self.economy = economy
@@ -50,31 +56,86 @@ class AgentLoop:
         self.audit = audit
         self.bus = bus
         self.precog = precog
+        self.memory = memory
+        self._neural_attention: dict[str, float] = {}
+        subscribe = getattr(self.bus, "subscribe", None)
+        if callable(subscribe):
+            subscribe("brain.subsystem.signal", self._on_neural_signal,
+                      name=f"{self.name}.neural-attention")
+
+    def _on_neural_signal(self, event: Any) -> None:
+        payload = event.payload if isinstance(event.payload, dict) else {}
+        subsystem = payload.get("subsystem")
+        attention = payload.get("attention")
+        if isinstance(subsystem, str) and isinstance(attention, (int, float)):
+            self._neural_attention[subsystem] = min(1.0, max(0.0, float(attention)))
+            if len(self._neural_attention) > 128:
+                oldest = next(iter(self._neural_attention))
+                del self._neural_attention[oldest]
 
     async def run(self, goal: str, agent_id: str = "agent-0", namespace: str = "default",
                   budget: float = 100.0, max_steps: int = 6,
                   policy_fn: Callable[..., dict[str, Any]] | None = None,
                   attestation: dict[str, float] | None = None) -> dict[str, Any]:
         from eci.kernel.bus import Event
+        if max_steps < 1:
+            raise ValueError("max_steps must be at least 1")
+        if not math.isfinite(budget) or budget < 0:
+            raise ValueError("budget must be finite and non-negative")
         policy_fn = policy_fn or demo_brain
         state = AgentState(goal=goal, budget=budget)
+        memory_session = f"{namespace}:{agent_id}"
         tool_names = self.tools.names() if self.tools else []
+        state.available_tools = self.tools.manifest() if self.tools else []
+        if self.memory is not None:
+            state.history = self.memory.last(8, session=memory_session)
+            self.memory.add("user", goal, session=memory_session)
         t0 = time.time()
+        status = "max_steps"
         for i in range(max_steps):
-            decision = policy_fn(state, tool_names)
-            step: dict[str, Any] = {"i": i, "thought": decision.get("thought", ""),
-                                    "tool": decision.get("tool"), "args": decision.get("args", {})}
+            try:
+                state.neural_attention = dict(self._neural_attention)
+                if inspect.iscoroutinefunction(policy_fn):
+                    decision = await policy_fn(state, tool_names)
+                else:
+                    decision = await asyncio.to_thread(policy_fn, state, tool_names)
+                if inspect.isawaitable(decision):
+                    decision = await decision
+                if not isinstance(decision, dict):
+                    raise TypeError("policy must return a decision object")
+                tool = decision.get("tool")
+                args = decision.get("args", {})
+                if tool is not None and not isinstance(tool, str):
+                    raise TypeError("decision tool must be a string or null")
+                if not isinstance(args, dict):
+                    raise TypeError("decision args must be an object")
+                if not isinstance(decision.get("done", False), bool):
+                    raise TypeError("decision done must be a boolean")
+            except Exception as exc:  # noqa: BLE001
+                state.steps.append({"i": i, "blocked": "policy-error", "error": str(exc)[:200]})
+                status = "policy-error"
+                break
+            step: dict[str, Any] = {"i": i, "thought": str(decision.get("thought", "")),
+                                    "tool": tool, "args": args}
+            if tool and tool not in tool_names:
+                step["blocked"] = "unknown-tool"
+                state.steps.append(step)
+                continue
             # guardrail 1: tenancy quota
-            if self.tenancy is not None:
+            if tool and self.tenancy is not None:
                 try:
                     if not self.tenancy.admit(namespace, actions=1):
                         step["blocked"] = "tenancy-quota"
                         state.steps.append(step)
+                        status = "blocked"
                         break
-                except Exception:  # noqa: BLE001
-                    pass
+                except Exception as exc:  # noqa: BLE001
+                    step["blocked"] = "tenancy-error"
+                    step["error"] = str(exc)[:200]
+                    state.steps.append(step)
+                    status = "blocked"
+                    break
             # guardrail 2: authz (when a tool is requested)
-            tool = decision.get("tool")
             if tool and self.authz is not None:
                 dec = self.authz.decide(agent_id, f"tool.{tool}", f"agent/{agent_id}",
                                         attrs={"namespace": namespace},
@@ -87,18 +148,25 @@ class AgentLoop:
             # guardrail 3: precog risk (advisory hold)
             if self.precog is not None:
                 try:
-                    risk = self.precog.assess(str(tool), step.get("args", {}))  # type: ignore[attr-defined]
+                    risk = self.precog.assess(str(tool), args)  # type: ignore[attr-defined]
                     step["precog"] = risk
                     if isinstance(risk, dict) and risk.get("tier") == "hold":
                         step["blocked"] = "precog-hold"
                         state.steps.append(step)
+                        status = "blocked"
                         break
-                except Exception:  # noqa: BLE001
-                    pass
+                except Exception as exc:  # noqa: BLE001
+                    step["blocked"] = "risk-check-error"
+                    step["error"] = str(exc)[:200]
+                    state.steps.append(step)
+                    status = "blocked"
+                    break
             if decision.get("done"):
                 state.done = True
                 state.answer = str(decision.get("answer", ""))
                 state.steps.append(step)
+                status = "completed"
+                self._remember(memory_session, "assistant", state.answer)
                 break
             if not tool or self.tools is None:
                 state.steps.append(step)
@@ -110,15 +178,31 @@ class AgentLoop:
                     if not chk.get("ok"):
                         step["blocked"] = "budget"
                         state.steps.append(step)
+                        status = "blocked"
                         break
-                except Exception:  # noqa: BLE001
-                    pass
+                except Exception as exc:  # noqa: BLE001
+                    step["blocked"] = "budget-check-error"
+                    step["error"] = str(exc)[:200]
+                    state.steps.append(step)
+                    status = "blocked"
+                    break
+            self._remember(memory_session, "assistant", f"tool={tool} args={args}")
             out = await self.tools.call(tool, step["args"],
                                         {"subject": agent_id, "budget": state.budget,
                                          "capabilities": ["bus.publish", "store.read", "store.write"]})
             state.budget -= float(out.get("cost", 0.0))
             step["observation"] = out
             state.steps.append(step)
+            self._remember(memory_session, "tool", str(out))
+            if self.bus is not None:
+                try:
+                    self.bus.publish(Event(
+                        type="agent.step.completed", source=agent_id,
+                        payload={"step": i, "tool": tool, "ok": bool(out.get("ok")),
+                                 "cost": float(out.get("cost", 0.0))},
+                    ))
+                except Exception:  # noqa: BLE001
+                    pass
             if self.provenance is not None:
                 try:
                     parent = state.steps[-2].get("prov") if len(state.steps) > 1 else ""
@@ -141,7 +225,13 @@ class AgentLoop:
             except Exception:  # noqa: BLE001
                 pass
         return {"ok": state.done, "answer": state.answer, "steps": state.steps,
-                "budget_left": state.budget, "duration_s": time.time() - t0}
+                "status": status, "budget_left": state.budget,
+                "neural_attention": dict(state.neural_attention),
+                "duration_s": time.time() - t0}
+
+    def _remember(self, session: str, role: str, content: str) -> None:
+        if self.memory is not None:
+            self.memory.add(role, content, session=session)
 
     def start(self) -> None: ...
     def stop(self) -> None: ...

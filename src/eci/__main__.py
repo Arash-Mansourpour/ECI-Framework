@@ -26,8 +26,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import importlib
 import json
+import os
 import sys
+from pathlib import Path
 from typing import Any
 
 from eci import __version__
@@ -166,8 +169,18 @@ def cmd_mcp(args: argparse.Namespace) -> int:
 
 def cmd_agent(args: argparse.Namespace) -> int:
     fw = ECIFramework()
+    policy = None
+    if args.provider == "openai-compatible":
+        from eci.agents import OpenAICompatiblePolicy
+
+        policy = OpenAICompatiblePolicy(
+            model=args.model,
+            base_url=args.base_url,
+            timeout_s=args.timeout,
+        )
     out = asyncio.run(fw.agents.loop.run(args.goal, agent_id="agent-0",
-                                         budget=args.budget, max_steps=args.steps))
+                                         budget=args.budget, max_steps=args.steps,
+                                         policy_fn=policy))
     _print_json(out)
     return 0
 
@@ -175,6 +188,61 @@ def cmd_agent(args: argparse.Namespace) -> int:
 def cmd_eval(args: argparse.Namespace) -> int:
     from eci.eval import run_gates
     _print_json(run_gates().to_dict())
+    return 0
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    """Run a versioned benchmark suite against two importable candidates."""
+    from eci.benchmarking import BenchmarkCase, BenchmarkSuite, compare
+
+    suite_data = json.loads(args.suite.read_text(encoding="utf-8"))
+    scorer_id = suite_data.get("scorer", "exact-match-v1")
+    scorer_config = dict(suite_data.get("scorer_config", {}))
+    tolerance = float(scorer_config.get("tolerance", suite_data.get("tolerance", 1.0)))
+    if scorer_id == "exact-match-v1":
+        scorer = lambda actual, expected: float(actual == expected)
+    elif scorer_id == "numeric-tolerance-v1":
+        if tolerance <= 0:
+            raise ValueError("numeric scorer tolerance must be positive")
+        scorer = lambda actual, expected: max(0.0, 1.0 - abs(float(actual) - float(expected)) / tolerance)
+    else:
+        raise ValueError(f"unsupported scorer: {scorer_id}")
+    suite = BenchmarkSuite(
+        name=str(suite_data["name"]),
+        version=str(suite_data["version"]),
+        cases=tuple(BenchmarkCase(**case) for case in suite_data["cases"]),
+        scorer=scorer,
+        scorer_id=scorer_id,
+        metric_name=str(suite_data.get("metric_name", "score")),
+        scorer_config=({"tolerance": tolerance} if scorer_id == "numeric-tolerance-v1"
+                       else scorer_config),
+    )
+
+    def load(spec: str):
+        module_name, separator, attribute = spec.partition(":")
+        if not separator or not module_name or not attribute:
+            raise ValueError(f"candidate must be written as module:callable: {spec!r}")
+        value = getattr(importlib.import_module(module_name), attribute)
+        if not callable(value):
+            raise TypeError(f"candidate is not callable: {spec!r}")
+        return value
+
+    seeds = [int(value.strip()) for value in args.seeds.split(",") if value.strip()]
+    baseline_metadata = json.loads(args.baseline_metadata)
+    candidate_metadata = json.loads(args.candidate_metadata)
+    if not isinstance(baseline_metadata, dict) or not isinstance(candidate_metadata, dict):
+        raise ValueError("candidate metadata must be JSON objects")
+    report = compare(suite, args.baseline, load(args.baseline),
+                     args.candidate, load(args.candidate), seeds=seeds,
+                     baseline_metadata=baseline_metadata,
+                     candidate_metadata=candidate_metadata)
+    text = report.to_json(args.output)
+    if args.output is None:
+        print(text)
+    else:
+        _print_json({"ok": True, "output": str(args.output),
+                     "suite_sha256": report.suite["sha256"],
+                     "mean_delta": report.paired["mean_delta"]})
     return 0
 
 
@@ -271,7 +339,9 @@ def cmd_v8(args: argparse.Namespace) -> int:
     try:
         hyp = fw.research_loop.propose("v8 loop is ledgered", 0.8, {"probe": 1.0})
         cyc = fw.research_loop.run_cycle(hyp, drill=lambda p: float(p.get("probe", 0.0)),
-                                         voters=["voter-0", "voter-1", "voter-2"], outcome=1)
+                                         voters=["voter-0", "voter-1", "voter-2"], outcome=1,
+                                         outcome_source="v8-built-in-demo-fixture",
+                                         simulate_votes=True)
         out["research_demo"] = cyc.to_dict()
     except Exception as exc:  # noqa: BLE001
         out["research_demo"] = {"ok": False, "error": repr(exc)}
@@ -351,7 +421,10 @@ def cmd_create(args: argparse.Namespace) -> int:
                         **ablation_report(lambda t: (t @ probe.w + probe.b).unsqueeze(1), x, probe)}
     meta = fw.meta_loop.run(
         lambda r: [{"claim": f"m{r}", "prob": 0.8, "payload": {"x": 0.9},
-                    "drill": (lambda p: float(p["x"])), "outcome": 1}],
+                    "drill": (lambda p: float(p["x"])), "outcome": 1,
+                    "drill_id": "create-demo-drill-v1",
+                    "outcome_source": "create-built-in-demo-fixture",
+                    "simulate_votes": True}],
         verifier=lambda s: True, rounds=2)
     out["meta"] = meta
     out["v9"] = fw.v9_status()
@@ -495,8 +568,27 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--goal", default="demo goal")
     a.add_argument("--budget", type=float, default=50.0)
     a.add_argument("--steps", type=int, default=4)
+    a.add_argument("--provider", choices=["demo", "openai-compatible"], default="demo",
+                   help="decision policy provider (API key from ECI_LLM_API_KEY or OPENAI_API_KEY)")
+    a.add_argument("--model", default="gpt-4o-mini", help="chat-completions model name")
+    a.add_argument("--base-url", default=os.environ.get("ECI_LLM_BASE_URL", "https://api.openai.com/v1"),
+                   help="OpenAI-compatible API base URL")
+    a.add_argument("--timeout", type=float, default=30.0, help="model request timeout in seconds")
 
     sub.add_parser("eval", help="golden regression gates")
+
+    cmp = sub.add_parser("compare", help="paired, reproducible benchmark comparison")
+    cmp.add_argument("--suite", type=Path, required=True,
+                     help="JSON suite containing versioned cases and expected outputs")
+    cmp.add_argument("--baseline", required=True, help="baseline candidate as module:callable")
+    cmp.add_argument("--candidate", required=True, help="candidate as module:callable")
+    cmp.add_argument("--seeds", default="0,1,2,3,4", help="comma-separated deterministic seeds")
+    cmp.add_argument("--baseline-metadata", default="{}",
+                     help="JSON object: model/code/config provenance for the baseline")
+    cmp.add_argument("--candidate-metadata", default="{}",
+                     help="JSON object: model/code/config provenance for the candidate")
+    cmp.add_argument("--output", type=Path,
+                     help="write full comparison report to this JSON file")
 
     t = sub.add_parser("think", help="AGI cognitive beat")
     t.add_argument("--goal", default="act")
@@ -557,6 +649,7 @@ def main(argv: list[str] | None = None) -> int:
         "mcp": cmd_mcp,
         "agent": cmd_agent,
         "eval": cmd_eval,
+        "compare": cmd_compare,
         "think": cmd_think,
         "dream": cmd_dream,
         "morph": cmd_morph,

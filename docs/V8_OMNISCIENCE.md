@@ -6,13 +6,14 @@ Version: `8.0.0-OMNISCIENCE` (`src/eci/version.py`), paper `infinity.23.0`.
 
 | Track | Module | Verdict |
 |---|---|---|
-| Fitness | `arch/fitness.py` (6 checks) + `arch/adr.py` (6 ADRs) | `eci v8` green |
+| Fitness | `arch/fitness.py` (7 checks) + `arch/adr.py` (6 ADRs) | `eci v8` green |
 | Quantum | `quantum/hardware.py` | sim default, qiskit/braket fail-closed, `BackendRouter.route` |
 | Federation | `federation/p2p.py` | memory (deterministic) + TCP transports, 2/3 gossip quorum, partition stall proven |
 | Economy | `economy_attack.py` | whale flagged+unprofitable, collusion detected, slash capped |
 | Observability | `observability/otel.py` | NoOp-unless-installed + native Prometheus |
-| Research | `research/loop.py` | propose→twin→canary→vote→Brier, ARCHITECT-stamped |
-| **Brain** | `brain/` (neuron/synapse/connectome/workspace/mesh) | 8 subsystems simulated as neural populations, GNW-style ignition math on simulated rates, local STDP |
+| Research | `research/loop.py` | explicit resolved label/source + reviewer adapter + Brier and policy loss; ARCHITECT-stamped |
+| **Brain** | `brain/` (neuron/synapse/connectome/workspace/mesh) | 8 macro-regions, GNW-style ignition math and local STDP |
+| **Neural fabric** | `brain/fabric.py` | Runtime component/event nodes, sparse cross-subsystem connectome, bounded local plasticity, routed attention events |
 
 ## Run
 

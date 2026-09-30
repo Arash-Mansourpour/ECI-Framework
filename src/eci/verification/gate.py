@@ -40,8 +40,9 @@ class Verdict:
 class VerificationGate:
     """Blocking admission control for ledger claims."""
 
-    def __init__(self, budget_s: float = 30.0) -> None:
+    def __init__(self, budget_s: float = 30.0, bus: Any = None) -> None:
         self.budget_s = budget_s
+        self.bus = bus
         self.verdicts: list[Verdict] = []
         self.admitted_ids: set[str] = set()
 
@@ -73,6 +74,18 @@ class VerificationGate:
         self.verdicts.append(verdict)
         if ok:
             self.admitted_ids.add(claim.id)
+        if self.bus is not None:
+            try:
+                from eci.kernel.bus import Event
+
+                self.bus.publish(Event(
+                    type="verification.claim.evaluated", source="verification-gate",
+                    payload={"claim_id": claim.id, "admitted": verdict.admitted,
+                             "elapsed_s": verdict.elapsed_s,
+                             "checks": len(verdict.checks)},
+                ))
+            except Exception:  # noqa: BLE001
+                pass
         return verdict
 
     def admitted(self, claim_id: str) -> bool:

@@ -10,7 +10,7 @@ import pytest
 COMMANDS = ["info", "demo", "quantum", "consciousness", "network", "field",
             "mind", "activate", "benchmark", "health", "system", "workflow",
             "mcp", "agent", "eval", "think", "dream", "morph", "ever", "aik",
-            "protocol", "v8", "brain", "architect", "create"]
+            "protocol", "v8", "brain", "architect", "create", "compare"]
 
 
 def test_all_subcommands_have_help():

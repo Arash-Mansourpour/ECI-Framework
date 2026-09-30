@@ -133,5 +133,62 @@ def test_framework_brain_tick():
     assert fw.brain is not None
     out = fw.brain_tick()
     assert out["ok"] and "winner" in out
+    assert out["fabric"]["nodes"] >= 30
+    assert out["fabric"]["connections"] > out["fabric"]["nodes"]
     assert "brain" in fw.v8_status()
+    assert "neural_fabric" in fw.v8_status()
     assert "brain" in fw.system_status() or "brain" in fw.system_status().get("v8", {})
+
+
+def test_subsystem_fabric_adapts_topology_and_isolates_component_failures():
+    from eci.brain import BrainMesh, SubsystemNeuralFabric
+    from eci.kernel.bus import Event, EventBus
+
+    bus = EventBus()
+    delivered = []
+    bus.subscribe("brain.subsystem.signal", delivered.append, name="test-signal-sink")
+    brain = BrainMesh(per_region=2, ticks=4, seed=12)
+    fabric = SubsystemNeuralFabric(brain, bus=bus, seed=12)
+
+    components = {
+        "agents": type("Healthy", (), {"health": lambda self: {"ok": True, "activity": 0.8}})(),
+        "research_loop": type("Research", (), {"health": lambda self: {"ok": True, "score": 0.7}})(),
+        "quantum_sim": type("Broken", (), {"health": lambda self: (_ for _ in ()).throw(RuntimeError("offline"))})(),
+        "market_commons": type("Market", (), {"health": lambda self: {"ok": True, "confidence": 0.9}})(),
+    }
+    cyclic_status = {}
+    cyclic_status["self"] = cyclic_status
+    components["cyclic_adapter"] = type(
+        "Cyclic", (), {"health": lambda self: cyclic_status}
+    )()
+    first = fabric.tick(components=components)
+    assert first["fabric"]["nodes"] == 5
+    assert first["fabric"]["connections"] >= 6  # connected backbone plus sparse links
+    assert first["fabric"]["weakly_connected_components"] == 1
+    assert first["component_errors"]["quantum_sim"] == "RuntimeError"
+    assert len(delivered) == 5  # one routed signal per registered subsystem
+
+    bus.publish(Event(type="agent.tool.completed", source="new-agent", payload={"ok": True}))
+    second = fabric.tick(components=components)
+    assert "new-agent" in fabric.nodes
+    assert second["fabric"]["event_count"] == 1
+    assert second["fabric"]["nodes"] == 6
+    for _ in range(8):
+        second = fabric.tick(components=components)
+    assert second["fabric"]["spikes"] > 0
+    assert second["fabric"]["plasticity_updates"] > 0
+
+
+def test_subsystem_fabric_topology_repeats_for_same_seed_and_registration_order():
+    from eci.brain import BrainMesh, SubsystemNeuralFabric
+
+    def build():
+        fabric = SubsystemNeuralFabric(BrainMesh(per_region=2, ticks=2, seed=5), seed=5)
+        for name in ("quantum_sim", "agents", "research_loop", "network_manager", "market_commons"):
+            fabric.register(name)
+        return fabric
+
+    left, right = build(), build()
+    assert left.weights == right.weights
+    assert left.health()["region_counts"] == right.health()["region_counts"]
+    assert left.topology() == right.topology()

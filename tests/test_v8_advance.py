@@ -7,7 +7,7 @@ def test_arch_fitness_green():
     from eci.arch import run_fitness
 
     rep = run_fitness()
-    assert rep["total"] == 6
+    assert rep["total"] == 7
     assert rep["ok"], rep
 
 
@@ -102,10 +102,13 @@ def test_research_loop_cycle():
 
     loop = ResearchLoop()
     hyp = loop.propose("twin doubles score", 0.8, {"x": 0.9})
-    res = loop.run_cycle(hyp, drill=lambda p: float(p["x"]), outcome=1)
+    res = loop.run_cycle(hyp, drill=lambda p: float(p["x"]), outcome=1,
+                         outcome_source="test-fixture", simulate_votes=True)
     assert res.twin_score == 0.9
     assert res.approved is True
     assert abs(res.brier - 0.04) < 1e-12
+    assert res.outcome_source == "test-fixture"
+    assert res.vote_source == "synthetic-demo"
     assert loop.mean_brier() == res.brier
 
 

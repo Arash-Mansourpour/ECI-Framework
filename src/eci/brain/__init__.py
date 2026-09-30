@@ -9,9 +9,11 @@ v8 OMNISCIENCE + 2026 brain principles:
 """
 
 from eci.brain.connectome import Connectome
+from eci.brain.fabric import SubsystemNeuralFabric, infer_region
 from eci.brain.mesh import BrainMesh, build_default_mesh
 from eci.brain.neuron import BrainNeuron
 from eci.brain.synapse import PlasticSynapse
 from eci.brain.workspace import BrainWorkspace
 
-__all__ = ["BrainMesh", "BrainNeuron", "BrainWorkspace", "Connectome", "PlasticSynapse", "build_default_mesh"]
+__all__ = ["BrainMesh", "BrainNeuron", "BrainWorkspace", "Connectome", "PlasticSynapse",
+           "SubsystemNeuralFabric", "infer_region", "build_default_mesh"]

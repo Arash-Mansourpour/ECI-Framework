@@ -123,6 +123,33 @@ def check_brain_mesh_intact() -> FitnessResult:
         return FitnessResult(name="brain_mesh_intact", ok=False, detail=repr(exc))
 
 
+def check_neural_subsystem_fabric() -> FitnessResult:
+    """The additive fabric connects component nodes and routes attention events."""
+    try:
+        from eci.brain import BrainMesh, SubsystemNeuralFabric
+        from eci.kernel.bus import Event, EventBus
+
+        bus = EventBus()
+        seen: list[Event] = []
+        bus.subscribe("brain.subsystem.signal", seen.append, name="fitness-signal-check")
+        fabric = SubsystemNeuralFabric(BrainMesh(per_region=2, ticks=2, seed=0),
+                                       bus=bus, seed=0)
+        fabric.register("quantum-simulator", "quantum", lambda: {"ok": True, "coherence": 0.8})
+        fabric.register("agent-runtime", "memory", lambda: {"ok": True, "activity": 0.5})
+        bus.publish(Event(type="agent.run.done", source="agent-runtime", payload={"ok": True}))
+        out = fabric.tick()
+        h = fabric.health()
+        ok = (h["nodes"] == 2 and h["connections"] >= 2 and len(seen) == 2
+              and out.get("fabric", {}).get("cycles") == 1)
+        return FitnessResult(
+            name="neural_subsystem_fabric", ok=bool(ok),
+            detail=f"nodes={h['nodes']} edges={h['connections']} signals={len(seen)}",
+            target="read-only adapters + sparse cross-subsystem graph + bus attention signals",
+        )
+    except Exception as exc:  # noqa: BLE001
+        return FitnessResult(name="neural_subsystem_fabric", ok=False, detail=repr(exc))
+
+
 def run_fitness() -> dict[str, object]:
     checks = [
         check_envelope_no_collision(),
@@ -131,6 +158,7 @@ def run_fitness() -> dict[str, object]:
         check_v8_composables_present(),
         check_aikernel_contract_intact(),
         check_brain_mesh_intact(),
+        check_neural_subsystem_fabric(),
     ]
     results = [{"name": c.name, "ok": c.ok, "detail": c.detail, "target": c.target} for c in checks]
     ok = all(c.ok for c in checks)

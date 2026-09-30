@@ -2,10 +2,12 @@
 
 from eci.agents.loop import AgentLoop, AgentState, demo_brain
 from eci.agents.memory import EpisodicMemory, VectorMemory
+from eci.agents.providers import ModelProviderError, OpenAICompatiblePolicy
 from eci.agents.tools import ToolBudgetExceeded, ToolDenied, ToolRegistry, ToolSpec
 
 __all__ = ["ToolRegistry", "ToolSpec", "ToolDenied", "ToolBudgetExceeded",
-           "EpisodicMemory", "VectorMemory", "AgentLoop", "AgentState", "demo_brain", "Agents"]
+           "EpisodicMemory", "VectorMemory", "AgentLoop", "AgentState", "demo_brain",
+           "OpenAICompatiblePolicy", "ModelProviderError", "Agents"]
 
 
 class Agents:
@@ -18,7 +20,7 @@ class Agents:
         self.vectors = VectorMemory()
         self.loop = AgentLoop(tools=self.tools, authz=authz, economy=economy,
                               tenancy=tenancy, provenance=provenance,
-                              audit=audit, bus=bus, precog=precog)
+                              audit=audit, bus=bus, precog=precog, memory=self.memory)
         # default safe tools
         self.tools.register("echo", lambda args, ctx: {"echo": args.get("text", "")},
                             params={"text": "str"}, cost=1.0, description="echo back text")

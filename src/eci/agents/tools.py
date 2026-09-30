@@ -9,6 +9,7 @@ transparent, with timeout and per-call budget deduction hooks.
 from __future__ import annotations
 
 import asyncio
+import inspect
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -96,9 +97,15 @@ class ToolRegistry:
         except Exception as exc:  # noqa: BLE001
             return {"ok": False, "error": f"bad params: {exc}"}
         try:
-            res = spec.fn(coerced, ctx)
-            if asyncio.iscoroutine(res):
+            if inspect.iscoroutinefunction(spec.fn):
+                res = spec.fn(coerced, ctx)
                 res = await asyncio.wait_for(res, timeout=spec.timeout_s)
+            else:
+                res = await asyncio.wait_for(
+                    asyncio.to_thread(spec.fn, coerced, ctx), timeout=spec.timeout_s
+                )
+                if asyncio.iscoroutine(res):
+                    res = await asyncio.wait_for(res, timeout=spec.timeout_s)
             spec.calls += 1
             return {"ok": True, "data": res, "cost": spec.cost,
                     "duration_s": time.time() - t0, "calls": spec.calls}

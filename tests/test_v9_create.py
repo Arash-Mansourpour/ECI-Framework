@@ -138,7 +138,8 @@ def test_outer_loop_improves():
     def tasks(r):
         return [{"claim": f"t{r}-{i}", "prob": 0.8,
                  "payload": {"x": 0.9}, "drill": (lambda p: float(p["x"])),
-                 "outcome": 1} for i in range(3)]
+                 "drill_id": "fixed-score-v1", "outcome": 1,
+                 "outcome_source": "test-fixture", "simulate_votes": True} for i in range(3)]
 
     outer = OuterLoop(make_inner, seed=0)
     rep = outer.run(tasks, verifier=lambda s: True, rounds=3)

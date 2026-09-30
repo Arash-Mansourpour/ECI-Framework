@@ -219,10 +219,14 @@ class ECIFramework:
             self._v8_mesh_fn = _build_mesh
             self._v8_slash_fn = _eval_slash
             self.otel = _Otel(service=self.config.observability.service_name)
-            self.research_loop = _RLoop()
+            self.research_loop = _RLoop(bus=self.bus)
+            from eci.brain import SubsystemNeuralFabric as _NeuralFabric
             from eci.brain import build_default_mesh as _build_brain
 
             self.brain = _build_brain(seed=self.config.experiment.random_seed)
+            self.neural_fabric = _NeuralFabric(
+                self.brain, bus=self.bus, seed=self.config.experiment.random_seed
+            )
             # brain surprise joins the unification ledger when mesh exists
             try:
                 aik = getattr(self, "_aik", None)
@@ -238,6 +242,7 @@ class ECIFramework:
             self.otel = None  # type: ignore
             self.research_loop = None  # type: ignore
             self.brain = None  # type: ignore
+            self.neural_fabric = None  # type: ignore
         # v9 CREATE composables (P0 QD/verification/exploration + P1 causal/
         # energy/interpret/recursion): fail-closed lazy wiring
         try:
@@ -251,7 +256,7 @@ class ECIFramework:
             from eci.verification import VerificationGate as _Gate
 
             self.qd = _QD(dims=2, bins=6, seed=self.config.experiment.random_seed)
-            self.verify_gate = _Gate()
+            self.verify_gate = _Gate(bus=self.bus)
             self.explorer = _Harn()
             self.causal_demo = _SCM(
                 ["X", "Z", "Y"],
@@ -263,7 +268,7 @@ class ECIFramework:
             self._probe_cls = _Probe
             self._outer_cls = _Outer
             self.meta_loop = _Outer(
-                lambda params: _RLoop(quorum=params.get("quorum", 0.66)),
+                lambda params: _RLoop(quorum=params.get("quorum", 0.66), bus=self.bus),
                 seed=self.config.experiment.random_seed)
             self._v9_wired = True
         except Exception as exc:  # noqa: BLE001
@@ -683,6 +688,7 @@ class ECIFramework:
             "qn_bridge": lambda: {"ok": True, "F": float(self.qn_bridge.free_energy_contribution().item())} if getattr(self, "qn_bridge", None) else {"ok": False},
             "mutable_constitution": lambda: {"ok": True, **self.mutable_constitution.to_dict()} if getattr(self, "mutable_constitution", None) else {"ok": False},
             "brain": lambda: {"ok": True, **self.brain.health()} if getattr(self, "brain", None) else {"ok": False},
+            "neural_fabric": lambda: self.neural_fabric.health() if getattr(self, "neural_fabric", None) else {"ok": False},
             "v8": _safe(self.v8_status),
             "v9": _safe(self.v9_status),
         }
@@ -718,6 +724,11 @@ class ECIFramework:
             out["brain"] = self.brain.health() if getattr(self, "brain", None) else {"ok": False}
         except Exception as exc:  # noqa: BLE001
             out["brain"] = {"ok": False, "error": repr(exc)}
+        try:
+            out["neural_fabric"] = (self.neural_fabric.health()
+                                    if getattr(self, "neural_fabric", None) else {"ok": False})
+        except Exception as exc:  # noqa: BLE001
+            out["neural_fabric"] = {"ok": False, "error": repr(exc)}
         out["v9"] = self.v9_status()
         return out
 
@@ -739,26 +750,45 @@ class ECIFramework:
         }
 
     def brain_tick(self, snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
-        """One brain cycle over live subsystem state (defaults to healthy probe)."""
+        """One brain cycle over live components plus their event-driven signals."""
         if getattr(self, "brain", None) is None:
             return {"ok": False, "error": "brain unwired"}
-        snap = snapshot or {
-            "quantum": {"entanglement": 0.6, "coherence": 0.5},
-            "consciousness": {"phi": 0.4, "awareness": 0.5},
-            "governance": {"risk": 0.2, "participation": 0.7},
-            "memory": {"recall": 0.6, "novelty": 0.4},
-            "market": {"confidence": 0.6, "liquidity": 0.5},
-            "immune": {"threat": 0.2},
-            "federation": {"peers": 0.7, "quorum": 0.66},
-            "cognition": {"coherence": 0.6, "forecast": 0.5},
-        }
-        out = self.brain.sense(snap)
+        components = self._brain_components()
+        fabric = getattr(self, "neural_fabric", None)
+        if fabric is not None:
+            out = fabric.tick(snapshot=snapshot, components=components)
+        else:
+            snap = snapshot or {}
+            out = self.brain.sense(snap)
         try:
             self.observability.metrics.counter("eci_brain_ticks_total").inc()
             self.observability.metrics.gauge("eci_brain_broadcast").set(float(out.get("broadcast", 0.0)))
+            if fabric is not None:
+                fabric_health = fabric.health()
+                self.observability.metrics.gauge("eci_neural_fabric_nodes").set(fabric_health["nodes"])
+                self.observability.metrics.gauge("eci_neural_fabric_connections").set(fabric_health["connections"])
+                self.observability.metrics.counter("eci_neural_fabric_spikes_total").inc(
+                    len(out.get("spiking_subsystems", []))
+                )
         except Exception:  # noqa: BLE001
             pass
         return {"ok": True, **out}
+
+    def _brain_components(self) -> dict[str, Any]:
+        """Live subsystem objects exposed through read-only neural adapters."""
+        names = (
+            "quantum_sim", "quantum_router", "iit", "consciousness_analyzer", "gnwt",
+            "fep_agent", "dao", "network_manager", "kernel", "bus", "observability",
+            "persistence", "resilience", "orchestration", "plugins", "authz", "streaming",
+            "mlops", "provenance", "secrets", "secure_channel", "tenancy", "economy",
+            "treasury", "data", "agents", "cognition", "morph", "caps", "watchtower",
+            "continuum", "mapek", "compat", "futarchy", "sortition", "emergency",
+            "challenger", "forecasters", "fcl", "can", "market_commons", "qn_bridge",
+            "mutable_constitution", "otel", "research_loop", "qd", "verify_gate",
+            "explorer", "causal_demo", "energy", "meta_loop", "mcp",
+        )
+        return {name: value for name in names
+                if (value := getattr(self, name, None)) is not None}
 
     async def workflow_demo(self) -> dict[str, Any]:
         """End-to-end v6 slice: DAG + event-bus + stream + provenance + audit."""
