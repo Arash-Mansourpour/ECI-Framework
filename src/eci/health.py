@@ -144,8 +144,8 @@ def bootstrap_gossip(node_id: str | None = None, port: int | None = None,
     global _GOSSIP_TRANSPORT, _GOSSIP_NODE, _GOSSIP_THREAD, _GOSSIP_LOOP, _GOSSIP_SERVER
     if _GOSSIP_TRANSPORT is not None:
         return {"ok": True, "already": True, "peers": _peer_count()}
-    node_id = node_id or os.environ.get("ECI_NODE_ID", "local")
-    resolved_node_id: str = node_id
+    resolved_node_id = node_id or os.environ.get("ECI_NODE_ID", "local")
+    resolved_node_id = str(resolved_node_id)
     if port is None:
         port = int(os.environ.get("ECI_PORT", "8777"))
     if bootstrap is None:

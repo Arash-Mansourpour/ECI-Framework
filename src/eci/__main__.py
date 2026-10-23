@@ -29,6 +29,7 @@ import asyncio
 import importlib
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -146,6 +147,25 @@ def cmd_health(args: argparse.Namespace) -> int:
         return 0
     print(_json.dumps(_status()))
     return 0
+
+
+def cmd_taskmesh(args: argparse.Namespace) -> int:
+    script = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                          "tools", "taskmesh_proc.py")
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "src")
+    env["ROLE"] = args.role
+    env["NODE_ID"] = args.node_id
+    env["PORT"] = str(args.port)
+    env["PEERS"] = args.peers
+    env["DURATION"] = str(args.duration)
+    if args.store:
+        env["STORE"] = args.store
+    if args.task_file:
+        env["TASK_FILE"] = args.task_file
+    if args.handler_sleep is not None:
+        env["HANDLER_SLEEP"] = str(args.handler_sleep)
+    return subprocess.run([sys.executable, script], env=env).returncode
 
 
 def cmd_system(args: argparse.Namespace) -> int:
@@ -558,6 +578,16 @@ def build_parser() -> argparse.ArgumentParser:
     hh.add_argument("--once", action="store_true", help="print one JSON status and exit")
     hh.add_argument("--port", type=int, default=None, help="serve port (default: ECI_PORT or 8777)")
 
+    tm = sub.add_parser("taskmesh", help="run distributed task mesh node")
+    tm.add_argument("--role", choices=["coordinator", "agent", "relay"], required=True)
+    tm.add_argument("--node-id", required=True)
+    tm.add_argument("--port", type=int, required=True)
+    tm.add_argument("--peers", default="")
+    tm.add_argument("--store", default=None)
+    tm.add_argument("--task-file", default=None)
+    tm.add_argument("--duration", type=float, default=12.0)
+    tm.add_argument("--handler-sleep", type=float, default=None)
+
     sub.add_parser("system", help="v6 hyper-architecture health snapshot")
     sub.add_parser("workflow", help="v6 DAG slice demo")
 
@@ -647,6 +677,7 @@ def main(argv: list[str] | None = None) -> int:
         "activate": cmd_activate,
         "benchmark": cmd_benchmark,
         "health": cmd_health,
+    "taskmesh": cmd_taskmesh,
         "system": cmd_system,
         "workflow": cmd_workflow,
         "mcp": cmd_mcp,

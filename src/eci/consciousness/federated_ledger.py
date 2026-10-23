@@ -65,6 +65,7 @@ class FederatedConsciousnessLedger:
     def __init__(self, ledger_path: str | None = None, tolerance: float = 1e-6) -> None:
         self.tolerance = tolerance
         self.claims: dict[str, PhiClaim] = {}
+        self.participants: set[str] = set()
         self.chain = ProtocolLedger(ledger_path)
         self.iit = IntegratedInformationTheory()
         self.view = 0
@@ -96,12 +97,19 @@ class FederatedConsciousnessLedger:
         h = self._tpm_hash(tpm)
         claim = PhiClaim(claimant=claimant, phi=phi, tpm_hash=h, evidence=[f"tpm:{h}", f"phi:{phi:.4f}"])
         self.claims[claim.id()] = claim
+        self.participants.add(claimant)
         return claim
 
     def verify(self, claim_id: str, verifier: str, tpm: torch.Tensor) -> bool:
         """Verifier recomputes Phi and signs if within tolerance."""
         claim = self.claims.get(claim_id)
         if claim is None:
+            return False
+        if verifier == claim.claimant:
+            claim.evidence.append(f"reject:{verifier}:claimant cannot self-verify")
+            return False
+        if verifier in claim.signatures:
+            claim.evidence.append(f"reject:{verifier}:duplicate vote")
             return False
         # recompute phi for same tpm
         recomputed_claim = self.propose(verifier, tpm)
@@ -117,6 +125,7 @@ class FederatedConsciousnessLedger:
             sig = hashlib.sha256(f"{verifier}|{claim_id}|{claim.phi:.6f}".encode()).hexdigest()[:16]
             claim.signatures[verifier] = sig
             claim.evidence.append(f"verify:{verifier}:{recomputed:.4f}")
+            self.participants.add(verifier)
             return True
         claim.evidence.append(f"reject:{verifier}:{recomputed:.4f} vs {claim.phi:.4f}")
         return False
@@ -125,9 +134,11 @@ class FederatedConsciousnessLedger:
         claim = self.claims.get(claim_id)
         if claim is None:
             return False
-        # need 2/3 of nodes including claimant's implicit signature
-        sigs = len(claim.signatures) + 1  # claimant counts as 1
-        return sigs * 3 >= 2 * n_nodes
+        # Distinct participants only: claimant plus independent verifiers.
+        # A repeated verifier name does not increase quorum.
+        distinct = len({claim.claimant} | set(claim.signatures))
+        required = (2 * n_nodes + 2) // 3  # ceil(2*n/3)
+        return distinct >= required and n_nodes > 0
 
     def commit(self, claim_id: str, n_nodes: int) -> dict[str, Any]:
         claim = self.claims.get(claim_id)

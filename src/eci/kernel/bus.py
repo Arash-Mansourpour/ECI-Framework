@@ -84,9 +84,29 @@ class EventBus:
                     try:
                         loop = asyncio.get_running_loop()
                     except RuntimeError:
-                        asyncio.run(res)
+                        try:
+                            asyncio.run(res)
+                        except Exception as exc:  # noqa: BLE001
+                            sub.errors += 1
+                            self._dlq.append({"event": event, "handler": sub.name,
+                                              "error": repr(exc), "ts": time.time()})
+                        else:
+                            sub.calls += 1
+                            delivered += 1
+                        continue
                     else:
-                        loop.create_task(res)
+                        task = loop.create_task(res)
+
+                        def _done(t: asyncio.Task[Any], sub: Subscription = sub,
+                                  event: Event = event) -> None:
+                            try:
+                                t.result()
+                            except Exception as exc:  # noqa: BLE001
+                                sub.errors += 1
+                                self._dlq.append({"event": event, "handler": sub.name,
+                                                  "error": repr(exc), "ts": time.time()})
+
+                        task.add_done_callback(_done)
                 sub.calls += 1
                 delivered += 1
             except Exception as exc:  # noqa: BLE001

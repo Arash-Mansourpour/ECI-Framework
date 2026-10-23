@@ -52,6 +52,7 @@ class FramedTcpTransport:
         self.forwarded = 0
         self.dropped_duplicates = 0
         self.dropped_invalid = 0
+        self.dropped_backpressure = 0
         self._seen: set[str] = set()
         self._seen_limit = 4096
 
@@ -94,7 +95,7 @@ class FramedTcpTransport:
                     try:
                         self._inbox.put_nowait(msg)
                     except asyncio.QueueFull:
-                        self.dropped_invalid += 1
+                        self.dropped_backpressure += 1
                     ttl = msg.get("_ttl", self.message_ttl)
                     try:
                         ttl = int(ttl)
@@ -170,6 +171,17 @@ class FramedTcpTransport:
         self.sent += ok
         return ok
 
+    async def broadcast_reliable(self, sender: str, message: Any,
+                                 retries: int = 2) -> dict[str, Any]:
+        delivered = 0
+        for attempt in range(retries + 1):
+            delivered = await self.broadcast(sender, message)
+            if delivered > 0:
+                break
+            await asyncio.sleep(0.1 * (attempt + 1))
+        return {"delivered": delivered, "attempts": retries + 1,
+                "ok": delivered > 0}
+
     async def drain(self, node_id: str = "", timeout: float = 0.1) -> list[Any]:
         out: list[Any] = []
         while True:
@@ -186,4 +198,5 @@ class FramedTcpTransport:
                 "forwarded": self.forwarded,
                 "dropped_duplicates": self.dropped_duplicates,
                 "dropped_invalid": self.dropped_invalid,
+                "dropped_backpressure": self.dropped_backpressure,
                 "seen": len(self._seen)}
