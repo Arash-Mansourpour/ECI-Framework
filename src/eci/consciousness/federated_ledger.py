@@ -79,12 +79,13 @@ class FederatedConsciousnessLedger:
         # Use deterministic Gaussian Phi if tpm is 2D covariance-like
         # For TPM, use iit4 if available, else iit gaussian
         try:
-            # Try to interpret tpm as covariance for Gaussian Phi
-            if tpm.dim() == 2 and tpm.shape[0] == tpm.shape[1]:
-                # Gaussian Phi via iit.py: need time-series, use dummy
-                # Instead compute directly via iit's gaussian_phi if exists
-                # Fallback: use discrete phi via iit4 if tpm is 0/1
-                phi = float(self.iit.calculate_phi(tpm.unsqueeze(0).repeat(4, 1), tpm)["phi"]) if hasattr(self.iit, "calculate_phi") else 0.0
+            # Treat a square 2-D tensor as a covariance matrix (Gaussian IIT).
+            # Fall back to the time-series path for rectangular inputs and to a
+            # bounded proxy only if the math is unavailable, never silently.
+            if tpm.dim() == 2 and tpm.shape[0] == tpm.shape[1] and tpm.shape[0] >= 2:
+                phi = float(self.iit.gaussian_phi(tpm))
+            elif tpm.dim() >= 2 and tpm.shape[-1] >= 2:
+                phi = float(self.iit.calculate_phi(tpm)["phi_total"])
             else:
                 phi = 0.0
         except Exception:
@@ -103,7 +104,14 @@ class FederatedConsciousnessLedger:
         if claim is None:
             return False
         # recompute phi for same tpm
-        recomputed = self.propose(verifier, tpm).phi  # propose gives phi for tpm
+        recomputed_claim = self.propose(verifier, tpm)
+        recomputed = recomputed_claim.phi  # propose gives phi for tpm
+        # Reject when the underlying TPM differs, even if Phi coincides.
+        if recomputed_claim.tpm_hash != claim.tpm_hash:
+            claim.evidence.append(
+                f"reject:{verifier}:tpm-hash {recomputed_claim.tpm_hash} vs {claim.tpm_hash}"
+            )
+            return False
         # Compare (use tolerance)
         if abs(recomputed - claim.phi) <= self.tolerance:
             sig = hashlib.sha256(f"{verifier}|{claim_id}|{claim.phi:.6f}".encode()).hexdigest()[:16]

@@ -139,7 +139,10 @@ def cmd_health(args: argparse.Namespace) -> int:
     from eci.health import status as _status
 
     if args.serve:
-        _serve(args.port)
+        port = args.port
+        if port is None:
+            port = int(os.environ.get("ECI_PORT", "8777"))
+        _serve(port)
         return 0
     print(_json.dumps(_status()))
     return 0
@@ -553,7 +556,7 @@ def build_parser() -> argparse.ArgumentParser:
     hh = sub.add_parser("health", help="health JSON / HTTP probe")
     hh.add_argument("--serve", action="store_true", help="serve /health + /metrics (blocks)")
     hh.add_argument("--once", action="store_true", help="print one JSON status and exit")
-    hh.add_argument("--port", type=int, default=8777, help="serve port")
+    hh.add_argument("--port", type=int, default=None, help="serve port (default: ECI_PORT or 8777)")
 
     sub.add_parser("system", help="v6 hyper-architecture health snapshot")
     sub.add_parser("workflow", help="v6 DAG slice demo")

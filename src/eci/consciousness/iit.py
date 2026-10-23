@@ -18,7 +18,7 @@ See ``consciousness/LIMITATIONS.md`` for what Phi is and is not.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 
@@ -151,6 +151,27 @@ class IntegratedInformationTheory:
         cov = 0.5 * (cov + cov.T)
         n = cov.shape[0]
         return cov + torch.eye(n, device=cov.device, dtype=cov.dtype) * COVARIANCE_REGULARIZER
+
+    def gaussian_phi(self, data: Any, exhaustive: bool = False) -> float:
+        """Public Gaussian-Phi entry point.
+
+        Accepts either a covariance matrix (square 2-D tensor) or a time-series
+        matrix ``[time, neurons]``. Covariance inputs are symmetrized and
+        regularized exactly like the ``GenerativeState`` path so callers do
+        not need to know the internal covariance helpers.
+        """
+        tensor = torch.as_tensor(data, dtype=torch.float64, device=self.device)
+        tensor = torch.nan_to_num(tensor, nan=0.0, posinf=1.0, neginf=-1.0)
+        if tensor.dim() == 2 and tensor.shape[0] == tensor.shape[1]:
+            cov = 0.5 * (tensor + tensor.T)
+            n = cov.shape[0]
+            if n < 2:
+                return 0.0
+            cov = cov + torch.eye(n, device=cov.device, dtype=cov.dtype) * COVARIANCE_REGULARIZER
+            return float(self._phi_gaussian_from_cov(cov, exhaustive=exhaustive))
+        if tensor.dim() < 2:
+            return 0.0
+        return float(self._phi_gaussian(tensor, exhaustive=exhaustive))
 
     def _phi_gaussian(self, neural_state: torch.Tensor, exhaustive: bool = False) -> float:
         """Phi = 1/2 min_partition [logdet(Sigma_A) + logdet(Sigma_B) - logdet(Sigma)].
